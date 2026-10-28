@@ -1104,6 +1104,11 @@ namespace Veltrix.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsStoreOpen")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1142,6 +1147,8 @@ namespace Veltrix.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
 
                     b.HasIndex("UpdatedAt");
 

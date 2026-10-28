@@ -22,11 +22,12 @@ namespace Veltrix.Configurations
             builder.Property(x => x.LogoUrl).HasMaxLength(2048);
             builder.Property(x => x.IsStoreOpen).HasDefaultValue(true).IsRequired();
             builder.Property(x => x.MaintenanceMessage).HasMaxLength(1000);
-
+            builder.Property(x => x.IsActive).HasDefaultValue(true).IsRequired();
 
             // Indexes
             builder.HasIndex(x => x.UpdatedAt);
             builder.HasIndex(x => x.UpdatedByUserId);
+            builder.HasIndex(x => x.IsActive);
 
             // RelationsShips
             builder.HasOne(x => x.UpdatedByUser).WithMany(x => x.StoreSettings)

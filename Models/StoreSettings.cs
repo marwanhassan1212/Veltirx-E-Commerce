@@ -10,6 +10,8 @@
         public string? SupportPhone { get; set; }
         public string CurrencyCode { get; set; } = "EGP";
         public bool IsStoreOpen { get; set; } = true;
+        public bool IsActive { get; set; } = true;
+
         public string? MaintenanceMessage { get; set; }
         public DateTime UpdatedAt { get; set; }
         public ApplicationUser? UpdatedByUser { get; set; }
