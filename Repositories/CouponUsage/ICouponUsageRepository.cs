@@ -1,6 +1,6 @@
 ﻿namespace Veltrix.Repositories.CouponUsage
 {
-    public interface ICouponUsage
+    public interface ICouponUsageRepository
     {
         Task<IReadOnlyList<Models.CouponUsage>> GetByCouponIdAsync(int couponId);
         Task<IReadOnlyList<Models.CouponUsage>> GetByUserIdAsync(string userId);

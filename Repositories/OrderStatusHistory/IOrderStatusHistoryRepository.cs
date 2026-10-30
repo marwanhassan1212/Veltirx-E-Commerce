@@ -1,6 +1,6 @@
 ﻿namespace Veltrix.Repositories.OrderStatusHistory
 {
-    public interface IOrderStatusHistory
+    public interface IOrderStatusHistoryRepository
     {
         Task<Models.OrderStatusHistory?> GetByIdAsync(long id);
         Task<IReadOnlyList<Models.OrderStatusHistory>> GetByOrderIdAsync(int orderId);

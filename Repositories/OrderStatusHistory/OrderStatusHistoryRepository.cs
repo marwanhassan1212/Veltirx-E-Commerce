@@ -4,10 +4,10 @@ using Veltrix.Data;
 
 namespace Veltrix.Repositories.OrderStatusHistory
 {
-    public class OrderStatusHistory : IOrderStatusHistory
+    public class OrderStatusHistoryRepository : IOrderStatusHistoryRepository
     {
         private readonly AppDbContext _db;
-        public OrderStatusHistory(AppDbContext db)
+        public OrderStatusHistoryRepository(AppDbContext db)
         {
             _db = db;
         }

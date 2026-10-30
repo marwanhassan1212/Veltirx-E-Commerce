@@ -4,10 +4,10 @@ using Veltrix.Data;
 
 namespace Veltrix.Repositories.CouponUsage
 {
-    public class CouponUsage : ICouponUsage
+    public class CouponUsageRepository : ICouponUsageRepository
     {
         private readonly AppDbContext _db;
-        public CouponUsage(AppDbContext db)
+        public CouponUsageRepository(AppDbContext db)
         {
             _db = db;
         }

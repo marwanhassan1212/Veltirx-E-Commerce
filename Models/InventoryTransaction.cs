@@ -21,7 +21,5 @@ namespace Veltrix.Models
         public Order? Order { get; set; }
         public int? OrderId { get; set; }
 
-
-
     }
 }
