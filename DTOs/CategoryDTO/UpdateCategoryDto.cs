@@ -12,8 +12,7 @@ namespace Veltrix.DTOs.CategoryDTO
         [StringLength(180, MinimumLength = 1)]
         public string Slug { get; set; } = string.Empty;
 
-        [StringLength(2048)]
-        public string? ImageUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
         [StringLength(1000)]
         public string? Description { get; set; }

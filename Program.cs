@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Veltrix.Data;
+using Veltrix.Models;
 using Veltrix.Repositories.Cart;
 using Veltrix.Repositories.CartItem;
 using Veltrix.Repositories.Category;
@@ -14,11 +15,16 @@ using Veltrix.Repositories.OrderStatusHistory;
 using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
+using Veltrix.Repositories.ProductVariant;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptionValue;
+using Veltrix.Services.Category;
+using Veltrix.Services.Images;
 using Veltrix.Services.Product;
+using Veltrix.Services.ProductVariant;
 using Veltrix.UnitOfWork;
 
 namespace Veltrix
@@ -52,6 +58,9 @@ namespace Veltrix
             builder.Services.AddScoped<IShippingSettingsRepository, ShippingSettingsRepository>();
             builder.Services.AddScoped<IStoreSettingsRepository, StoreSettingsRepository>();
             builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+            builder.Services.AddScoped<IVariantOptionValueRepository, VariantOptionValueRepository>();
+            builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+
 
 
             // Unit of work
@@ -59,6 +68,10 @@ namespace Veltrix
 
             // Services
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
+            builder.Services.AddScoped<IImageStorageService, LocalImageStorageService>();
+            
 
             var app = builder.Build();
 

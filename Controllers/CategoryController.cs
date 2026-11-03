@@ -1,76 +1,109 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Veltrix.DTOs.CategoryDTO;
 using Veltrix.Services.Category;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Veltrix.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryService categoryService;
-        public CategoryController(ICategoryService categoryService)
+        private readonly ICategoryService _categoryService;
+        private readonly ILogger<CategoryController> _logger;
+
+        private async Task PopulateParentCategoriesAsync(int? selectedParentId = null, int? currentCategoryId = null)
         {
-            this.categoryService = categoryService;
+            var categories = await _categoryService.GetAllAsync();
+
+            var availableCategories = categories
+                .Where(c => !currentCategoryId.HasValue ||
+                            c.Id != currentCategoryId.Value)
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            ViewBag.ParentCategories = new SelectList(
+                availableCategories,
+                "Id",
+                "Name",
+                selectedParentId
+            );
         }
 
-        // Get All Categories
+        public CategoryController(ICategoryService categoryService, ILogger<CategoryController> logger)
+        {
+            _categoryService = categoryService;
+            _logger = logger;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var categories = await categoryService.GetAllAsync();
+            var categories = await _categoryService.GetAllAsync();
             return View(categories);
         }
 
-        // Get Category Details
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var category = await categoryService.GetByIdAsync(id);
-            if(category == null)
-            {
+            var category = await _categoryService.GetByIdAsync(id);
+
+            if (category == null)
                 return NotFound();
-            }
+
             return View(category);
         }
 
-        // Create Category -> GET
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await PopulateParentCategoriesAsync();
             return View();
         }
 
-        // Create Category -> POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateCategoryDto dto)
         {
             if (!ModelState.IsValid)
+            {
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId);
                 return View(dto);
+            }
 
             try
             {
-                await categoryService.CreateAsync(dto);
+                await _categoryService.CreateAsync(dto);
+
                 TempData["Success"] = "Category Added Successfully";
+
                 return RedirectToAction(nameof(Index));
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
+
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId);
                 return View(dto);
             }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Category image upload failed.");
 
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Could not upload the image. Please try again.");
+
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId);
+                return View(dto);
+            }
         }
 
-        // Edit Category -> GET
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await categoryService.GetByIdAsync(id);
-            if(category == null)
-            {
+            var category = await _categoryService.GetByIdAsync(id);
+
+            if (category == null)
                 return NotFound();
-            }
 
             var updateCategory = new UpdateCategoryDto
             {
@@ -78,38 +111,71 @@ namespace Veltrix.Controllers
                 Slug = category.Slug,
                 Description = category.Description,
                 DisplayOrder = category.DisplayOrder,
-                ImageUrl = category.ImageUrl,
                 IsActive = category.IsActive,
                 ParentCategoryId = category.ParentCategoryId
             };
 
             ViewBag.CategoryId = id;
+            ViewBag.CurrentImageUrl = category.ImageUrl;
+
+            await PopulateParentCategoriesAsync(
+                updateCategory.ParentCategoryId,
+                id
+            );
             return View(updateCategory);
         }
 
-        // Edit Category -> POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id , UpdateCategoryDto dto)
+        public async Task<IActionResult> Edit(int id, UpdateCategoryDto dto)
         {
             ViewBag.CategoryId = id;
+
+            var existingCategory = await _categoryService.GetByIdAsync(id);
+
+            if (existingCategory == null)
+                return NotFound();
+
+            ViewBag.CurrentImageUrl = existingCategory.ImageUrl;
+
             if (!ModelState.IsValid)
+            {
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId, id);
                 return View(dto);
+            }
+
             try
             {
-                var category = await categoryService.UpdateAsync(id , dto);
+                var category = await _categoryService.UpdateAsync(id, dto);
+
                 if (category == null)
                     return NotFound();
+
                 TempData["Success"] = "Category Updated Successfully";
+
                 return RedirectToAction(nameof(Index));
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
+
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId, id);
+                return View(dto);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Category image update failed for Category ID {CategoryId}",
+                    id);
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Could not upload the image. Please try again.");
+
+                await PopulateParentCategoriesAsync(dto.ParentCategoryId, id);
                 return View(dto);
             }
         }
-
-
     }
 }

@@ -1,8 +1,868 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <style>
+        .dashboard-page {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .dashboard-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .dashboard-heading h1 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+        }
+
+        .dashboard-heading p {
+            margin: 7px 0 0;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+        }
+
+        .dashboard-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 13px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+        }
+
+        .dashboard-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 17px;
+        }
+
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-label {
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .kpi-icon {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border-radius: 11px;
+            font-size: 17px;
+        }
+
+        .kpi-icon.violet { background: #F0EDFF; color: #7657F6; }
+        .kpi-icon.blue { background: #EAF3FF; color: #3985E8; }
+        .kpi-icon.green { background: #E6F7F0; color: #16A779; }
+        .kpi-icon.orange { background: #FFF3E7; color: #E18B35; }
+
+        .kpi-value {
+            margin: 19px 0 8px;
+            color: var(--vx-text);
+            font-size: 27px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .kpi-comparison {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .kpi-trend {
+            color: var(--vx-success);
+            font-weight: 700;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+            gap: 18px;
+        }
+
+        .dashboard-card {
+            min-width: 0;
+            padding: 21px;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 23px;
+        }
+
+        .dashboard-card-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .dashboard-card-header p {
+            margin: 5px 0 0;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .dashboard-select {
+            padding: 7px 10px;
+            border: 1px solid var(--vx-border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            font-size: 10px;
+        }
+
+        .sales-summary {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .sales-summary strong {
+            font-size: 25px;
+            letter-spacing: -0.8px;
+        }
+
+        .sales-summary span {
+            color: var(--vx-success);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .sales-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            height: 190px;
+            padding: 12px 4px 0;
+            border-bottom: 1px solid var(--vx-border);
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0,
+                transparent 46px,
+                #F0F0F5 47px,
+                transparent 48px
+            );
+        }
+
+        .chart-column {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            gap: 9px;
+        }
+
+        .chart-bar {
+            width: min(28px, 75%);
+            min-height: 8px;
+            border-radius: 6px 6px 2px 2px;
+            background: #DCD5FF;
+            transition: background .2s ease;
+        }
+
+        .chart-bar:hover,
+        .chart-bar.highlight {
+            background: var(--vx-primary);
+        }
+
+        .chart-column span {
+            color: var(--vx-text-muted);
+            font-size: 9px;
+        }
+
+        .chart-legend {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 15px;
+            color: var(--vx-text-secondary);
+            font-size: 10px;
+        }
+
+        .chart-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--vx-primary);
+        }
+
+        .channel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 19px;
+        }
+
+        .channel-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .channel-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 11px;
+        }
+
+        .channel-info span:first-child {
+            color: var(--vx-text-secondary);
+        }
+
+        .channel-info strong {
+            color: var(--vx-text);
+        }
+
+        .channel-progress {
+            height: 7px;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #F0EFF5;
+        }
+
+        .channel-progress div {
+            height: 100%;
+            border-radius: inherit;
+            background: var(--vx-primary);
+        }
+
+        .channel-item:nth-child(2) .channel-progress div { background: #3985E8; }
+        .channel-item:nth-child(3) .channel-progress div { background: #16A779; }
+        .channel-item:nth-child(4) .channel-progress div { background: #E5A044; }
+
+        .dashboard-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .dashboard-table th {
+            padding: 12px 13px;
+            border-bottom: 1px solid var(--vx-border);
+            background: #FAFAFC;
+            color: var(--vx-text-muted);
+            font-size: 9px;
+            font-weight: 700;
+            text-align: left;
+            letter-spacing: .5px;
+        }
+
+        .dashboard-table td {
+            padding: 15px 13px;
+            border-bottom: 1px solid #F1F1F5;
+            color: var(--vx-text);
+            font-size: 10px;
+        }
+
+        .dashboard-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .order-number {
+            color: var(--vx-primary);
+            font-weight: 700;
+        }
+
+        .customer-cell {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .customer-avatar {
+            display: grid;
+            width: 29px;
+            height: 29px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 9px;
+            background: #F0EDFF;
+            color: var(--vx-primary);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .status-completed { background: #E6F7F0; color: #16A779; }
+        .status-pending { background: #FFF5DF; color: #C58A21; }
+        .status-processing { background: #EAF3FF; color: #3985E8; }
+
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 17px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .product-placeholder {
+            display: grid;
+            width: 43px;
+            height: 43px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 11px;
+            background: #F1EEFF;
+            color: var(--vx-primary);
+            font-size: 18px;
+        }
+
+        .product-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-details strong {
+            display: block;
+            overflow: hidden;
+            color: var(--vx-text);
+            font-size: 11px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-details span {
+            display: block;
+            margin-top: 4px;
+            color: var(--vx-text-muted);
+            font-size: 9px;
+        }
+
+        .product-revenue {
+            color: var(--vx-text);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .inventory-alert {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px;
+            border: 1px solid #F7E7C6;
+            border-radius: 10px;
+            background: #FFFAF0;
+        }
+
+        .inventory-alert + .inventory-alert {
+            margin-top: 10px;
+        }
+
+        .inventory-alert-icon {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 9px;
+            background: #FFF0D3;
+            color: #C58A21;
+        }
+
+        .inventory-alert strong {
+            display: block;
+            color: var(--vx-text);
+            font-size: 10px;
+        }
+
+        .inventory-alert span {
+            display: block;
+            margin-top: 4px;
+            color: var(--vx-text-secondary);
+            font-size: 9px;
+        }
+
+        .dashboard-link {
+            color: var(--vx-primary);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .dashboard-link:hover {
+            color: var(--vx-primary-hover);
+        }
+
+        .preview-note {
+            padding: 10px 13px;
+            border: 1px solid #E6E0FF;
+            border-radius: 9px;
+            background: #F8F6FF;
+            color: #6853C5;
+            font-size: 10px;
+        }
+
+        @@media (max-width: 1100px) {
+            .dashboard-kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .dashboard-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .dashboard-kpis {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-card {
+                padding: 17px;
+            }
+
+            .dashboard-card {
+                padding: 16px;
+            }
+
+            .sales-chart {
+                gap: 6px;
+            }
+        }
+    </style>
+}
+
+<div class="dashboard-page">
+
+    <div class="preview-note">
+        <i class="bi bi-info-circle me-1"></i>
+        Dashboard preview — displayed figures are sample data and are not connected to live business records yet.
+    </div>
+
+    <!-- Page Heading -->
+    <section class="dashboard-heading">
+        <div>
+            <h1>Good morning, Administrator <span>👋</span></h1>
+            <p>Here's what's happening with your store today.</p>
+        </div>
+
+        <div class="dashboard-date">
+            <i class="bi bi-calendar3"></i>
+            @DateTime.UtcNow.ToString("dd MMM yyyy")
+        </div>
+    </section>
+
+    <!-- KPI Cards -->
+    <section class="dashboard-kpis">
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <span class="kpi-label">Total Revenue</span>
+                <span class="kpi-icon violet">
+                    <i class="bi bi-wallet2"></i>
+                </span>
+            </div>
+            <div class="kpi-value">EGP 248,650</div>
+            <div class="kpi-comparison">
+                <span class="kpi-trend">
+                    <i class="bi bi-arrow-up-right"></i> 12.8%
+                </span>
+                <span>vs. previous month</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <span class="kpi-label">Total Orders</span>
+                <span class="kpi-icon blue">
+                    <i class="bi bi-bag-check"></i>
+                </span>
+            </div>
+            <div class="kpi-value">1,284</div>
+            <div class="kpi-comparison">
+                <span class="kpi-trend">
+                    <i class="bi bi-arrow-up-right"></i> 8.4%
+                </span>
+                <span>vs. previous month</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <span class="kpi-label">Total Customers</span>
+                <span class="kpi-icon green">
+                    <i class="bi bi-people"></i>
+                </span>
+            </div>
+            <div class="kpi-value">3,842</div>
+            <div class="kpi-comparison">
+                <span class="kpi-trend">
+                    <i class="bi bi-arrow-up-right"></i> 6.2%
+                </span>
+                <span>vs. previous month</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <span class="kpi-label">Pending Orders</span>
+                <span class="kpi-icon orange">
+                    <i class="bi bi-clock-history"></i>
+                </span>
+            </div>
+            <div class="kpi-value">36</div>
+            <div class="kpi-comparison">
+                <span>Awaiting processing</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Analytics -->
+    <section class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h3>Revenue Overview</h3>
+                    <p>Revenue performance over the last 7 months</p>
+                </div>
+
+                <select class="dashboard-select" aria-label="Revenue period">
+                    <option>Last 7 months</option>
+                    <option>Last 30 days</option>
+                    <option>This year</option>
+                </select>
+            </div>
+
+            <div class="sales-summary">
+                <strong>EGP 248,650</strong>
+                <span><i class="bi bi-arrow-up-right"></i> 12.8%</span>
+            </div>
+
+            <div class="sales-chart">
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 42%"></div>
+                    <span>May</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 58%"></div>
+                    <span>Jun</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 48%"></div>
+                    <span>Jul</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 72%"></div>
+                    <span>Aug</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 63%"></div>
+                    <span>Sep</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar" style="height: 85%"></div>
+                    <span>Oct</span>
+                </div>
+                <div class="chart-column">
+                    <div class="chart-bar highlight" style="height: 100%"></div>
+                    <span>Nov</span>
+                </div>
+            </div>
+
+            <div class="chart-legend">
+                <span class="chart-legend-dot"></span>
+                Revenue
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h3>Sales Channels</h3>
+                    <p>Illustrative order distribution</p>
+                </div>
+                <i class="bi bi-three-dots"></i>
+            </div>
+
+            <div class="channel-list">
+                <div class="channel-item">
+                    <div class="channel-info">
+                        <span>Direct Store</span>
+                        <strong>48%</strong>
+                    </div>
+                    <div class="channel-progress">
+                        <div style="width: 48%"></div>
+                    </div>
+                </div>
+
+                <div class="channel-item">
+                    <div class="channel-info">
+                        <span>Social Media</span>
+                        <strong>27%</strong>
+                    </div>
+                    <div class="channel-progress">
+                        <div style="width: 27%"></div>
+                    </div>
+                </div>
+
+                <div class="channel-item">
+                    <div class="channel-info">
+                        <span>Referral</span>
+                        <strong>16%</strong>
+                    </div>
+                    <div class="channel-progress">
+                        <div style="width: 16%"></div>
+                    </div>
+                </div>
+
+                <div class="channel-item">
+                    <div class="channel-info">
+                        <span>Other</span>
+                        <strong>9%</strong>
+                    </div>
+                    <div class="channel-progress">
+                        <div style="width: 9%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Orders and Products -->
+    <section class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h3>Recent Orders</h3>
+                    <p>Latest activity across your store</p>
+                </div>
+
+                <a asp-controller="Order"
+                   asp-action="Index"
+                   class="dashboard-link">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>ORDER</th>
+                            <th>CUSTOMER</th>
+                            <th>AMOUNT</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td><span class="order-number">#VX-1024</span></td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="customer-avatar">AM</span>
+                                    Ahmed Mohamed
+                                </div>
+                            </td>
+                            <td>EGP 2,450</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="order-number">#VX-1023</span></td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="customer-avatar">OS</span>
+                                    Omar Salah
+                                </div>
+                            </td>
+                            <td>EGP 1,850</td>
+                            <td><span class="status-pill status-pending">Pending</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="order-number">#VX-1022</span></td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="customer-avatar">MK</span>
+                                    Mariam Khaled
+                                </div>
+                            </td>
+                            <td>EGP 3,200</td>
+                            <td><span class="status-pill status-processing">Processing</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="order-number">#VX-1021</span></td>
+                            <td>
+                                <div class="customer-cell">
+                                    <span class="customer-avatar">YA</span>
+                                    Youssef Ali
+                                </div>
+                            </td>
+                            <td>EGP 950</td>
+                            <td><span class="status-pill status-completed">Completed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h3>Top Products</h3>
+                    <p>Best performing products</p>
+                </div>
+                <a asp-controller="Product"
+                   asp-action="Index"
+                   class="dashboard-link">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="product-list">
+
+                <div class="product-item">
+                    <div class="product-placeholder">
+                        <i class="bi bi-headphones"></i>
+                    </div>
+                    <div class="product-details">
+                        <strong>Wireless Headphones</strong>
+                        <span>124 units sold</span>
+                    </div>
+                    <span class="product-revenue">EGP 48K</span>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-placeholder">
+                        <i class="bi bi-smartwatch"></i>
+                    </div>
+                    <div class="product-details">
+                        <strong>Smart Watch Pro</strong>
+                        <span>98 units sold</span>
+                    </div>
+                    <span class="product-revenue">EGP 35K</span>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-placeholder">
+                        <i class="bi bi-speaker"></i>
+                    </div>
+                    <div class="product-details">
+                        <strong>Bluetooth Speaker</strong>
+                        <span>76 units sold</span>
+                    </div>
+                    <span class="product-revenue">EGP 22K</span>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-placeholder">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="product-details">
+                        <strong>Premium Phone Case</strong>
+                        <span>65 units sold</span>
+                    </div>
+                    <span class="product-revenue">EGP 12K</span>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Inventory Alerts -->
+    <section class="dashboard-card">
+        <div class="dashboard-card-header">
+            <div>
+                <h3>Inventory Alerts</h3>
+                <p>Items that may require your attention</p>
+            </div>
+
+            <a asp-controller="Inventory"
+               asp-action="Index"
+               class="dashboard-link">
+                Manage inventory <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="inventory-alert">
+                <div class="inventory-alert-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <strong>Wireless Headphones</strong>
+                    <span>Only 4 units remaining</span>
+                </div>
+            </div>
+
+            <div class="inventory-alert">
+                <div class="inventory-alert-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <strong>Smart Watch Pro</strong>
+                    <span>Only 6 units remaining</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </div>

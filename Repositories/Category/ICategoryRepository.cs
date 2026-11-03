@@ -1,4 +1,5 @@
-﻿using Veltrix.Models;
+﻿using Veltrix.DTOs.CategoryDTO;
+using Veltrix.Models;
 
 namespace Veltrix.Repositories.Category
 {
@@ -7,6 +8,7 @@ namespace Veltrix.Repositories.Category
         Task<Models.Category?> GetByIdAsync(int Id);
         Task<Models.Category?> GetBySlugAsync(string slug);
         Task<IReadOnlyList<Models.Category>> GetAllAsync();
+        Task<IReadOnlyList<CategoryDto>> GetCategoriesForListAsync();
         Task<IReadOnlyList<Models.Category>> GetActiveCategoriesAsync();
         Task AddAsync(Models.Category category);
         void Update(Models.Category category);

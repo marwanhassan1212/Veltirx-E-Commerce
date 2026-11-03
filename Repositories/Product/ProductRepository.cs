@@ -17,6 +17,7 @@ namespace Veltrix.Repositories.Product
             return await _db.Products
                 .Include(x => x.Category)
                 .Include(x => x.ProductImages)
+                .Include(x => x.Variants)
                 .AsNoTracking()
                 .ToListAsync();
                     
@@ -27,6 +28,7 @@ namespace Veltrix.Repositories.Product
             return await _db.Products
               .Include(x => x.Category)
               .Include(x => x.ProductImages)
+              .Include(x => x.Variants)
               .FirstOrDefaultAsync(x => x.Id == Id);
         }
 
@@ -35,6 +37,7 @@ namespace Veltrix.Repositories.Product
             return await _db.Products
                 .Include(x => x.Category)
                 .Include(x => x.ProductImages)
+                .Include(x => x.Variants)
                 .FirstOrDefaultAsync(x => x.Slug == slug);
         }
 
@@ -43,6 +46,7 @@ namespace Veltrix.Repositories.Product
             return await _db.Products
                 .Include(x => x.Category)
                 .Include(x => x.ProductImages)
+                .Include(x => x.Variants)
                 .Where(x => x.IsPublished)
                 .AsNoTracking()
                 .ToListAsync();
@@ -58,10 +62,9 @@ namespace Veltrix.Repositories.Product
             await _db.Products.AddAsync(product);
         }
 
-        async Task<Models.ProductVariant?> IProductRepository.GetBySkuAsync(string sku)
+        public async Task<Models.ProductVariant?> GetBySkuAsync(string sku)
         {
-            return await _db.ProductVariants.Include(x => x.Product)
-                    .FirstOrDefaultAsync(x => x.SKU == sku);
+            return await _db.ProductVariants.FirstOrDefaultAsync(x => x.SKU == sku);
         }
     }
 }

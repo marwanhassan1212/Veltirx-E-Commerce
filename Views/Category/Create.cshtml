@@ -1,0 +1,389 @@
+﻿@model Veltrix.DTOs.CategoryDTO.CreateCategoryDto
+
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+@section Styles {
+    <style>
+        .category-form {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .category-form-card {
+            background: var(--vx-surface, #fff);
+            border: 1px solid var(--vx-border);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            border-color: var(--vx-border);
+            border-radius: 9px;
+        }
+
+        textarea.form-control {
+            min-height: 110px;
+        }
+
+        .image-upload-box {
+            border: 2px dashed var(--vx-border);
+            border-radius: 14px;
+            padding: 25px;
+            text-align: center;
+            background: var(--vx-bg, #fafafa);
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+            .image-upload-box:hover {
+                border-color: var(--vx-primary);
+            }
+
+            .image-upload-box input {
+                display: none;
+            }
+
+        .upload-icon {
+            font-size: 32px;
+            color: var(--vx-primary);
+            margin-bottom: 10px;
+        }
+
+        .image-preview-wrapper {
+            display: none;
+            margin-top: 18px;
+            text-align: center;
+        }
+
+        .image-preview {
+            width: 180px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid var(--vx-border);
+        }
+
+        .image-preview-name {
+            font-size: 12px;
+            color: var(--vx-text-secondary);
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .form-check-input {
+            cursor: pointer;
+        }
+
+        @@media (max-width: 576px) {
+            .category-form-card {
+                padding: 18px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+                .form-actions .btn {
+                    width: 100%;
+                }
+
+            .image-preview {
+                max-width: 100%;
+            }
+        }
+    </style>
+}
+
+<div class="category-form">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Create Category</h2>
+            <p class="text-secondary mb-0">
+                Add a new category to your store.
+            </p>
+        </div>
+
+        <a asp-action="Index" class="btn vx-btn-outline">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Categories
+        </a>
+    </div>
+
+    <div class="category-form-card">
+
+        <form asp-action="Create"
+              method="post"
+              enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger"
+                 role="alert"></div>
+
+            <h5 class="form-section-title">General Information</h5>
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label asp-for="Name" class="form-label">
+                        Category Name
+                    </label>
+
+                    <input asp-for="Name"
+                           class="form-control"
+                           placeholder="e.g. Electronics" />
+
+                    <span asp-validation-for="Name"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Slug" class="form-label">
+                        Slug
+                    </label>
+
+                    <input asp-for="Slug"
+                           class="form-control"
+                           placeholder="e.g. electronics" />
+
+                    <span asp-validation-for="Slug"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label">
+                        Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              placeholder="Write a short category description..."></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger small"></span>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <h5 class="form-section-title">Category Image</h5>
+
+            <label for="ImageFile" class="image-upload-box w-100">
+
+                <div class="upload-icon">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                </div>
+
+                <h6 class="fw-bold mb-1">Upload Category Image</h6>
+
+                <p class="text-secondary small mb-1">
+                    Click here to browse your device
+                </p>
+
+                <small class="text-secondary">
+                    JPG, JPEG, PNG or WEBP — Maximum 5 MB
+                </small>
+
+                <input asp-for="ImageFile"
+                       id="ImageFile"
+                       type="file"
+                       accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+            </label>
+
+            <span asp-validation-for="ImageFile"
+                  class="text-danger small"></span>
+
+            <div id="imagePreviewWrapper" class="image-preview-wrapper">
+
+                <img id="imagePreview"
+                     class="image-preview"
+                     alt="Category image preview" />
+
+                <div id="imagePreviewName"
+                     class="image-preview-name"></div>
+
+                <button type="button"
+                        id="removeImageButton"
+                        class="btn btn-sm btn-outline-danger mt-2">
+                    <i class="bi bi-trash me-1"></i>
+                    Remove Image
+                </button>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <h5 class="form-section-title">Category Organization</h5>
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label asp-for="ParentCategoryId" class="form-label">
+                        Parent Category
+                    </label>
+
+                    <select asp-for="ParentCategoryId"
+                            asp-items="ViewBag.ParentCategories"
+                            class="form-select">
+
+                        <option value="">No Parent (Main Category)</option>
+
+                    </select>
+
+                    <span asp-validation-for="ParentCategoryId"
+                          class="text-danger small"></span>
+
+                    <small class="text-secondary">
+                        Select a parent if this is a subcategory.
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DisplayOrder" class="form-label">
+                        Display Order
+                    </label>
+
+                    <input asp-for="DisplayOrder"
+                           type="number"
+                           min="0"
+                           class="form-control"
+                           placeholder="0" />
+
+                    <span asp-validation-for="DisplayOrder"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive"
+                               class="form-check-input"
+                               type="checkbox" />
+
+                        <label asp-for="IsActive"
+                               class="form-check-label fw-semibold">
+                            Active Category
+                        </label>
+                    </div>
+
+                    <small class="text-secondary">
+                        Active categories can be displayed in the store.
+                    </small>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <a asp-action="Index"
+                   class="btn vx-btn-outline">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn vx-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Create Category
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput = document.getElementById("ImageFile");
+        const previewWrapper = document.getElementById("imagePreviewWrapper");
+        const imagePreview = document.getElementById("imagePreview");
+        const imagePreviewName = document.getElementById("imagePreviewName");
+        const removeImageButton = document.getElementById("removeImageButton");
+
+        let previewUrl = null;
+
+        imageInput.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                clearPreview();
+                return;
+            }
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Please select a JPG, PNG or WEBP image.");
+                this.value = "";
+                clearPreview();
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image size cannot exceed 5 MB.");
+                this.value = "";
+                clearPreview();
+                return;
+            }
+
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            previewUrl = URL.createObjectURL(file);
+
+            imagePreview.src = previewUrl;
+            imagePreviewName.textContent = file.name;
+            previewWrapper.style.display = "block";
+        });
+
+        removeImageButton.addEventListener("click", function () {
+            imageInput.value = "";
+            clearPreview();
+        });
+
+        function clearPreview() {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+                previewUrl = null;
+            }
+
+            imagePreview.removeAttribute("src");
+            imagePreviewName.textContent = "";
+            previewWrapper.style.display = "none";
+        }
+    </script>
+}

@@ -14,10 +14,12 @@ using Veltrix.Repositories.OrderStatusHistory;
 using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
+using Veltrix.Repositories.ProductVariant;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptionValue;
 
 namespace Veltrix.UnitOfWork
 {
@@ -59,6 +61,10 @@ namespace Veltrix.UnitOfWork
         public IShippingSettingsRepository ShippingSettings { get; }
 
         public IStoreSettingsRepository StoreSettings { get; }
+        public IProductVariantRepository productVariant { get; }
+
+        public IVariantOptionValueRepository VariantOptionValues { get; }
+
 
         public UnitOfWork(
             AppDbContext db,
@@ -79,7 +85,9 @@ namespace Veltrix.UnitOfWork
             IUserAddressRepository userAddresses,
             IApplicationUserRepository users,
             IShippingSettingsRepository shippingSettings,
-            IStoreSettingsRepository storeSettings)
+            IStoreSettingsRepository storeSettings,
+            IProductVariantRepository productVariant,
+            IVariantOptionValueRepository variantOptionValues)
         {
             _db = db;
             Product = products;
@@ -88,7 +96,9 @@ namespace Veltrix.UnitOfWork
             InventoryTransactions = inventoryTransactions;
             ProductImages = productImages;
             ProductReviews = productReviews;
-
+            this.productVariant = productVariant;
+            this.VariantOptionValues = variantOptionValues;
+            
             Carts = carts;
             CartItems = cartItems;
 

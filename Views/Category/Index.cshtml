@@ -1,0 +1,842 @@
+﻿@model IReadOnlyList<Veltrix.DTOs.CategoryDTO.CategoryDto>
+
+@{
+    ViewData["Title"] = "Categories";
+
+    var categories = Model ?? Array.Empty<Veltrix.DTOs.CategoryDTO.CategoryDto>();
+
+    int totalCategories = categories.Count;
+    int activeCategories = categories.Count(c => c.IsActive);
+    int inactiveCategories = totalCategories - activeCategories;
+    int parentCategories = categories.Count(c => c.ParentCategoryId == null);
+}
+
+@section Styles {
+    <style>
+        .category-page {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .category-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+            .category-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+                letter-spacing: -.7px;
+            }
+
+            .category-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        .category-heading-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .category-stat {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-width: 0;
+            padding: 18px;
+            border: 1px solid var(--vx-border);
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .category-stat-icon {
+            display: grid;
+            width: 43px;
+            height: 43px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+
+            .category-stat-icon.purple {
+                background: #F0EDFF;
+                color: #7657F6;
+            }
+
+            .category-stat-icon.green {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .category-stat-icon.red {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+            .category-stat-icon.blue {
+                background: #EAF3FF;
+                color: #3985E8;
+            }
+
+        .category-stat-info span {
+            display: block;
+            color: var(--vx-text-secondary);
+            font-size: 10px;
+        }
+
+        .category-stat-info strong {
+            display: block;
+            margin-top: 5px;
+            color: var(--vx-text);
+            font-size: 22px;
+            font-weight: 750;
+        }
+
+        .category-panel {
+            overflow: hidden;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .category-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding: 20px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .category-panel-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .category-panel-header p {
+                margin: 5px 0 0;
+                color: var(--vx-text-muted);
+                font-size: 10px;
+            }
+
+        .category-toolbar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .category-search {
+            position: relative;
+            width: 240px;
+        }
+
+            .category-search i {
+                position: absolute;
+                top: 50%;
+                left: 12px;
+                transform: translateY(-50%);
+                color: var(--vx-text-muted);
+            }
+
+            .category-search input {
+                width: 100%;
+                height: 38px;
+                padding: 0 12px 0 35px;
+                border: 1px solid var(--vx-border);
+                border-radius: 9px;
+                outline: none;
+                font-size: 11px;
+            }
+
+                .category-search input:focus {
+                    border-color: var(--vx-primary);
+                    box-shadow: 0 0 0 3px rgba(118, 87, 246, .1);
+                }
+
+        .category-filter {
+            height: 38px;
+            padding: 0 11px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+            outline: none;
+        }
+
+        .category-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .category-table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+        }
+
+            .category-table thead th {
+                padding: 14px 18px;
+                background: #FAFAFC;
+                border-bottom: 1px solid var(--vx-border);
+                color: var(--vx-text-muted);
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: .6px;
+                text-align: left;
+                white-space: nowrap;
+            }
+
+            .category-table tbody td {
+                padding: 15px 18px;
+                border-bottom: 1px solid #F1F1F5;
+                color: var(--vx-text);
+                font-size: 11px;
+                vertical-align: middle;
+            }
+
+            .category-table tbody tr:last-child td {
+                border-bottom: 0;
+            }
+
+            .category-table tbody tr:hover {
+                background: #FCFBFF;
+            }
+
+        .category-identity {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            min-width: 180px;
+        }
+
+        .category-image {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            place-items: center;
+            overflow: hidden;
+            border: 1px solid #ECEAF5;
+            border-radius: 10px;
+            background: #F5F3FF;
+            color: var(--vx-primary);
+            font-size: 17px;
+        }
+
+            .category-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .category-identity strong {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .category-identity span {
+            display: block;
+            max-width: 210px;
+            margin-top: 4px;
+            overflow: hidden;
+            color: var(--vx-text-muted);
+            font-size: 9px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .category-slug {
+            color: var(--vx-text-secondary);
+            font-family: monospace;
+            font-size: 10px;
+        }
+
+        .category-parent {
+            color: var(--vx-text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .category-root {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--vx-primary);
+            font-size: 10px;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .category-products {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 27px;
+            padding: 0 8px;
+            border-radius: 7px;
+            background: #F0EDFF;
+            color: var(--vx-primary);
+            font-size: 10px;
+            font-weight: 750;
+        }
+
+        .category-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+            .category-status.active {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .category-status.inactive {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+            .category-status i {
+                font-size: 7px;
+            }
+
+        .category-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .category-action {
+            display: grid;
+            width: 32px;
+            height: 32px;
+            place-items: center;
+            border: 1px solid var(--vx-border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+            .category-action:hover {
+                border-color: #D8D0FF;
+                background: #F3F0FF;
+                color: var(--vx-primary);
+            }
+
+        .category-empty {
+            padding: 55px 20px;
+            text-align: center;
+        }
+
+        .category-empty-icon {
+            display: grid;
+            width: 65px;
+            height: 65px;
+            margin: 0 auto 16px;
+            place-items: center;
+            border-radius: 18px;
+            background: #F0EDFF;
+            color: var(--vx-primary);
+            font-size: 26px;
+        }
+
+        .category-empty h3 {
+            margin-bottom: 7px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .category-empty p {
+            max-width: 330px;
+            margin: 0 auto 18px;
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .category-no-results {
+            display: none;
+            padding: 35px 15px;
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .category-panel-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px 20px;
+            border-top: 1px solid var(--vx-border);
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .category-alert {
+            padding: 12px 15px;
+            border-radius: 9px;
+            font-size: 11px;
+        }
+
+        @@media (max-width: 1100px) {
+            .category-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .category-heading {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .category-heading-actions {
+                width: 100%;
+            }
+
+                .category-heading-actions a {
+                    flex: 1;
+                }
+
+            .category-stats {
+                gap: 9px;
+            }
+
+            .category-stat {
+                gap: 9px;
+                padding: 12px;
+            }
+
+            .category-stat-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 15px;
+            }
+
+            .category-stat-info strong {
+                font-size: 18px;
+            }
+
+            .category-panel-header {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .category-toolbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .category-search {
+                width: 100%;
+            }
+
+            .category-filter {
+                width: 100%;
+            }
+
+            .category-panel-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @@media (max-width: 350px) {
+            .category-stat {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+<div class="category-page">
+
+    <!-- Page Heading -->
+    <section class="category-heading">
+        <div>
+            <h1>Categories</h1>
+            <p>Organize and manage your product categories.</p>
+        </div>
+
+        <div class="category-heading-actions">
+            <a asp-controller="Category"
+               asp-action="Create"
+               class="vx-btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>
+                Add Category
+            </a>
+        </div>
+    </section>
+
+    <!-- TempData Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success category-alert mb-0">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger category-alert mb-0">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- Statistics -->
+    <section class="category-stats">
+
+        <div class="category-stat">
+            <div class="category-stat-icon purple">
+                <i class="bi bi-grid"></i>
+            </div>
+            <div class="category-stat-info">
+                <span>Total Categories</span>
+                <strong>@totalCategories</strong>
+            </div>
+        </div>
+
+        <div class="category-stat">
+            <div class="category-stat-icon green">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="category-stat-info">
+                <span>Active Categories</span>
+                <strong>@activeCategories</strong>
+            </div>
+        </div>
+
+        <div class="category-stat">
+            <div class="category-stat-icon red">
+                <i class="bi bi-pause-circle"></i>
+            </div>
+            <div class="category-stat-info">
+                <span>Inactive Categories</span>
+                <strong>@inactiveCategories</strong>
+            </div>
+        </div>
+
+        <div class="category-stat">
+            <div class="category-stat-icon blue">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <div class="category-stat-info">
+                <span>Parent Categories</span>
+                <strong>@parentCategories</strong>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Categories Table -->
+    <section class="category-panel">
+
+        <div class="category-panel-header">
+            <div>
+                <h2>All Categories</h2>
+                <p>View and manage your category records.</p>
+            </div>
+
+            <div class="category-toolbar">
+
+                <div class="category-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text"
+                           id="categorySearch"
+                           placeholder="Search categories..."
+                           aria-label="Search categories" />
+                </div>
+
+                <select id="categoryStatusFilter"
+                        class="category-filter"
+                        aria-label="Filter by status">
+                    <option value="all">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+
+            </div>
+        </div>
+
+        @if (categories.Any())
+        {
+            <div class="category-table-wrapper">
+
+                <table class="category-table">
+                    <thead>
+                        <tr>
+                            <th>CATEGORY</th>
+                            <th>SLUG</th>
+                            <th>PARENT CATEGORY</th>
+                            <th>PRODUCTS</th>
+                            <th>STATUS</th>
+                            <th style="text-align: right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="categoryTableBody">
+
+                        @foreach (var category in categories)
+                        {
+                            <tr class="category-row"
+                                data-name="@category.Name"
+                                data-slug="@category.Slug"
+                                data-parent="@(category.ParentCategoryName ?? "Root Category")"
+                                data-status="@(category.IsActive ? "active" : "inactive")">
+
+                                <td>
+                                    <div class="category-identity">
+
+                                        <div class="category-image">
+                                            @if (!string.IsNullOrWhiteSpace(category.ImageUrl))
+                                            {
+                                                <img src="@category.ImageUrl"
+                                                     alt="@category.Name"
+                                                     loading="lazy"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+
+                                                <i class="bi bi-image"
+                                                   style="display:none;"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-image"></i>
+                                            }
+                                    </div>
+
+                                    <div>
+                                        <strong>@category.Name</strong>
+
+                                        <span title="@category.Description">
+                                            @(string.IsNullOrWhiteSpace(category.Description)
+                                                                                    ? "No description"
+                                                                                    : category.Description)
+                                    </span>
+                                </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="category-slug">
+                                        @category.Slug
+                                    </span>
+                                </td>
+
+                                <td>
+                            @if (!string.IsNullOrWhiteSpace(category.ParentCategoryName))
+                                    {
+                                        <span class="category-parent">
+                                            <i class="bi bi-diagram-2 me-1"></i>
+                                            @category.ParentCategoryName
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="category-root">
+                                            <i class="bi bi-diagram-3"></i>
+                                            Root Category
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="category-products"
+                                          title="@category.ProductsCount products">
+                                        @category.ProductsCount
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (category.IsActive)
+                                    {
+                                        <span class="category-status active">
+                                            <i class="bi bi-circle-fill"></i>
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="category-status inactive">
+                                            <i class="bi bi-circle-fill"></i>
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="category-actions">
+
+                                        <a asp-controller="Category"
+                                           asp-action="Details"
+                                           asp-route-id="@category.Id"
+                                           class="category-action"
+                                           title="View Details"
+                                           aria-label="View category details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <a asp-controller="Category"
+                                           asp-action="Edit"
+                                           asp-route-id="@category.Id"
+                                           class="category-action"
+                                           title="Edit Category"
+                                           aria-label="Edit category">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div id="categoryNoResults" class="category-no-results">
+                <i class="bi bi-search me-1"></i>
+                No categories match your search.
+            </div>
+
+            <div class="category-panel-footer">
+                <span id="categoryResultsCount">
+                    Showing @totalCategories categories
+                </span>
+
+                <span>
+                    <i class="bi bi-shield-check me-1"></i>
+                    Category management
+                </span>
+            </div>
+        }
+        else
+        {
+            <div class="category-empty">
+                <div class="category-empty-icon">
+                    <i class="bi bi-grid"></i>
+                </div>
+
+                <h3>No categories yet</h3>
+
+                <p>
+                    You haven't created any categories.
+                    Start organizing your products by creating your first category.
+                </p>
+
+                <a asp-controller="Category"
+                   asp-action="Create"
+                   class="vx-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Create First Category
+                </a>
+            </div>
+        }
+
+    </section>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput = document.getElementById("categorySearch");
+            const statusFilter = document.getElementById("categoryStatusFilter");
+            const rows = document.querySelectorAll(".category-row");
+            const noResults = document.getElementById("categoryNoResults");
+            const resultsCount = document.getElementById("categoryResultsCount");
+
+            if (!searchInput || !statusFilter) return;
+
+            function filterCategories() {
+
+                const searchValue = searchInput.value.trim().toLowerCase();
+                const selectedStatus = statusFilter.value;
+
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+
+                    const name = (row.dataset.name || "").toLowerCase();
+                    const slug = (row.dataset.slug || "").toLowerCase();
+                    const parent = (row.dataset.parent || "").toLowerCase();
+                    const status = row.dataset.status;
+
+                    const matchesSearch =
+                        name.includes(searchValue) ||
+                        slug.includes(searchValue) ||
+                        parent.includes(searchValue);
+
+                    const matchesStatus =
+                        selectedStatus === "all" ||
+                        status === selectedStatus;
+
+                    const isVisible = matchesSearch && matchesStatus;
+
+                    row.style.display = isVisible ? "" : "none";
+
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+                });
+
+                if (noResults) {
+                    noResults.style.display =
+                        visibleCount === 0 && rows.length > 0 ? "block" : "none";
+                }
+
+                if (resultsCount) {
+                    resultsCount.textContent =
+                        `Showing ${visibleCount} of ${rows.length} categories`;
+                }
+            }
+
+            searchInput.addEventListener("input", filterCategories);
+            statusFilter.addEventListener("change", filterCategories);
+
+        });
+    </script>
+}

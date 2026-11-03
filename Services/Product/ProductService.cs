@@ -69,10 +69,25 @@ namespace Veltrix.Services.Product
                 CategoryId = createProductDto.CategoryId,
                 Category = category,
                 IsPublished = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Variants = new List<Models.ProductVariant>
+                {
+                    new Models.ProductVariant
+                    {
+                    SKU = createProductDto.SKU,
+                    Price = createProductDto.Price,
+                    IsDefault = true,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                    }
+                }
             };
+
+
             await unitOfWork.Product.AddAsync(product);
             await unitOfWork.SaveChangesAsync();
+
+            product.Category = category;
             return MapToDto(product);
             
         }
@@ -118,10 +133,18 @@ namespace Veltrix.Services.Product
             if (product.IsPublished)
                 return true;
 
+            // Check Default Variant
+            var defaultVariant = product.Variants
+                .FirstOrDefault(x => x.IsDefault);
+
+            if (defaultVariant == null || !defaultVariant.IsActive)
+                throw new InvalidOperationException(
+                    "Product must have an active default variant before publishing.");
+
+
             product.IsPublished = true;
             product.UpdatedAt = DateTime.UtcNow;
 
-            unitOfWork.Product.Update(product);
             await unitOfWork.SaveChangesAsync();
             return true;
         }
@@ -150,6 +173,10 @@ namespace Veltrix.Services.Product
             if (product == null)
                 return null;
 
+            var defaultVariant = product.Variants.FirstOrDefault(x => x.IsDefault);
+            if (defaultVariant == null)
+                throw new InvalidOperationException("Default variant does not exist.");
+
             // Check Slug
             var existingSlug = await unitOfWork.Product.GetBySlugAsync(updateProductDto.Slug);
             if (existingSlug != null && existingSlug.Id != id)
@@ -157,7 +184,7 @@ namespace Veltrix.Services.Product
 
             // Check SKU
             var existingSKU = await unitOfWork.Product.GetBySkuAsync(updateProductDto.SKU);
-            if (existingSKU != null && existingSKU.Id != id)
+            if (existingSKU != null && existingSKU.Id != defaultVariant.Id)
                 throw new InvalidOperationException("SKU already exists");
 
             // Check Category
@@ -172,6 +199,11 @@ namespace Veltrix.Services.Product
             product.CategoryId = updateProductDto.CategoryId;
             product.Category = category;
             product.UpdatedAt = DateTime.UtcNow;
+
+            // Update Default Variant
+            defaultVariant.SKU = updateProductDto.SKU;
+            defaultVariant.Price = updateProductDto.Price;
+            defaultVariant.UpdatedAt = DateTime.UtcNow;
 
             unitOfWork.Product.Update(product);
             await unitOfWork.SaveChangesAsync();

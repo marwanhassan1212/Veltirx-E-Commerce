@@ -12,10 +12,12 @@ using Veltrix.Repositories.OrderStatusHistory;
 using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
+using Veltrix.Repositories.ProductVariant;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptionValue;
 
 namespace Veltrix.UnitOfWork
 {
@@ -39,6 +41,8 @@ namespace Veltrix.UnitOfWork
         IApplicationUserRepository Users { get; }
         IShippingSettingsRepository ShippingSettings { get; }
         IStoreSettingsRepository StoreSettings { get; }
+        IProductVariantRepository productVariant { get; }
+        IVariantOptionValueRepository VariantOptionValues { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     }

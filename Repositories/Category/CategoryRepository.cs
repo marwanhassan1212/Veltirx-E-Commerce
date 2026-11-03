@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Veltrix.Data;
+using Veltrix.DTOs.CategoryDTO;
 
 namespace Veltrix.Repositories.Category
 {
@@ -26,9 +27,9 @@ namespace Veltrix.Repositories.Category
 
         public async Task<IReadOnlyList<Models.Category>> GetAllAsync()
         {
-            return await _db.Categories.AsNoTracking()
-                .OrderBy(x => x.DisplayOrder)
-                .ToListAsync();
+            return await _db.Categories.OrderBy(x => x.DisplayOrder).ToListAsync();
+
+
         }
 
         public async Task<Models.Category?> GetByIdAsync(int Id)
@@ -56,6 +57,31 @@ namespace Veltrix.Repositories.Category
         public void Update(Models.Category category)
         {
             _db.Categories.Update(category);
+        }
+
+        public async Task<IReadOnlyList<CategoryDto>> GetCategoriesForListAsync()
+        {
+            return await _db.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.DisplayOrder)
+                .Select(c => new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Slug = c.Slug,
+                    ImageUrl = c.ImageUrl,
+                    Description = c.Description,
+                    DisplayOrder = c.DisplayOrder,
+                    IsActive = c.IsActive,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    ParentCategoryId = c.ParentCategoryId,
+                    ParentCategoryName = c.ParentCategory != null
+                        ? c.ParentCategory.Name
+                        : null,
+                    ProductsCount = c.Products.Count()
+                })
+                .ToListAsync();
         }
     }
 }

@@ -1,49 +1,271 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - Veltrix</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <meta name="description" content="Veltrix Enterprise E-Commerce Management System" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Veltrix.styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Veltrix</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+    <div class="app-shell">
+
+        <!-- Sidebar -->
+        <aside class="app-sidebar" id="appSidebar">
+
+            <div class="sidebar-brand">
+                <a asp-controller="Home" asp-action="Index" class="brand-link">
+                    <span class="brand-icon">
+                        <i class="bi bi-boxes"></i>
+                    </span>
+
+                    <span class="brand-name">VELTRIX</span>
+                </a>
+
+                <button class="sidebar-close d-lg-none"
+                        type="button"
+                        id="sidebarClose"
+                        aria-label="Close navigation">
+                    <i class="bi bi-x-lg"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+            </div>
+
+            <div class="sidebar-workspace">
+                <div class="workspace-avatar">V</div>
+
+                <div class="workspace-info">
+                    <span class="workspace-label">WORKSPACE</span>
+                    <strong>Veltrix Store</strong>
+                </div>
+
+                <i class="bi bi-chevron-down workspace-arrow"></i>
+            </div>
+
+            <nav class="sidebar-navigation">
+
+                <div class="nav-section-label">OVERVIEW</div>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="nav-section-label">CATALOG</div>
+
+                <a asp-controller="Product"
+                   asp-action="Index"
+                   class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Products</span>
+                </a>
+
+                <a asp-controller="Category"
+                   asp-action="Index"
+                   class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
+                    <i class="bi bi-tags"></i>
+                    <span>Categories</span>
+                </a>
+
+                <a asp-controller="ProductVariant"
+                   asp-action="Index"
+                   class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProductVariant" ? "active" : "")">
+                    <i class="bi bi-layers"></i>
+                    <span>Product Variants</span>
+                </a>
+
+                <div class="nav-section-label">OPERATIONS</div>
+
+                <a asp-controller="Order"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-receipt"></i>
+                    <span>Orders</span>
+                </a>
+
+                <a asp-controller="Inventory"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Inventory</span>
+                </a>
+
+                <a asp-controller="Warehouse"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-buildings"></i>
+                    <span>Warehouses</span>
+                </a>
+
+                <a asp-controller="StockTransfer"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Stock Transfers</span>
+                </a>
+
+                <div class="nav-section-label">CUSTOMERS</div>
+
+                <a asp-controller="Customer"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+
+                <a asp-controller="Coupon"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Coupons</span>
+                </a>
+
+                <div class="nav-section-label">INSIGHTS</div>
+
+                <a asp-controller="Analytics"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Analytics</span>
+                </a>
+
+                <div class="nav-section-label">SYSTEM</div>
+
+                <a asp-controller="Employee"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Employees</span>
+                </a>
+
+                <a asp-controller="Settings"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <div>
+                    <strong>Veltrix Enterprise</strong>
+                    <span>Management Platform</span>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Area -->
+        <div class="app-main">
+
+            <!-- Topbar -->
+            <header class="app-topbar">
+
+                <div class="topbar-left">
+
+                    <button class="icon-button sidebar-toggle"
+                            type="button"
+                            id="sidebarToggle"
+                            aria-label="Open navigation">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <div class="breadcrumb-area">
+                        <span class="breadcrumb-root">Veltrix</span>
+                        <i class="bi bi-chevron-right"></i>
+                        <span class="breadcrumb-current">
+                            @ViewData["Title"]
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="topbar-right">
+
+                    <div class="topbar-search">
+                        <i class="bi bi-search"></i>
+                        <input type="search"
+                               placeholder="Search anything..."
+                               aria-label="Search" />
+                        <kbd>⌘ K</kbd>
+                    </div>
+
+                    <button class="icon-button notification-button"
+                            type="button"
+                            aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+
+                    <div class="topbar-divider"></div>
+
+                    <button class="profile-button" type="button">
+
+                        <div class="profile-avatar">A</div>
+
+                        <div class="profile-info">
+                            <strong>Administrator</strong>
+                            <span>Store Manager</span>
+                        </div>
+
+                        <i class="bi bi-chevron-down profile-arrow"></i>
+
+                    </button>
+
+                </div>
+
+            </header>
+
+            <!-- Page Content -->
+            <main class="app-content">
+
+                @RenderBody()
+
+            </main>
+
+            <!-- Footer -->
+            <footer class="app-footer">
+                <span>© @DateTime.UtcNow.Year Veltrix. All rights reserved.</span>
+                <span>Built for better business management.</span>
+            </footer>
+
+        </div>
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Veltrix - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

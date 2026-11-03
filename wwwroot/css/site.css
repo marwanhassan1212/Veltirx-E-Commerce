@@ -1,22 +1,833 @@
+
+/* =========================================================
+   VELTRIX — PREMIUM DESIGN SYSTEM
+   Theme: Dark Sidebar / Light Workspace
+   Accent: Violet
+========================================================= */
+
+/* 01. Design Tokens */
+:root {
+    --vx-primary: #7657F6;
+    --vx-primary-hover: #6544E8;
+    --vx-primary-soft: #F0EDFF;
+    --vx-sidebar: #171725;
+    --vx-sidebar-hover: #252438;
+    --vx-sidebar-active: #30264F;
+    --vx-bg: #F6F7FB;
+    --vx-surface: #FFFFFF;
+    --vx-surface-soft: #FAFAFD;
+    --vx-text: #202033;
+    --vx-text-secondary: #77788D;
+    --vx-text-muted: #A0A1B2;
+    --vx-border: #ECECF2;
+    --vx-success: #16A779;
+    --vx-success-soft: #E6F7F0;
+    --vx-danger: #E05260;
+    --vx-danger-soft: #FDECEF;
+    --vx-warning: #D99A28;
+    --vx-warning-soft: #FFF5DF;
+    --vx-info: #3985E8;
+    --vx-info-soft: #EAF3FF;
+    --vx-sidebar-width: 264px;
+    --vx-topbar-height: 76px;
+    --vx-radius-sm: 8px;
+    --vx-radius-md: 12px;
+    --vx-radius-lg: 16px;
+    --vx-radius-xl: 20px;
+    --vx-shadow-sm: 0 2px 8px rgba(28, 27, 48, 0.04);
+    --vx-shadow-md: 0 8px 24px rgba(28, 27, 48, 0.06);
+    --vx-shadow-lg: 0 16px 40px rgba(28, 27, 48, 0.08);
+    --vx-transition: 0.2s ease;
+}
+
+/* 02. Global Reset */
+* {
+    box-sizing: border-box;
+}
+
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    min-height: 100%;
+    scroll-behavior: smooth;
 }
 
 body {
-  margin-bottom: 60px;
+    margin: 0;
+    min-height: 100vh;
+    background: var(--vx-bg);
+    color: var(--vx-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* 03. Application Shell */
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-main {
+    min-height: 100vh;
+    margin-left: var(--vx-sidebar-width);
+    display: flex;
+    flex-direction: column;
+    transition: margin-left var(--vx-transition);
+}
+
+.app-content {
+    flex: 1;
+    width: 100%;
+    padding: 32px;
+}
+
+/* 04. Sidebar */
+.app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    width: var(--vx-sidebar-width);
+    height: 100vh;
+    padding: 24px 16px 18px;
+    overflow-y: auto;
+    background: var(--vx-sidebar);
+    color: #FFFFFF;
+    scrollbar-width: thin;
+    scrollbar-color: #45435B transparent;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    margin-bottom: 30px;
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+}
+
+    .brand-link:hover {
+        color: #FFFFFF;
+    }
+
+.brand-icon {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #927BFF, #6846E9);
+    box-shadow: 0 5px 18px rgba(118, 87, 246, 0.35);
+    font-size: 21px;
+}
+
+.brand-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.sidebar-close {
+    border: 0;
+    background: transparent;
+    color: #FFFFFF;
+    font-size: 20px;
+}
+
+/* 05. Workspace Switcher */
+.sidebar-workspace {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px;
+    margin-bottom: 27px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--vx-radius-md);
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.workspace-avatar {
+    display: grid;
+    flex-shrink: 0;
+    width: 37px;
+    height: 37px;
+    place-items: center;
+    border-radius: 10px;
+    background: #7657F6;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.workspace-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.workspace-label {
+    color: #9997B0;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.workspace-info strong {
+    overflow: hidden;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-arrow {
+    color: #9997B0;
+    font-size: 12px;
+}
+
+/* 06. Sidebar Navigation */
+.sidebar-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-section-label {
+    padding: 17px 12px 8px;
+    color: #77758E;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+}
+
+.sidebar-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 43px;
+    padding: 0 13px;
+    border-radius: 9px;
+    color: #AAA9BC;
+    font-size: 12.5px;
+    font-weight: 500;
+    transition: background var(--vx-transition), color var(--vx-transition);
+}
+
+    .sidebar-link i {
+        width: 18px;
+        font-size: 17px;
+        text-align: center;
+    }
+
+    .sidebar-link:hover {
+        background: var(--vx-sidebar-hover);
+        color: #FFFFFF;
+    }
+
+    .sidebar-link.active {
+        background: var(--vx-sidebar-active);
+        color: #FFFFFF;
+        font-weight: 600;
+    }
+
+        .sidebar-link.active::before {
+            position: absolute;
+            top: 9px;
+            bottom: 9px;
+            left: 0;
+            width: 3px;
+            border-radius: 0 5px 5px 0;
+            background: #927BFF;
+            content: "";
+        }
+
+        .sidebar-link.active i {
+            color: #A997FF;
+        }
+
+/* 07. Sidebar Footer */
+.sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 15px 10px 0;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-footer-icon {
+    display: grid;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(22, 167, 121, 0.13);
+    color: #55D5A5;
+    font-size: 17px;
+}
+
+.sidebar-footer div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-footer strong {
+    color: #E8E7F0;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.sidebar-footer span {
+    color: #89879F;
+    font-size: 10px;
+}
+
+/* 08. Topbar */
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--vx-topbar-height);
+    padding: 0 32px;
+    border-bottom: 1px solid var(--vx-border);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(14px);
+}
+
+.topbar-left,
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.breadcrumb-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.breadcrumb-root {
+    color: var(--vx-text-muted);
+    font-weight: 500;
+}
+
+.breadcrumb-area i {
+    color: #C1C1CF;
+    font-size: 10px;
+}
+
+.breadcrumb-current {
+    color: var(--vx-text);
+    font-weight: 600;
+}
+
+/* 09. Icon Buttons */
+.icon-button {
+    position: relative;
+    display: grid;
+    flex-shrink: 0;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    border: 1px solid var(--vx-border);
+    border-radius: 11px;
+    background: #FFFFFF;
+    color: #77788D;
+    transition: all var(--vx-transition);
+}
+
+    .icon-button:hover {
+        border-color: #D8D0FF;
+        background: var(--vx-primary-soft);
+        color: var(--vx-primary);
+    }
+
+    .icon-button i {
+        font-size: 17px;
+    }
+
+.sidebar-toggle {
+    display: none;
+    font-size: 20px;
+}
+
+.notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border: 1.5px solid #FFFFFF;
+    border-radius: 50%;
+    background: var(--vx-danger);
+}
+
+/* 10. Search */
+.topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 250px;
+    height: 39px;
+    padding: 0 11px;
+    border: 1px solid var(--vx-border);
+    border-radius: 10px;
+    background: var(--vx-surface-soft);
+    color: #A0A1B2;
+}
+
+    .topbar-search > i {
+        font-size: 14px;
+    }
+
+    .topbar-search input {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--vx-text);
+        font-size: 11px;
+    }
+
+        .topbar-search input::placeholder {
+            color: #A0A1B2;
+        }
+
+    .topbar-search kbd {
+        padding: 3px 5px;
+        border: 1px solid #E7E7EE;
+        border-radius: 4px;
+        background: #FFFFFF;
+        color: #9293A4;
+        font-size: 9px;
+    }
+
+/* 11. Profile */
+.topbar-divider {
+    width: 1px;
+    height: 31px;
+    background: var(--vx-border);
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.profile-avatar {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 2px solid #E8E2FF;
+    border-radius: 12px;
+    background: var(--vx-primary-soft);
+    color: var(--vx-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+    .profile-info strong {
+        color: var(--vx-text);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .profile-info span {
+        color: var(--vx-text-muted);
+        font-size: 10px;
+    }
+
+.profile-arrow {
+    margin-left: 5px;
+    color: #A0A1B2;
+    font-size: 11px;
+}
+
+/* 12. Footer */
+.app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 19px 32px;
+    border-top: 1px solid var(--vx-border);
+    background: #FFFFFF;
+    color: var(--vx-text-muted);
+    font-size: 10px;
+}
+
+/* 13. Shared UI Components */
+.vx-card {
+    padding: 22px;
+    border: 1px solid var(--vx-border);
+    border-radius: var(--vx-radius-lg);
+    background: var(--vx-surface);
+    box-shadow: var(--vx-shadow-sm);
+}
+
+.vx-card-title {
+    margin: 0;
+    color: var(--vx-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.vx-card-subtitle {
+    margin-top: 5px;
+    color: var(--vx-text-secondary);
+    font-size: 11px;
+}
+
+.vx-page-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 27px;
+}
+
+.vx-page-title {
+    margin: 0;
+    color: var(--vx-text);
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.7px;
+}
+
+.vx-page-description {
+    margin: 7px 0 0;
+    color: var(--vx-text-secondary);
+    font-size: 12px;
+}
+
+.vx-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--vx-primary);
+    border-radius: 9px;
+    background: var(--vx-primary);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all var(--vx-transition);
+}
+
+    .vx-btn-primary:hover {
+        border-color: var(--vx-primary-hover);
+        background: var(--vx-primary-hover);
+        color: #FFFFFF;
+        box-shadow: 0 5px 14px rgba(118, 87, 246, 0.2);
+    }
+
+.vx-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 39px;
+    padding: 0 14px;
+    border: 1px solid var(--vx-border);
+    border-radius: 9px;
+    background: #FFFFFF;
+    color: var(--vx-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    transition: all var(--vx-transition);
+}
+
+    .vx-btn-outline:hover {
+        border-color: #D8D0FF;
+        background: var(--vx-primary-soft);
+        color: var(--vx-primary);
+    }
+
+.vx-form-control {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--vx-border);
+    border-radius: 9px;
+    outline: none;
+    background: #FFFFFF;
+    color: var(--vx-text);
+    font-size: 12px;
+    transition: border-color var(--vx-transition), box-shadow var(--vx-transition);
+}
+
+    .vx-form-control:focus {
+        border-color: var(--vx-primary);
+        box-shadow: 0 0 0 3px rgba(118, 87, 246, 0.10);
+    }
+
+.vx-form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--vx-text);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vx-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #FFFFFF;
+}
+
+    .vx-table thead th {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--vx-border);
+        background: #FAFAFC;
+        color: var(--vx-text-secondary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .vx-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F1F5;
+        color: var(--vx-text);
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .vx-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .vx-table tbody tr:hover {
+        background: #FCFBFF;
+    }
+
+.vx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.vx-badge-primary {
+    background: var(--vx-primary-soft);
+    color: var(--vx-primary);
+}
+
+.vx-badge-success {
+    background: var(--vx-success-soft);
+    color: var(--vx-success);
+}
+
+.vx-badge-danger {
+    background: var(--vx-danger-soft);
+    color: var(--vx-danger);
+}
+
+.vx-badge-warning {
+    background: var(--vx-warning-soft);
+    color: var(--vx-warning);
+}
+
+/* 14. Bootstrap Refinements */
+.btn {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.form-control,
+.form-select {
+    border-color: var(--vx-border);
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--vx-primary);
+        box-shadow: 0 0 0 3px rgba(118, 87, 246, 0.10);
+    }
+
+.card {
+    border-color: var(--vx-border);
+    border-radius: var(--vx-radius-lg);
+    box-shadow: var(--vx-shadow-sm);
+}
+
+.table {
+    font-size: 12px;
+}
+
+    .table > :not(caption) > * > * {
+        padding: 14px 16px;
+        border-bottom-color: #F1F1F5;
+    }
+
+/* 15. Mobile Overlay */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1030;
+    display: none;
+    background: rgba(15, 15, 30, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+
+/* 16. Responsive Layout */
+@media (max-width: 1199.98px) {
+    .app-content {
+        padding: 25px;
+    }
+
+    .app-topbar {
+        padding: 0 25px;
+    }
+
+    .topbar-search {
+        width: 210px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--vx-transition);
+    }
+
+        .app-sidebar.show {
+            transform: translateX(0);
+        }
+
+    .app-main {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: grid;
+    }
+
+    .sidebar-close {
+        display: block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    :root {
+        --vx-topbar-height: 66px;
+    }
+
+    .app-content {
+        padding: 20px 16px;
+    }
+
+    .app-topbar {
+        padding: 0 16px;
+    }
+
+    .topbar-left,
+    .topbar-right {
+        gap: 10px;
+    }
+
+    .topbar-search {
+        display: none;
+    }
+
+    .profile-info,
+    .profile-arrow,
+    .topbar-divider {
+        display: none;
+    }
+
+    .breadcrumb-area {
+        gap: 7px;
+        font-size: 11px;
+    }
+
+    .app-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px;
+        font-size: 9px;
+    }
+
+    .vx-page-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .vx-page-title {
+        font-size: 21px;
+    }
+
+    .vx-card {
+        padding: 17px;
+    }
+}
+
+@media (max-width: 400px) {
+    .brand-name {
+        font-size: 18px;
+    }
+
+    .app-content {
+        padding: 16px 12px;
+    }
 }

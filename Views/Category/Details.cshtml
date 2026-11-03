@@ -1,0 +1,466 @@
+﻿@model Veltrix.DTOs.CategoryDTO.CategoryDto
+
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+@section Styles {
+    <style>
+        .category-details-page {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .details-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 23px;
+        }
+
+            .details-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+            }
+
+            .details-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        .details-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+            .details-actions a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                min-height: 38px;
+                padding: 0 15px;
+                font-size: 11px;
+                text-decoration: none;
+            }
+
+        .details-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(250px, .8fr);
+            gap: 18px;
+        }
+
+        .details-card {
+            overflow: hidden;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .details-card-header {
+            padding: 19px 21px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .details-card-header h2 {
+                margin: 0;
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .details-card-header p {
+                margin: 5px 0 0;
+                color: var(--vx-text-muted);
+                font-size: 10px;
+            }
+
+        .details-card-body {
+            padding: 21px;
+        }
+
+        .category-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+        .category-profile-image {
+            display: grid;
+            width: 78px;
+            height: 78px;
+            flex-shrink: 0;
+            place-items: center;
+            overflow: hidden;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #F0EDFF;
+            color: var(--vx-primary);
+            font-size: 27px;
+        }
+
+            .category-profile-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .category-profile h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 750;
+            overflow-wrap: anywhere;
+        }
+
+        .category-profile p {
+            margin: 6px 0 0;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .details-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 21px;
+            padding-top: 22px;
+        }
+
+        .info-item span {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .info-item strong {
+            display: block;
+            color: var(--vx-text);
+            font-size: 12px;
+            font-weight: 650;
+            overflow-wrap: anywhere;
+        }
+
+        .category-description {
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .details-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 650;
+        }
+
+            .details-status.active {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .details-status.inactive {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+        .details-side-stat {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .details-side-stat:last-child {
+                border-bottom: 0;
+            }
+
+        .details-side-icon {
+            display: grid;
+            width: 39px;
+            height: 39px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 10px;
+            background: #F0EDFF;
+            color: var(--vx-primary);
+            font-size: 16px;
+        }
+
+        .details-side-stat span {
+            display: block;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .details-side-stat strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .details-note {
+            margin-top: 17px;
+            padding: 13px;
+            border: 1px solid #E6E0FF;
+            border-radius: 10px;
+            background: #F8F6FF;
+            color: #6853C5;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        @@media (max-width: 767.98px) {
+            .details-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .details-heading {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .details-actions a {
+                flex: 1;
+            }
+
+            .details-card-body {
+                padding: 16px;
+            }
+
+            .details-info-grid {
+                gap: 18px 12px;
+            }
+
+            .category-profile-image {
+                width: 62px;
+                height: 62px;
+            }
+        }
+
+        @@media (max-width: 350px) {
+            .category-profile {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .details-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+<div class="category-details-page">
+
+    <div class="details-heading">
+        <div>
+            <h1>Category Details</h1>
+            <p>View complete information about this category.</p>
+        </div>
+
+        <div class="details-actions">
+
+            <a asp-controller="Category"
+               asp-action="Index"
+               class="vx-btn-outline">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+            <a asp-controller="Category"
+               asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="vx-btn-primary">
+                <i class="bi bi-pencil"></i>
+                Edit Category
+            </a>
+
+        </div>
+    </div>
+
+    <div class="details-layout">
+
+        <section class="details-card">
+
+            <div class="details-card-header">
+                <h2>Category Information</h2>
+                <p>General information and configuration.</p>
+            </div>
+
+            <div class="details-card-body">
+
+                <div class="category-profile">
+
+                    <div class="category-profile-image">
+
+                        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                        {
+                            <img src="@Model.ImageUrl"
+                                 alt="@Model.Name"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+
+                            <i class="bi bi-image" style="display:none;"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-image"></i>
+                        }
+
+                    </div>
+
+                    <div>
+                        <h3>@Model.Name</h3>
+                        <p>Category ID: #@Model.Id</p>
+                    </div>
+
+                </div>
+
+                <div class="details-info-grid">
+
+                    <div class="info-item">
+                        <span>Category Name</span>
+                        <strong>@Model.Name</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Slug</span>
+                        <strong>@Model.Slug</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Parent Category</span>
+                        <strong>
+                            @(Model.ParentCategoryId.HasValue
+                                                        ? $"#{Model.ParentCategoryId}"
+                                                        : "Root Category")
+                        </strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Display Order</span>
+                        <strong>@Model.DisplayOrder</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Status</span>
+                        <strong>
+                            @if (Model.IsActive)
+                            {
+                                <span class="details-status active">
+                                    <i class="bi bi-check-circle"></i>
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="details-status inactive">
+                                    <i class="bi bi-x-circle"></i>
+                                    Inactive
+                                </span>
+                            }
+                        </strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Category ID</span>
+                        <strong>#@Model.Id</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <div>
+
+            <section class="details-card">
+
+                <div class="details-card-header">
+                    <h2>Category Summary</h2>
+                    <p>Quick overview.</p>
+                </div>
+
+                <div class="details-card-body">
+
+                    <div class="details-side-stat">
+                        <div class="details-side-icon">
+                            <i class="bi bi-hash"></i>
+                        </div>
+                        <div>
+                            <span>Category Identifier</span>
+                            <strong>#@Model.Id</strong>
+                        </div>
+                    </div>
+
+                    <div class="details-side-stat">
+                        <div class="details-side-icon">
+                            <i class="bi bi-sort-numeric-down"></i>
+                        </div>
+                        <div>
+                            <span>Display Position</span>
+                            <strong>@Model.DisplayOrder</strong>
+                        </div>
+                    </div>
+
+                    <div class="details-side-stat">
+                        <div class="details-side-icon">
+                            <i class="bi bi-diagram-3"></i>
+                        </div>
+                        <div>
+                            <span>Hierarchy</span>
+                            <strong>
+                                @(Model.ParentCategoryId.HasValue
+                                                                ? "Subcategory"
+                                                                : "Parent Category")
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="details-note">
+                        <i class="bi bi-info-circle me-1"></i>
+                        This page displays the current category information.
+                        Use Edit Category to make changes.
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="details-card mt-3">
+
+                <div class="details-card-header">
+                    <h2>Description</h2>
+                    <p>Category description and details.</p>
+                </div>
+
+                <div class="details-card-body">
+                    <div class="category-description">
+                        @(string.IsNullOrWhiteSpace(Model.Description)
+                                                ? "No description has been provided for this category."
+                                                : Model.Description)
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
