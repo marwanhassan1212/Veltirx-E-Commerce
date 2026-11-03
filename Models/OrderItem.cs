@@ -10,10 +10,11 @@
         public decimal LineTotal { get; set; }
         public Order Order { get; set; } = null!;
         public int OrderId { get; set; }
-        public Product Product { get; set; } = null!;
-        public int ProductId { get; set; }
 
         public ICollection<ProductReview> ProductReviews { get; set; } = new List<ProductReview>();
+
+        public ProductVariant ProductVariant { get; set; } = null!;
+        public int ProductVariantId { get; set; }
 
     }
 }

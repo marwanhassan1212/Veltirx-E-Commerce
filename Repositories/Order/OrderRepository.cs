@@ -27,14 +27,17 @@ namespace Veltrix.Repositories.Order
         {
             return await _db.Orders
                 .Include(x => x.OrderItems)
-                .ThenInclude(x => x.Product).FirstOrDefaultAsync(x => x.Id == id);
+                .ThenInclude(x => x.ProductVariant)
+                    .ThenInclude(x => x.Product).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Models.Order?> GetByOrderNumberAsync(string orderNumber)
         {
             return await _db.Orders
                 .Include(x => x.OrderItems)
-                .ThenInclude(x => x.Product).FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
+                .ThenInclude(x => x.ProductVariant)
+                    .ThenInclude(x => x.Product)
+                    .FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
         }
 
         public async Task<IReadOnlyList<Models.Order>> GetByUserIdAsync(string userId)

@@ -27,6 +27,10 @@ namespace Veltrix.Data
         public DbSet<ShippingSettings> ShippingSettings { get; set; } = null!;
         public DbSet<StoreSettings> StoreSettings { get; set; } = null!;
         public DbSet<UserAddress> UserAddresses { get; set; } = null!;
+        public DbSet<ProductVariant> ProductVariants { get; set; } = null!;
+        public DbSet<VariantOptions> VariantOptions { get; set; } = null!;
+        public DbSet<VariantOptionValue> VariantOptionValues { get; set; } = null!;
+        public DbSet<ProductVariantOption> ProductVariantOptions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

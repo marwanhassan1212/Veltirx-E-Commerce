@@ -35,7 +35,7 @@ namespace Veltrix.Repositories.OrderItem
 
         public async Task<IReadOnlyList<Models.OrderItem>> GetByProductIdAsync(int productId)
         {
-            return await _db.OrderItems.Where(x => x.ProductId == productId)
+            return await _db.OrderItems.Where(x => x.ProductVariant.ProductId == productId)
                 .AsNoTracking().OrderByDescending(x => x.Order.CreatedAt).ToListAsync();
         }
 

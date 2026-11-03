@@ -8,6 +8,7 @@ namespace Veltrix.Repositories.Product
         Task<Models.Product?> GetBySlugAsync(string slug);
         Task<IReadOnlyList<Models.Product>> GetAllAsync();
         Task<IReadOnlyList<Models.Product>> GetPublishedProductsAsync();
+        Task<Models.ProductVariant?> GetBySkuAsync(string sku);
         Task AddAsync(Models.Product product);
         void Update(Models.Product product);
     }

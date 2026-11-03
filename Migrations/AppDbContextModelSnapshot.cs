@@ -349,7 +349,7 @@ namespace Veltrix.Migrations
                     b.Property<int>("CartId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -362,9 +362,9 @@ namespace Veltrix.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductVariantId");
 
-                    b.HasIndex("CartId", "ProductId")
+                    b.HasIndex("CartId", "ProductVariantId")
                         .IsUnique();
 
                     b.ToTable("CartItems", null, t =>
@@ -404,8 +404,11 @@ namespace Veltrix.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -417,10 +420,15 @@ namespace Veltrix.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentCategoryId");
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Categories_NoSelfParent", "[ParentCategoryId] IS NULL OR [ParentCategoryId] <> [Id]");
+                        });
                 });
 
             modelBuilder.Entity("Veltrix.Models.Coupon", b =>
@@ -557,7 +565,7 @@ namespace Veltrix.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
 
                     b.Property<int>("StockQuantity")
@@ -570,7 +578,7 @@ namespace Veltrix.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
+                    b.HasIndex("ProductVariantId")
                         .IsUnique();
 
                     b.ToTable("Inventories", null, t =>
@@ -834,13 +842,13 @@ namespace Veltrix.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -858,7 +866,7 @@ namespace Veltrix.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("OrderItems", null, t =>
                         {
@@ -940,15 +948,6 @@ namespace Veltrix.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SKU")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("ShortDescription")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -965,16 +964,10 @@ namespace Veltrix.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("SKU")
-                        .IsUnique();
-
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Products", null, t =>
-                        {
-                            t.HasCheckConstraint("Check_Product_Price", "[Price] >= 0");
-                        });
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Veltrix.Models.ProductImage", b =>
@@ -1071,6 +1064,81 @@ namespace Veltrix.Migrations
                         {
                             t.HasCheckConstraint("CK_ProductReviews_Rating", "[Rating] >= 1 AND [Rating] <= 5");
                         });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasFilter("[IsDefault] = 1");
+
+                    b.HasIndex("SKU")
+                        .IsUnique();
+
+                    b.ToTable("ProductVariants", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductVariants_Price", "[Price] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ProductVariantOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VariantOptionValueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VariantOptionValueId");
+
+                    b.HasIndex("ProductVariantId", "VariantOptionValueId")
+                        .IsUnique();
+
+                    b.ToTable("ProductVariantOptions");
                 });
 
             modelBuilder.Entity("Veltrix.Models.ShippingSettings", b =>
@@ -1258,6 +1326,74 @@ namespace Veltrix.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Veltrix.Models.VariantOptionValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("VariantOptionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VariantOptionId");
+
+                    b.HasIndex("VariantOptionId", "Value")
+                        .IsUnique();
+
+                    b.ToTable("VariantOptionValues", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VariantOptionValues_DisplayOrder", "[DisplayOrder] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.VariantOptions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("VariantOptions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VariantOptions_DisplayOrder", "[DisplayOrder] >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1338,15 +1474,25 @@ namespace Veltrix.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Veltrix.Models.Product", "Product")
+                    b.HasOne("Veltrix.Models.ProductVariant", "ProductVariant")
                         .WithMany("CartItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cart");
 
-                    b.Navigation("Product");
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.Category", b =>
+                {
+                    b.HasOne("Veltrix.Models.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCategory");
                 });
 
             modelBuilder.Entity("Veltrix.Models.CouponUsage", b =>
@@ -1378,13 +1524,13 @@ namespace Veltrix.Migrations
 
             modelBuilder.Entity("Veltrix.Models.Inventory", b =>
                 {
-                    b.HasOne("Veltrix.Models.Product", "Product")
+                    b.HasOne("Veltrix.Models.ProductVariant", "ProductVariant")
                         .WithOne("Inventory")
-                        .HasForeignKey("Veltrix.Models.Inventory", "ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("Veltrix.Models.Inventory", "ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("Veltrix.Models.InventoryTransaction", b =>
@@ -1456,15 +1602,15 @@ namespace Veltrix.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Veltrix.Models.Product", "Product")
+                    b.HasOne("Veltrix.Models.ProductVariant", "ProductVariant")
                         .WithMany("OrderItems")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductVariantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Product");
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("Veltrix.Models.OrderStatusHistory", b =>
@@ -1534,6 +1680,36 @@ namespace Veltrix.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Veltrix.Models.ProductVariant", b =>
+                {
+                    b.HasOne("Veltrix.Models.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ProductVariantOption", b =>
+                {
+                    b.HasOne("Veltrix.Models.ProductVariant", "ProductVariant")
+                        .WithMany("VariantOptions")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Models.VariantOptionValue", "VariantOptionValue")
+                        .WithMany("ProductVariantOptions")
+                        .HasForeignKey("VariantOptionValueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductVariant");
+
+                    b.Navigation("VariantOptionValue");
+                });
+
             modelBuilder.Entity("Veltrix.Models.ShippingSettings", b =>
                 {
                     b.HasOne("Veltrix.Models.ApplicationUser", "UpdatedByUser")
@@ -1563,6 +1739,28 @@ namespace Veltrix.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.VariantOptionValue", b =>
+                {
+                    b.HasOne("Veltrix.Models.VariantOptions", "VariantOption")
+                        .WithMany("Values")
+                        .HasForeignKey("VariantOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("VariantOption");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.VariantOptions", b =>
+                {
+                    b.HasOne("Veltrix.Models.Product", "Product")
+                        .WithMany("VariantOptions")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Veltrix.Models.ApplicationUser", b =>
@@ -1598,6 +1796,8 @@ namespace Veltrix.Migrations
             modelBuilder.Entity("Veltrix.Models.Category", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("Veltrix.Models.Coupon", b =>
@@ -1632,15 +1832,34 @@ namespace Veltrix.Migrations
 
             modelBuilder.Entity("Veltrix.Models.Product", b =>
                 {
+                    b.Navigation("ProductImages");
+
+                    b.Navigation("ProductReviews");
+
+                    b.Navigation("VariantOptions");
+
+                    b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ProductVariant", b =>
+                {
                     b.Navigation("CartItems");
 
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderItems");
 
-                    b.Navigation("ProductImages");
+                    b.Navigation("VariantOptions");
+                });
 
-                    b.Navigation("ProductReviews");
+            modelBuilder.Entity("Veltrix.Models.VariantOptionValue", b =>
+                {
+                    b.Navigation("ProductVariantOptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.VariantOptions", b =>
+                {
+                    b.Navigation("Values");
                 });
 #pragma warning restore 612, 618
         }

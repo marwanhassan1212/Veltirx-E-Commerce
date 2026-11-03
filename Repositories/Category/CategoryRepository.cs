@@ -41,6 +41,18 @@ namespace Veltrix.Repositories.Category
             return await _db.Categories.FirstOrDefaultAsync(x => x.Slug == slug);
         }
 
+        public async Task<bool> HasActiveSubCategoriesAsync(int categoryId)
+        {
+            return await _db.Categories.AnyAsync(x => x.ParentCategoryId == categoryId
+            && x.IsActive);
+        }
+
+        public async Task<bool> HasPublishedProductsAsync(int categoryId)
+        {
+            return await _db.Products.AnyAsync(x => x.CategoryId == categoryId
+            && x.IsPublished);
+        }
+
         public void Update(Models.Category category)
         {
             _db.Categories.Update(category);

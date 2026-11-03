@@ -22,9 +22,9 @@ namespace Veltrix.Repositories.Inventory
             return await _db.Inventories.FirstOrDefaultAsync(x => x.Id == Id);
         }
 
-        public async Task<Models.Inventory?> GetByProductIdAsync(int productId)
+        public async Task<Models.Inventory?> GetByProductIdAsync(int productvariantId)
         {
-            return await _db.Inventories.FirstOrDefaultAsync(x => x.ProductId == productId);
+            return await _db.Inventories.FirstOrDefaultAsync(x => x.ProductVariantId == productvariantId);
         }
 
         public async Task<IReadOnlyList<Models.InventoryTransaction>> GetTransactionsByInventoryIdAsync(int inventoryId)

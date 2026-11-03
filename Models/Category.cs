@@ -14,5 +14,11 @@
         public DateTime? UpdatedAt { get; set; }
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
+
+        public int? ParentCategoryId { get; set; }
+        public Category? ParentCategory { get; set; }
+        public ICollection<Category> SubCategories { get; set; } = new List<Category>();
+
+
     }
 }

@@ -18,6 +18,7 @@ using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Services.Product;
 using Veltrix.UnitOfWork;
 
 namespace Veltrix
@@ -55,6 +56,9 @@ namespace Veltrix
 
             // Unit of work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+            // Services
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             var app = builder.Build();
 

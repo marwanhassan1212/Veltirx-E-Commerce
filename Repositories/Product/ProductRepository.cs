@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Veltrix.Data;
+using Veltrix.Models;
 
 namespace Veltrix.Repositories.Product
 {
@@ -55,6 +56,12 @@ namespace Veltrix.Repositories.Product
         public async Task AddAsync(Models.Product product)
         {
             await _db.Products.AddAsync(product);
+        }
+
+        async Task<Models.ProductVariant?> IProductRepository.GetBySkuAsync(string sku)
+        {
+            return await _db.ProductVariants.Include(x => x.Product)
+                    .FirstOrDefaultAsync(x => x.SKU == sku);
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Veltrix.Repositories.Category
         Task<IReadOnlyList<Models.Category>> GetActiveCategoriesAsync();
         Task AddAsync(Models.Category category);
         void Update(Models.Category category);
+        Task<bool> HasActiveSubCategoriesAsync(int categoryId);
+        Task<bool> HasPublishedProductsAsync(int categoryId);
 
     }
 }

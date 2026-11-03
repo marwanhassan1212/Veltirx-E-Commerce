@@ -22,10 +22,10 @@ namespace Veltrix.Repositories.CartItem
             _db.CartItems.Remove(cartItem);
         }
 
-        public async Task<Models.CartItem?> GetByCartAndProductAsync(int cartId, int productId)
+        public async Task<Models.CartItem?> GetByCartAndProductAsync(int cartId, int productVariantId)
         {
             return await _db.CartItems.
-                FirstOrDefaultAsync(x => x.CartId == cartId && x.ProductId == productId);
+                FirstOrDefaultAsync(x => x.CartId == cartId && x.ProductVariantId == productVariantId);
         }
 
         public async Task<IReadOnlyList<Models.CartItem>> GetByCartIdAsync(int cartId)

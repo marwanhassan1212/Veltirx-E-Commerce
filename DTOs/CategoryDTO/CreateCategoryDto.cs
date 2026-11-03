@@ -16,8 +16,7 @@ namespace Veltrix.DTOs.CategoryDTO
         public string? Description { get; set; } = string.Empty;
         [Range(0, int.MaxValue)]
         public int DisplayOrder { get; set; }
-
         public bool IsActive { get; set; } = true;
-
+        public int? ParentCategoryId { get; set; }
     }
 }

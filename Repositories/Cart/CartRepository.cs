@@ -25,11 +25,12 @@ namespace Veltrix.Repositories.Cart
         public async Task<Models.Cart?> GetByUserIdAsync(string userId)
         {
             return await _db.Carts
-                .Include(x => x.CartItems)
-                .ThenInclude(x => x.Product)
-                .ThenInclude(x => x.ProductImages)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+        .   Include(x => x.CartItems)
+                .ThenInclude(x => x.ProductVariant)
+                    .ThenInclude(x => x.Product)
+                        .ThenInclude(x => x.ProductImages)
+        .AsSplitQuery()
+        .FirstOrDefaultAsync(x => x.UserId == userId);
         }
 
         public void Update(Models.Cart cart)
