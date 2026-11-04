@@ -15,12 +15,20 @@ namespace Veltrix.Controllers
             _productVariantService = productVariantService;
         }
 
-        // GET: ProductVariant/Index?productId=1
+        private async Task LoadOptionGroupsAsync(int productId)
+        {
+            ViewBag.OptionGroups =
+                await _productVariantService.GetOptionGroupsWithValuesAsync(productId);
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index(int productId)
         {
             if (productId <= 0)
-                return BadRequest();
+            {
+                ViewBag.ProductId = 0;
+                return View(Array.Empty<ProductVariantDto>());
+            }
 
             var variants = await _productVariantService
                 .GetByProductIdAsync(productId);
@@ -153,28 +161,46 @@ namespace Veltrix.Controllers
             }
         }
 
-        // POST: ProductVariant/SetDefault/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetDefault(int id)
         {
+            var variant = await _productVariantService.GetByIdAsync(id);
+
+            if (variant == null)
+            {
+                TempData["Error"] = "Variant not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            int productId = variant.ProductId;
+
             try
             {
-                var result =
-                    await _productVariantService.SetDefaultAsync(id);
+                var result = await _productVariantService.SetDefaultAsync(id);
 
-                if (!result)
-                    return NotFound();
-
-                TempData["Success"] =
-                    "Default variant updated successfully.";
+                if (result)
+                {
+                    TempData["Success"] =
+                        "Default variant updated successfully.";
+                }
+                else
+                {
+                    TempData["Error"] =
+                        "Unable to update the default variant. Please try again.";
+                }
             }
             catch (InvalidOperationException ex)
             {
                 TempData["Error"] = ex.Message;
             }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.ToString();
+            }
 
-            return await RedirectToVariantIndex(id);
+            return RedirectToAction(nameof(Index),
+                new { productId });
         }
 
         // POST: ProductVariant/Activate/5
@@ -279,7 +305,7 @@ namespace Veltrix.Controllers
 
             ViewBag.VariantId = id;
             ViewBag.ProductId = variant.ProductId;
-
+            await LoadOptionGroupsAsync(variant.ProductId);
             return View(new SetVariantOptionsDto());
         }
 
@@ -296,6 +322,7 @@ namespace Veltrix.Controllers
 
             ViewBag.VariantId = id;
             ViewBag.ProductId = variant.ProductId;
+            await LoadOptionGroupsAsync(variant.ProductId);
 
             if (!ModelState.IsValid)
                 return View(dto);
@@ -336,8 +363,11 @@ namespace Veltrix.Controllers
 
             ViewBag.VariantId = id;
             ViewBag.ProductId = variant.ProductId;
-
-            return View(new SetVariantOptionsDto());
+            await LoadOptionGroupsAsync(variant.ProductId);
+            return View(new SetVariantOptionsDto
+            {
+                VariantOptionValueIds = variant.VariantOptionValueIds
+            });
         }
 
         // POST: ProductVariant/EditOptions/5
@@ -353,7 +383,7 @@ namespace Veltrix.Controllers
 
             ViewBag.VariantId = id;
             ViewBag.ProductId = variant.ProductId;
-
+            await LoadOptionGroupsAsync(variant.ProductId);
             if (!ModelState.IsValid)
                 return View(dto);
 

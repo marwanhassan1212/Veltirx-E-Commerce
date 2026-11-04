@@ -1,0 +1,155 @@
+﻿@model Veltrix.DTOs.ProductImageDTO.UpdateProductImageDto
+
+@{
+    ViewData["Title"] = "Edit Product Image";
+    int productId = (int)ViewBag.ProductId;
+    string imageUrl = ViewBag.ImageUrl;
+}
+
+<div class="container-fluid py-4">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">Edit Product Image</h2>
+        <p class="text-muted mb-0">
+            Update image information or replace the file.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-action="Edit"
+                  asp-route-id="@ViewBag.ImageId"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"></div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        Current Image
+                    </label>
+
+                    <div>
+                        <img src="@imageUrl"
+                             id="imagePreview"
+                             alt="Current Product Image"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height:250px;" />
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Image"
+                           class="form-label fw-semibold">
+                        Replace Image (Optional)
+                    </label>
+
+                    <input asp-for="Image"
+                           type="file"
+                           class="form-control"
+                           accept=".jpg,.jpeg,.png,.webp"
+                           id="imageInput" />
+
+                    <span asp-validation-for="Image"
+                          class="text-danger"></span>
+
+                    <small class="text-muted">
+                        Leave empty to keep the current image. Maximum size: 5 MB.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AltText"
+                           class="form-label fw-semibold">
+                        Alternative Text
+                    </label>
+
+                    <input asp-for="AltText"
+                           class="form-control" />
+
+                    <span asp-validation-for="AltText"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="DisplayOrder"
+                           class="form-label fw-semibold">
+                        Display Order
+                    </label>
+
+                    <input asp-for="DisplayOrder"
+                           type="number"
+                           min="0"
+                           class="form-control" />
+
+                    <span asp-validation-for="DisplayOrder"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+
+                    <a asp-action="Index"
+                       asp-route-productId="@productId"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const imagePreview = document.getElementById("imagePreview");
+
+        imageInput.addEventListener("change", function () {
+
+            const file = this.files[0];
+
+            if (!file)
+                return;
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Please select a valid image.");
+                this.value = "";
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image size cannot exceed 5 MB.");
+                this.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                imagePreview.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+}

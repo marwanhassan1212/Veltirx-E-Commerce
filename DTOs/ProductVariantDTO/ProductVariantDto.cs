@@ -1,5 +1,4 @@
-﻿
-namespace Veltrix.DTOs.ProductVariantDTO
+﻿namespace Veltrix.DTOs.ProductVariantDTO
 {
     public class ProductVariantDto
     {
@@ -11,5 +10,15 @@ namespace Veltrix.DTOs.ProductVariantDTO
         public int ProductId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public List<int> VariantOptionValueIds { get; set; } = new();
+
+        public List<ProductVariantOptionDto> SelectedOptions { get; set; } = new();
+    }
+
+    public class ProductVariantOptionDto
+    {
+        public string OptionName { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
     }
 }

@@ -1,0 +1,549 @@
+﻿@model Veltrix.DTOs.Storefront.StorefrontProductDto
+@using System.Text.Json
+
+@{
+    Layout = null;
+
+    var jsonOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    var variantsJson = JsonSerializer.Serialize(Model.Variants, jsonOptions);
+    var imagesJson = JsonSerializer.Serialize(Model.Images, jsonOptions);
+    var optionsJson = JsonSerializer.Serialize(Model.Options, jsonOptions);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@Model.Name | Veltrix Store</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #202124;
+            background: #f7f8fa;
+        }
+
+        .store-header {
+            padding: 22px 7%;
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 45px auto;
+            padding: 0 20px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 25px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .product-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 55px;
+            background: #fff;
+            padding: 35px;
+            border-radius: 14px;
+        }
+
+        .main-image-container {
+            width: 100%;
+            height: 430px;
+            background: #f7f7f7;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .gallery {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .gallery-thumbnail {
+            width: 75px;
+            height: 75px;
+            object-fit: contain;
+            background: #f7f7f7;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+            .gallery-thumbnail.active {
+                border-color: #2563eb;
+            }
+
+        .product-category {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .product-title {
+            font-size: 32px;
+            margin: 0 0 15px;
+        }
+
+        .product-description {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .product-price {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .product-sku {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .option-group {
+            margin-bottom: 23px;
+        }
+
+        .option-title {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .option-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option-value {
+            padding: 10px 18px;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+            .option-value:hover:not(:disabled) {
+                border-color: #2563eb;
+            }
+
+            .option-value.selected {
+                color: #fff;
+                background: #2563eb;
+                border-color: #2563eb;
+            }
+
+            .option-value:disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+                background: #f1f1f1;
+                border-color: #e5e5e5;
+                text-decoration: line-through;
+            }
+
+        .variant-message {
+            color: #b42318;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #202124;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: not-allowed;
+            opacity: .6;
+            margin-top: 15px;
+        }
+
+        .description-section {
+            background: #fff;
+            padding: 30px;
+            margin-top: 25px;
+            border-radius: 14px;
+            line-height: 1.8;
+        }
+
+        @@media (max-width: 800px) {
+            .product-layout {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 20px;
+            }
+
+            .main-image-container {
+                height: 320px;
+            }
+
+            .product-title {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="store-header">
+        VELTRIX
+    </header>
+
+    <main class="page-container">
+
+        <div class="breadcrumb">
+            Home / @Model.CategoryName / @Model.Name
+        </div>
+
+        <section class="product-layout">
+
+            <div class="product-gallery">
+
+                <div class="main-image-container">
+                    <img id="mainImage"
+                         class="main-image"
+                         src=""
+                         alt="@Model.Name" />
+                </div>
+
+                <div id="imageGallery" class="gallery"></div>
+
+            </div>
+
+            <div class="product-information">
+
+                <div class="product-category">
+                    @Model.CategoryName
+                </div>
+
+                <h1 class="product-title">
+                    @Model.Name
+                </h1>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ShortDescription))
+                {
+                    <p class="product-description">
+                        @Model.ShortDescription
+                    </p>
+                }
+
+                <div id="productPrice" class="product-price">
+                    @Model.Price.ToString("N2")
+                </div>
+
+                <div class="product-sku">
+                    SKU: <span id="productSku">@Model.SKU</span>
+                </div>
+
+                <div id="productOptions"></div>
+
+                <div id="variantMessage"
+                     class="variant-message"
+                     role="status"></div>
+
+                <button id="addToCartButton"
+                        class="add-to-cart"
+                        type="button"
+                        disabled>
+                    Add to Cart
+                </button>
+
+                <small>Cart integration will be added in the next stage.</small>
+
+            </div>
+
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <section class="description-section">
+                <h2>Product Description</h2>
+                <p>@Model.Description</p>
+            </section>
+        }
+
+    </main>
+
+    <script>
+        const variants = @Html.Raw(variantsJson);
+        const generalImages = @Html.Raw(imagesJson);
+        const options = @Html.Raw(optionsJson);
+
+        let selectedValues = {};
+        let currentVariant = null;
+
+        const mainImage = document.getElementById("mainImage");
+        const imageGallery = document.getElementById("imageGallery");
+        const productOptions = document.getElementById("productOptions");
+        const productPrice = document.getElementById("productPrice");
+        const productSku = document.getElementById("productSku");
+        const variantMessage = document.getElementById("variantMessage");
+        const addToCartButton = document.getElementById("addToCartButton");
+
+        // Supports either DTO property naming convention.
+        function getVariantOptionIds(variant) {
+            return variant.variantOptionValueIds
+                ?? variant.optionValueIds
+                ?? [];
+        }
+
+        // Get images belonging to the selected variant.
+        function getVariantImages(variant) {
+            if (variant?.images?.length > 0) {
+                return variant.images;
+            }
+
+            return generalImages ?? [];
+        }
+
+        // Display the selected variant's images.
+        function renderGallery(images) {
+            imageGallery.replaceChildren();
+
+            if (!images || images.length === 0) {
+                mainImage.removeAttribute("src");
+                mainImage.alt = "No product image available";
+                return;
+            }
+
+            const orderedImages = [...images].sort((a, b) => {
+                if (a.isPrimary !== b.isPrimary) {
+                    return Number(b.isPrimary) - Number(a.isPrimary);
+                }
+
+                return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+            });
+
+            mainImage.src = orderedImages[0].imageUrl;
+            mainImage.alt = orderedImages[0].altText || "@Model.Name";
+
+            orderedImages.forEach((image, index) => {
+                const thumbnail = document.createElement("img");
+
+                thumbnail.src = image.imageUrl;
+                thumbnail.alt = image.altText || "@Model.Name";
+
+                thumbnail.className =
+                    "gallery-thumbnail" + (index === 0 ? " active" : "");
+
+                thumbnail.addEventListener("click", () => {
+                    mainImage.src = image.imageUrl;
+                    mainImage.alt = image.altText || "@Model.Name";
+
+                    imageGallery.querySelectorAll(".gallery-thumbnail")
+                        .forEach(x => x.classList.remove("active"));
+
+                    thumbnail.classList.add("active");
+                });
+
+                imageGallery.appendChild(thumbnail);
+            });
+        }
+
+        // Check whether at least one variant matches the required values.
+        function hasMatchingVariant(requiredValues) {
+            return variants.some(variant => {
+                const variantIds = getVariantOptionIds(variant).map(Number);
+
+                return Object.values(requiredValues).every(valueId =>
+                    variantIds.includes(Number(valueId))
+                );
+            });
+        }
+
+        // Check whether a value is available with current selections.
+        function isValueAvailable(optionId, valueId) {
+            const requiredValues = { ...selectedValues };
+
+            delete requiredValues[optionId];
+
+            requiredValues[optionId] = valueId;
+
+            return hasMatchingVariant(requiredValues);
+        }
+
+        // Find the exact variant when all options are selected.
+        function findMatchingVariant() {
+            if (Object.keys(selectedValues).length !== options.length) {
+                return null;
+            }
+
+            const selectedIds = Object.values(selectedValues)
+                .map(Number)
+                .sort((a, b) => a - b);
+
+            return variants.find(variant => {
+                const variantIds = getVariantOptionIds(variant)
+                    .map(Number)
+                    .sort((a, b) => a - b);
+
+                return variantIds.length === options.length &&
+                    variantIds.every((id, index) => id === selectedIds[index]);
+            }) || null;
+        }
+
+        // Render options and update their availability.
+        function renderOptions() {
+            productOptions.replaceChildren();
+
+            options.forEach(option => {
+                const group = document.createElement("div");
+                group.className = "option-group";
+
+                const title = document.createElement("span");
+                title.className = "option-title";
+                title.textContent = option.name;
+
+                const valuesContainer = document.createElement("div");
+                valuesContainer.className = "option-values";
+
+                option.values.forEach(value => {
+                    const button = document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "option-value";
+                    button.textContent = value.value;
+
+                    const available = isValueAvailable(option.id, value.id);
+
+                    button.disabled = !available;
+
+                    const selected =
+                        Number(selectedValues[option.id]) === Number(value.id);
+
+                    button.classList.toggle("selected", selected);
+
+                    button.addEventListener("click", () => {
+
+                        // Clicking the selected value again removes it.
+                        if (selected) {
+                            delete selectedValues[option.id];
+                        } else {
+                            selectedValues[option.id] = value.id;
+                        }
+
+                        updateSelection();
+                    });
+
+                    valuesContainer.appendChild(button);
+                });
+
+                group.appendChild(title);
+                group.appendChild(valuesContainer);
+
+                productOptions.appendChild(group);
+            });
+        }
+
+        // Update the product after every selection or deselection.
+        function updateSelection() {
+            currentVariant = findMatchingVariant();
+
+            if (currentVariant) {
+                productPrice.textContent =
+                    Number(currentVariant.price).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+
+                productSku.textContent = currentVariant.sku;
+
+                renderGallery(getVariantImages(currentVariant));
+
+                variantMessage.textContent = "";
+            } else {
+                productPrice.textContent = "—";
+                productSku.textContent = "—";
+
+                renderGallery(generalImages);
+
+                variantMessage.textContent =
+                    "Select the remaining options to see the product variant.";
+            }
+
+            // Cart remains disabled until cart integration is implemented.
+            addToCartButton.disabled = true;
+
+            // Recalculate available values after every change.
+            renderOptions();
+        }
+
+        // Initialize the page using the default variant.
+        function initializeProduct() {
+            const defaultVariant =
+                variants.find(x => x.isDefault) || variants[0];
+
+            if (!defaultVariant) {
+                renderOptions();
+                renderGallery(generalImages);
+
+                productPrice.textContent = "—";
+                productSku.textContent = "—";
+
+                variantMessage.textContent =
+                    "This product is currently unavailable.";
+
+                addToCartButton.disabled = true;
+                return;
+            }
+
+            const defaultOptionIds = getVariantOptionIds(defaultVariant);
+
+            options.forEach(option => {
+                const matchingValueId = defaultOptionIds.find(id =>
+                    option.values.some(value =>
+                        Number(value.id) === Number(id)
+                    )
+                );
+
+                if (matchingValueId !== undefined) {
+                    selectedValues[option.id] = matchingValueId;
+                }
+            });
+
+            updateSelection();
+        }
+
+        initializeProduct();
+    </script>
+
+</body>
+</html>

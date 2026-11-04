@@ -1,14 +1,31 @@
-﻿@model IReadOnlyList<Veltrix.DTOs.CategoryDTO.CategoryDto>
+﻿@model Veltrix.DTOs.CategoryDTO.PagedResultDto
 
 @{
     ViewData["Title"] = "Categories";
 
-    var categories = Model ?? Array.Empty<Veltrix.DTOs.CategoryDTO.CategoryDto>();
+    var categories = Model.Items ?? [];
 
-    int totalCategories = categories.Count;
-    int activeCategories = categories.Count(c => c.IsActive);
-    int inactiveCategories = totalCategories - activeCategories;
-    int parentCategories = categories.Count(c => c.ParentCategoryId == null);
+    var statistics =
+        ViewBag.Statistics as Veltrix.DTOs.CategoryDTO.CategoryStatisticsDTo
+        ?? new Veltrix.DTOs.CategoryDTO.CategoryStatisticsDTo();
+
+    string search = ViewBag.Search as string ?? "";
+    string status = ViewBag.Status as string ?? "all";
+
+    int pageSize = Model.PageSize;
+    int currentPage = Model.PageNumber;
+    int totalPages = Model.TotalPages;
+    int totalCount = Model.TotalCount;
+
+    int startItem = totalCount == 0
+        ? 0
+        : ((currentPage - 1) * pageSize) + 1;
+
+    int endItem = Math.Min(currentPage * pageSize, totalCount);
+
+    // Display a limited range of page numbers.
+    int paginationStartPage = Math.Max(1, currentPage - 2);
+    int paginationEndPage = Math.Min(totalPages, currentPage + 2);
 }
 
 @section Styles {
@@ -388,24 +405,85 @@
             line-height: 1.7;
         }
 
-        .category-no-results {
-            display: none;
-            padding: 35px 15px;
-            color: var(--vx-text-secondary);
-            font-size: 11px;
-            text-align: center;
-        }
-
         .category-panel-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             padding: 15px 20px;
             border-top: 1px solid var(--vx-border);
             color: var(--vx-text-muted);
             font-size: 10px;
+        }
+
+        .category-footer-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .category-page-size {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .category-page-size select {
+                height: 32px;
+                padding: 0 8px;
+                border: 1px solid var(--vx-border);
+                border-radius: 7px;
+                background: #fff;
+                color: var(--vx-text-secondary);
+                font-size: 10px;
+            }
+
+        .category-pagination {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .category-page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 9px;
+            border: 1px solid var(--vx-border);
+            border-radius: 7px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+            .category-page-link:hover {
+                border-color: #D8D0FF;
+                background: #F3F0FF;
+                color: var(--vx-primary);
+            }
+
+            .category-page-link.active {
+                border-color: var(--vx-primary);
+                background: var(--vx-primary);
+                color: #fff;
+            }
+
+            .category-page-link.disabled {
+                opacity: .4;
+                pointer-events: none;
+            }
+
+        .category-page-ellipsis {
+            padding: 0 4px;
+            color: var(--vx-text-muted);
         }
 
         .category-alert {
@@ -476,12 +554,29 @@
                 align-items: flex-start;
                 flex-direction: column;
             }
+
+            .category-footer-info {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .category-pagination {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
 
         @@media (max-width: 350px) {
             .category-stat {
                 align-items: flex-start;
                 flex-direction: column;
+            }
+
+            .category-page-link {
+                min-width: 29px;
+                height: 29px;
+                padding: 0 6px;
             }
         }
     </style>
@@ -532,7 +627,7 @@
             </div>
             <div class="category-stat-info">
                 <span>Total Categories</span>
-                <strong>@totalCategories</strong>
+                <strong>@statistics.TotalCategories</strong>
             </div>
         </div>
 
@@ -542,7 +637,7 @@
             </div>
             <div class="category-stat-info">
                 <span>Active Categories</span>
-                <strong>@activeCategories</strong>
+                <strong>@statistics.ActiveCategories</strong>
             </div>
         </div>
 
@@ -552,7 +647,7 @@
             </div>
             <div class="category-stat-info">
                 <span>Inactive Categories</span>
-                <strong>@inactiveCategories</strong>
+                <strong>@statistics.InactiveCategories</strong>
             </div>
         </div>
 
@@ -562,7 +657,7 @@
             </div>
             <div class="category-stat-info">
                 <span>Parent Categories</span>
-                <strong>@parentCategories</strong>
+                <strong>@statistics.ParentCategories</strong>
             </div>
         </div>
 
@@ -577,25 +672,66 @@
                 <p>View and manage your category records.</p>
             </div>
 
-            <div class="category-toolbar">
+            <!-- Server-side Search and Filters -->
+            <form method="get"
+                  asp-controller="Category"
+                  asp-action="Index"
+                  class="category-toolbar">
 
-                <div class="category-search">
-                    <i class="bi bi-search"></i>
-                    <input type="text"
-                           id="categorySearch"
-                           placeholder="Search categories..."
-                           aria-label="Search categories" />
+                <!-- Client-side Search and Filters -->
+                <div class="category-toolbar">
+
+                    <div class="category-search">
+                        <i class="bi bi-search"></i>
+
+                        <input type="text"
+                               id="categorySearch"
+                               value="@search"
+                               placeholder="Search categories..."
+                               aria-label="Search categories" />
+                    </div>
+
+                    <select id="categoryStatusFilter"
+                            class="category-filter"
+                            aria-label="Filter by status">
+
+                        <option value="all"
+                                selected="@(status == "all" ? "selected" : null)">
+                            All Statuses
+                        </option>
+
+                        <option value="active"
+                                selected="@(status == "active" ? "selected" : null)">
+                            Active
+                        </option>
+
+                        <option value="inactive"
+                                selected="@(status == "inactive" ? "selected" : null)">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                    <select id="categoryPageSize"
+                            class="category-filter"
+                            aria-label="Items per page">
+
+                        <option value="10" selected="@(pageSize == 10 ? "selected" : null)">
+                            10 / page
+                        </option>
+
+                        <option value="20" selected="@(pageSize == 20 ? "selected" : null)">
+                            20 / page
+                        </option>
+
+                        <option value="50" selected="@(pageSize == 50 ? "selected" : null)">
+                            50 / page
+                        </option>
+
+                    </select>
+
                 </div>
-
-                <select id="categoryStatusFilter"
-                        class="category-filter"
-                        aria-label="Filter by status">
-                    <option value="all">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-
-            </div>
+            </form>
         </div>
 
         @if (categories.Any())
@@ -614,20 +750,21 @@
                         </tr>
                     </thead>
 
-                    <tbody id="categoryTableBody">
+                    <tbody>
 
                         @foreach (var category in categories)
                         {
                             <tr class="category-row"
                                 data-name="@category.Name"
                                 data-slug="@category.Slug"
-                                data-parent="@(category.ParentCategoryName ?? "Root Category")"
+                                data-parent="@category.ParentCategoryName"
                                 data-status="@(category.IsActive ? "active" : "inactive")">
 
                                 <td>
                                     <div class="category-identity">
 
                                         <div class="category-image">
+
                                             @if (!string.IsNullOrWhiteSpace(category.ImageUrl))
                                             {
                                                 <img src="@category.ImageUrl"
@@ -642,6 +779,7 @@
                                             {
                                                 <i class="bi bi-image"></i>
                                             }
+
                                     </div>
 
                                     <div>
@@ -733,63 +871,195 @@
 
                     </tbody>
                 </table>
+                <div id="categoryNoResults"
+                     class="category-empty"
+                     style="display: none;">
+
+                    <div class="category-empty-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+
+                    <h3>No matching categories</h3>
+
+                    <p>
+                        No categories match your search or status filter.
+                        Try changing your search criteria.
+                    </p>
+
+                    <button type="button"
+                            id="clearCategoryFilters"
+                            class="vx-btn-outline">
+                        Clear Filters
+                    </button>
+
+                </div>
 
             </div>
 
-            <div id="categoryNoResults" class="category-no-results">
-                <i class="bi bi-search me-1"></i>
-                No categories match your search.
-            </div>
-
+            <!-- Pagination Footer -->
             <div class="category-panel-footer">
-                <span id="categoryResultsCount">
-                    Showing @totalCategories categories
-                </span>
 
-                <span>
-                    <i class="bi bi-shield-check me-1"></i>
-                    Category management
-                </span>
+                <div>
+                    Showing <strong>@startItem–@endItem</strong>
+                    of <strong>@totalCount</strong> categories
+                </div>
+
+                <div class="category-footer-info">
+
+                    <div class="category-page-size">
+                        <span>Rows per page</span>
+
+                        <span>Page @currentPage of @totalPages</span>
+                    </div>
+
+                    <span>
+                        <i class="bi bi-shield-check me-1"></i>
+                        Category management
+                    </span>
+
+                </div>
+
+                <nav class="category-pagination"
+                     aria-label="Category pagination">
+
+                    <!-- Previous -->
+                    <a asp-action="Index"
+                       asp-route-search="@search"
+                       asp-route-status="@status"
+                       asp-route-pageSize="@pageSize"
+                       asp-route-page="@(currentPage - 1)"
+                       class="category-page-link @(Model.HasPreviousPage ? "" : "disabled")"
+                       aria-label="Previous page">
+
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+
+                    <!-- First Page -->
+                    @if (paginationStartPage > 1)
+                    {
+                        <a asp-action="Index"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-pageSize="@pageSize"
+                           asp-route-page="1"
+                           class="category-page-link">
+                            1
+                        </a>
+
+                        @if (paginationStartPage > 2)
+                        {
+                            <span class="category-page-ellipsis">...</span>
+                        }
+                    }
+
+                    <!-- Visible Page Numbers -->
+                    @for (int i = paginationStartPage; i <= paginationEndPage; i++)
+                    {
+                        <a asp-action="Index"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-pageSize="@pageSize"
+                           asp-route-page="@i"
+                           class="category-page-link @(i == currentPage ? "active" : "")"
+                           aria-current="@(i == currentPage ? "page" : null)">
+
+                            @i
+                        </a>
+                    }
+
+                    <!-- Last Page -->
+                    @if (paginationEndPage < totalPages)
+                    {
+                        @if (paginationEndPage < totalPages - 1)
+                        {
+                            <span class="category-page-ellipsis">...</span>
+                        }
+
+                        <a asp-action="Index"
+                           asp-route-search="@search"
+                           asp-route-status="@status"
+                           asp-route-pageSize="@pageSize"
+                           asp-route-page="@totalPages"
+                           class="category-page-link">
+                            @totalPages
+                        </a>
+                    }
+
+                    <!-- Next -->
+                    <a asp-action="Index"
+                       asp-route-search="@search"
+                       asp-route-status="@status"
+                       asp-route-pageSize="@pageSize"
+                       asp-route-page="@(currentPage + 1)"
+                       class="category-page-link @(Model.HasNextPage ? "" : "disabled")"
+                       aria-label="Next page">
+
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                </nav>
+
             </div>
         }
         else
         {
             <div class="category-empty">
+
                 <div class="category-empty-icon">
-                    <i class="bi bi-grid"></i>
-                </div>
+                    <i class="bi @(statistics.TotalCategories == 0
+                                               ? "bi-grid"
+                                               : "bi-search")"></i>
+            </div>
 
-                <h3>No categories yet</h3>
+            @if (statistics.TotalCategories == 0)
+                {
+                    <h3>No categories yet</h3>
 
-                <p>
-                    You haven't created any categories.
-                    Start organizing your products by creating your first category.
-                </p>
+                    <p>
+                        You haven't created any categories.
+                        Start organizing your products by creating your first category.
+                    </p>
 
-                <a asp-controller="Category"
-                   asp-action="Create"
-                   class="vx-btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i>
-                    Create First Category
-                </a>
+                    <a asp-controller="Category"
+                       asp-action="Create"
+                       class="vx-btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Create First Category
+                    </a>
+                }
+                else
+                {
+                    <h3>No matching categories</h3>
+
+                    <p>
+                        No categories match your current search or status filter.
+                        Try changing your search criteria.
+                    </p>
+
+                    <a asp-controller="Category"
+                       asp-action="Index"
+                       class="vx-btn-outline">
+                        Clear Filters
+                    </a>
+                }
+
             </div>
         }
 
     </section>
 
 </div>
-
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
             const searchInput = document.getElementById("categorySearch");
             const statusFilter = document.getElementById("categoryStatusFilter");
+            const pageSizeSelect = document.getElementById("categoryPageSize");
+
             const rows = document.querySelectorAll(".category-row");
             const noResults = document.getElementById("categoryNoResults");
-            const resultsCount = document.getElementById("categoryResultsCount");
-
-            if (!searchInput || !statusFilter) return;
+            const clearButton = document.getElementById("clearCategoryFilters");
 
             function filterCategories() {
 
@@ -798,10 +1068,10 @@
 
                 let visibleCount = 0;
 
-                rows.forEach(function (row) {
+                rows.forEach(row => {
 
-                    const name = (row.dataset.name || "").toLowerCase();
-                    const slug = (row.dataset.slug || "").toLowerCase();
+                    const name = row.dataset.name.toLowerCase();
+                    const slug = row.dataset.slug.toLowerCase();
                     const parent = (row.dataset.parent || "").toLowerCase();
                     const status = row.dataset.status;
 
@@ -823,20 +1093,33 @@
                     }
                 });
 
-                if (noResults) {
-                    noResults.style.display =
-                        visibleCount === 0 && rows.length > 0 ? "block" : "none";
-                }
-
-                if (resultsCount) {
-                    resultsCount.textContent =
-                        `Showing ${visibleCount} of ${rows.length} categories`;
-                }
+                noResults.style.display =
+                    visibleCount === 0 ? "block" : "none";
             }
 
             searchInput.addEventListener("input", filterCategories);
+
             statusFilter.addEventListener("change", filterCategories);
 
+            clearButton.addEventListener("click", function () {
+
+                searchInput.value = "";
+                statusFilter.value = "all";
+
+                filterCategories();
+            });
+
+            pageSizeSelect.addEventListener("change", function () {
+
+                const url = new URL(window.location.href);
+
+                url.searchParams.set("pageSize", pageSizeSelect.value);
+                url.searchParams.set("pageNumber", "1");
+
+                window.location.href = url.toString();
+            });
+
+            filterCategories();
         });
     </script>
 }

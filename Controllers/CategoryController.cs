@@ -35,10 +35,18 @@ namespace Veltrix.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search , string? status,
+            int page = 1 , int pageSize = 10)
         {
-            var categories = await _categoryService.GetAllAsync();
+            var categories = await _categoryService.GetPagedCategoriesAsync(search,
+                status, page, pageSize);
+            var statistics = await _categoryService.GetStatisticsAsync();
+            ViewBag.Statistics = statistics;
+            ViewBag.Search = search;
+            ViewBag.Status = status ?? "all";
+            ViewBag.PageSize = categories.PageSize;
             return View(categories);
+
         }
 
         [HttpGet]

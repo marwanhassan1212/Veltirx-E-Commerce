@@ -1,0 +1,745 @@
+﻿@model IReadOnlyList<Veltrix.DTOs.ProductVariantDTO.ProductVariantDto>
+
+@{
+    ViewData["Title"] = "Product Variants";
+
+    int productId = ViewBag.ProductId ?? 0;
+
+    var variants = Model ?? Array.Empty<Veltrix.DTOs.ProductVariantDTO.ProductVariantDto>();
+
+    int activeCount = variants.Count(x => x.IsActive);
+    int inactiveCount = variants.Count - activeCount;
+}
+
+@section Styles {
+    <style>
+        .vx-select-product {
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        .vx-select-card {
+            max-width: 650px;
+            margin: 45px auto;
+            padding: 45px 35px;
+            text-align: center;
+            background: #fff;
+            border: 1px solid var(--vx-border);
+            border-radius: 18px;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .vx-select-icon {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 22px;
+            background: #F1EEFF;
+            color: var(--vx-primary);
+            font-size: 32px;
+        }
+
+        .vx-select-card h2 {
+            margin-bottom: 12px;
+            font-size: 21px;
+            font-weight: 750;
+            color: var(--vx-text);
+        }
+
+        .vx-select-card p {
+            max-width: 430px;
+            margin: 0 auto 25px;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .vx-select-hint {
+            margin-top: 17px;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        .vx-page {
+            max-width: 1400px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .vx-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+            .vx-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+            }
+
+            .vx-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        /* Notifications */
+        .vx-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            padding: 16px 18px;
+            border: 1px solid;
+            border-radius: 12px;
+            position: relative;
+        }
+
+            .vx-alert.success {
+                background: #F0FBF6;
+                border-color: #C5EEDD;
+                color: #16845F;
+            }
+
+            .vx-alert.error {
+                background: #FFF4F4;
+                border-color: #F5CDCD;
+                color: #C43D4B;
+            }
+
+        .vx-alert-icon {
+            display: grid;
+            width: 35px;
+            height: 35px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 9px;
+            font-size: 17px;
+        }
+
+        .vx-alert.success .vx-alert-icon {
+            background: #DDF6EA;
+        }
+
+        .vx-alert.error .vx-alert-icon {
+            background: #FCE1E3;
+        }
+
+        .vx-alert-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+            .vx-alert-content strong {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 12px;
+                font-weight: 750;
+            }
+
+            .vx-alert-content p {
+                margin: 0;
+                font-size: 11px;
+                line-height: 1.6;
+                overflow-wrap: anywhere;
+            }
+
+        .vx-alert-close {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            opacity: .65;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+            .vx-alert-close:hover {
+                opacity: 1;
+            }
+
+        .vx-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .vx-stat {
+            padding: 17px;
+            border: 1px solid var(--vx-border);
+            border-radius: 13px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+            .vx-stat span {
+                display: block;
+                color: var(--vx-text-secondary);
+                font-size: 10px;
+            }
+
+            .vx-stat strong {
+                display: block;
+                margin-top: 6px;
+                font-size: 22px;
+                font-weight: 750;
+            }
+
+        .vx-card {
+            overflow: hidden;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .vx-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 19px 20px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .vx-card-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+        .vx-table-wrap {
+            overflow-x: auto;
+        }
+
+        .vx-table {
+            width: 100%;
+            min-width: 1050px;
+            border-collapse: collapse;
+        }
+
+            .vx-table th {
+                padding: 14px 17px;
+                background: #FAFAFC;
+                color: var(--vx-text-muted);
+                font-size: 9px;
+                text-align: left;
+                letter-spacing: .5px;
+            }
+
+            .vx-table td {
+                padding: 14px 17px;
+                border-top: 1px solid #F1F1F5;
+                font-size: 11px;
+                vertical-align: middle;
+            }
+
+            .vx-table tr:hover td {
+                background: #FCFBFF;
+            }
+
+        .vx-code {
+            font-family: monospace;
+            color: var(--vx-text-secondary);
+        }
+
+        .vx-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 9px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+            .vx-pill.active {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .vx-pill.inactive {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+            .vx-pill.default {
+                background: #F0EDFF;
+                color: #7657F6;
+            }
+
+        /* Selected Options */
+        .vx-selected-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-width: 190px;
+        }
+
+        .vx-option-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 9px;
+            border: 1px solid #E6E0FF;
+            border-radius: 7px;
+            background: #F7F5FF;
+            color: #7657F6;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+            .vx-option-badge strong {
+                font-weight: 750;
+            }
+
+        .vx-option-empty {
+            color: var(--vx-text-muted);
+            font-size: 10px;
+            font-style: italic;
+        }
+
+        .vx-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .vx-icon-btn {
+            display: grid;
+            width: 31px;
+            height: 31px;
+            place-items: center;
+            border: 1px solid var(--vx-border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .vx-icon-btn:hover {
+                border-color: #D8D0FF;
+                background: #F3F0FF;
+                color: var(--vx-primary);
+            }
+
+            .vx-icon-btn.danger:hover {
+                border-color: #F5C6CB;
+                background: #FDECEF;
+                color: #D9485B;
+            }
+
+        .vx-empty {
+            padding: 55px 20px;
+            text-align: center;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+        }
+
+            .vx-empty i {
+                display: block;
+                margin-bottom: 12px;
+                color: var(--vx-primary);
+                font-size: 30px;
+            }
+
+        .vx-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--vx-border);
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        @@media(max-width: 600px) {
+            .vx-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .vx-heading {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .vx-select-card {
+                margin: 25px auto;
+                padding: 35px 20px;
+            }
+        }
+    </style>
+}
+
+@if (productId <= 0)
+{
+    <div class="vx-select-product">
+
+        <div class="vx-heading">
+            <div>
+                <h1>Product Variants</h1>
+                <p>Manage product SKUs, pricing, options and availability.</p>
+            </div>
+        </div>
+
+        <div class="vx-select-card">
+
+            <div class="vx-select-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+
+            <h2>No Product Selected</h2>
+
+            <p>
+                Product variants are managed individually for each product.
+                Select a product first to manage its variants, pricing,
+                availability and options.
+            </p>
+
+            <a asp-controller="Product"
+               asp-action="Index"
+               class="vx-btn-primary">
+                <i class="bi bi-arrow-right me-2"></i>
+                Go to Products
+            </a>
+
+            <div class="vx-select-hint">
+                Select a product to get started with variant management.
+            </div>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="vx-page">
+
+        <div class="vx-heading">
+            <div>
+                <h1>Product Variants</h1>
+                <p>Manage SKUs, pricing, options and availability for this product.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <a asp-controller="Product"
+                   asp-action="Details"
+                   asp-route-id="@productId"
+                   class="vx-btn-outline">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Product Details
+                </a>
+
+                <a asp-controller="VariantOptions"
+                   asp-action="Index"
+                   asp-route-productId="@productId"
+                   class="vx-btn-outline">
+                    <i class="bi bi-sliders me-1"></i>
+                    Manage Options
+                </a>
+
+                <a asp-action="Create"
+                   asp-route-productId="@productId"
+                   class="vx-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Add Variant
+                </a>
+
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="vx-alert success" role="alert">
+                <div class="vx-alert-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+
+                <div class="vx-alert-content">
+                    <strong>Operation Completed Successfully</strong>
+                    <p>@TempData["Success"]</p>
+                </div>
+
+                <button type="button"
+                        class="vx-alert-close"
+                        onclick="this.parentElement.remove()"
+                        aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="vx-alert error" role="alert">
+                <div class="vx-alert-icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+
+                <div class="vx-alert-content">
+                    <strong>Unable to Complete Operation</strong>
+                    <p>@TempData["Error"]</p>
+                </div>
+
+                <button type="button"
+                        class="vx-alert-close"
+                        onclick="this.parentElement.remove()"
+                        aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        }
+
+        <section class="vx-stats">
+
+            <div class="vx-stat">
+                <span>Total Variants</span>
+                <strong>@variants.Count</strong>
+            </div>
+
+            <div class="vx-stat">
+                <span>Active Variants</span>
+                <strong>@activeCount</strong>
+            </div>
+
+            <div class="vx-stat">
+                <span>Inactive Variants</span>
+                <strong>@inactiveCount</strong>
+            </div>
+
+        </section>
+
+        <section class="vx-card">
+
+            <div class="vx-card-header">
+                <h2>All Variants</h2>
+                <span class="text-secondary small">Product #@productId</span>
+            </div>
+
+            @if (variants.Any())
+            {
+                <div class="vx-table-wrap">
+
+                    <table class="vx-table">
+
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>SELECTED OPTIONS</th>
+                                <th>PRICE</th>
+                                <th>STATUS</th>
+                                <th>DEFAULT</th>
+                                <th>CREATED</th>
+                                <th style="text-align:right">ACTIONS</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var variant in variants)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong class="vx-code">@variant.SKU</strong>
+                                    </td>
+
+                                    <td>
+                                        @if (variant.SelectedOptions != null &&
+                                                                    variant.SelectedOptions.Any())
+                                        {
+                                            <div class="vx-selected-options">
+
+                                                @foreach (var option in variant.SelectedOptions)
+                                                {
+                                                    <span class="vx-option-badge">
+                                                        <strong>@option.OptionName:</strong>
+                                                        <span>@option.Value</span>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="vx-option-empty">
+                                                Not configured
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <strong>@variant.Price.ToString("N2") EGP</strong>
+                                    </td>
+
+                                    <td>
+                                        @if (variant.IsActive)
+                                        {
+                                            <span class="vx-pill active">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="vx-pill inactive">Inactive</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (variant.IsDefault)
+                                        {
+                                            <span class="vx-pill default">
+                                                <i class="bi bi-star-fill me-1"></i>
+                                                Default
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">—</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @variant.CreatedAt.ToString("dd MMM yyyy")
+                                    </td>
+
+                                    <td>
+                                        <div class="vx-actions">
+
+                                            <a asp-action="Details"
+                                               asp-route-id="@variant.Id"
+                                               class="vx-icon-btn"
+                                               title="Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <a asp-action="Edit"
+                                               asp-route-id="@variant.Id"
+                                               class="vx-icon-btn"
+                                               title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <a asp-action="SetOptions"
+                                               asp-route-id="@variant.Id"
+                                               class="vx-icon-btn"
+                                               title="Set Options">
+                                                <i class="bi bi-sliders"></i>
+                                            </a>
+
+                                            <a asp-action="EditOptions"
+                                               asp-route-id="@variant.Id"
+                                               class="vx-icon-btn"
+                                               title="Edit Options">
+                                                <i class="bi bi-toggles"></i>
+                                            </a>
+
+                                            @if (!variant.IsDefault && variant.IsActive)
+                                            {
+                                                <form asp-action="SetDefault"
+                                                      asp-route-id="@variant.Id"
+                                                      method="post">
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button class="vx-icon-btn"
+                                                            title="Set as Default"
+                                                            type="submit">
+                                                        <i class="bi bi-star"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            @if (variant.IsActive)
+                                            {
+                                                <form asp-action="Deactivate"
+                                                      asp-route-id="@variant.Id"
+                                                      method="post">
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button class="vx-icon-btn"
+                                                            title="Deactivate"
+                                                            type="submit">
+                                                        <i class="bi bi-pause-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="Activate"
+                                                      asp-route-id="@variant.Id"
+                                                      method="post">
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button class="vx-icon-btn"
+                                                            title="Activate"
+                                                            type="submit">
+                                                        <i class="bi bi-play-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            @if (!variant.IsDefault)
+                                            {
+                                                <form asp-action="Delete"
+                                                      asp-route-id="@variant.Id"
+                                                      method="post"
+                                                      onsubmit="return confirm('Are you sure you want to delete this variant?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button class="vx-icon-btn danger"
+                                                            title="Delete"
+                                                            type="submit">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+
+                                                </form>
+                                            }
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="vx-footer">
+                    Showing @variants.Count variant(s)
+                </div>
+            }
+            else
+            {
+                <div class="vx-empty">
+
+                    <i class="bi bi-layers"></i>
+
+                    <h3 class="fs-6 fw-bold text-dark">
+                        No variants yet
+                    </h3>
+
+                    <p>Create the first variant for this product.</p>
+
+                    <a asp-action="Create"
+                       asp-route-productId="@productId"
+                       class="vx-btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Create Variant
+                    </a>
+
+                </div>
+            }
+
+        </section>
+
+    </div>
+}

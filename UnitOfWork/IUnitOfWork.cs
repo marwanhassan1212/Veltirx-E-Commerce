@@ -1,4 +1,5 @@
-﻿using Veltrix.Repositories.Cart;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Veltrix.Repositories.Cart;
 using Veltrix.Repositories.CartItem;
 using Veltrix.Repositories.Category;
 using Veltrix.Repositories.Coupon;
@@ -13,10 +14,12 @@ using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
 using Veltrix.Repositories.ProductVariant;
+using Veltrix.Repositories.ProductVariantImage;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptions;
 using Veltrix.Repositories.VariantOptionValue;
 
 namespace Veltrix.UnitOfWork
@@ -43,7 +46,11 @@ namespace Veltrix.UnitOfWork
         IStoreSettingsRepository StoreSettings { get; }
         IProductVariantRepository productVariant { get; }
         IVariantOptionValueRepository VariantOptionValues { get; }
+        IVariantOptionsRepository VariantOptions { get; }
+        IProductVariantImageRepository ProductVariantImages { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
 
     }
 }

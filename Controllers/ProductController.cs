@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using Veltrix.DTOs.ProductDTO;
+using Veltrix.Services.Category;
 using Veltrix.Services.Product;
 
 namespace Veltrix.Controllers
@@ -7,17 +9,30 @@ namespace Veltrix.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService , ICategoryService categoryService)
         {
             _productService = productService;
+            _categoryService = categoryService;
+        }
+
+        private async Task LoadCategoriesAsync()
+        {
+            ViewBag.Categories = await _categoryService.GetActiveCategoriesAsync();
         }
 
         // Get All Products
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 1 , int pageSize = 10
+            , string? search  = null , string? status = null)
         {
-            var products = await _productService.GetAllAsync();
+            var products = await _productService.GetPagedAsync(pageNumber, pageSize,
+                search, status);
+
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            
             return View(products);
         }
 
@@ -39,18 +54,22 @@ namespace Veltrix.Controllers
         // Create Product - GET
  
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await LoadCategoriesAsync();
             return View();
         }
-
+        
         // Create Product - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateProductDto dto)
         {
             if (!ModelState.IsValid)
+            {
+                await LoadCategoriesAsync();
                 return View(dto);
+            }
 
             try
             {
@@ -63,6 +82,7 @@ namespace Veltrix.Controllers
             catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
+                await LoadCategoriesAsync();
                 return View(dto);
             }
         }
@@ -83,15 +103,13 @@ namespace Veltrix.Controllers
             {
                 Name = product.Name,
                 Slug = product.Slug,
-                SKU = product.SKU,
                 ShortDescription = product.ShortDescription,
                 Description = product.Description,
-                Price = product.Price,
                 CategoryId = product.CategoryId
             };
 
             ViewBag.ProductId = id;
-
+            await LoadCategoriesAsync();
             return View(updateProduct);
         }
 
@@ -106,8 +124,10 @@ namespace Veltrix.Controllers
             ViewBag.ProductId = id;
 
             if (!ModelState.IsValid)
+            {
+                await LoadCategoriesAsync();
                 return View(updateProduct);
-
+            }
             try
             {
                 var product = await _productService.UpdateAsync(id, updateProduct);
@@ -122,6 +142,7 @@ namespace Veltrix.Controllers
             catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
+                await LoadCategoriesAsync();
                 return View(updateProduct);
             }
         }

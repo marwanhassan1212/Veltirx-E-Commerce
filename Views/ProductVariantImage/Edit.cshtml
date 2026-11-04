@@ -1,0 +1,113 @@
+﻿@model Veltrix.DTOs.ProductVariantImage.UpdateProductVariantImageDto
+
+@{
+    ViewData["Title"] = "Edit Variant Image";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">Edit Variant Image</h2>
+        <p class="text-muted">
+            Update image information or replace the current image.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    Current Image
+                </label>
+
+                <div>
+                    <img src="@ViewBag.ImageUrl"
+                         alt="Current variant image"
+                         class="img-thumbnail"
+                         style="max-width:300px; max-height:250px; object-fit:contain;" />
+                </div>
+            </div>
+
+            <form asp-action="Edit"
+                  asp-route-id="@ViewBag.ImageId"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Image"
+                           class="form-label fw-semibold">
+                        Replace Image
+                    </label>
+
+                    <input asp-for="Image"
+                           type="file"
+                           class="form-control"
+                           accept=".jpg,.jpeg,.png,.webp" />
+
+                    <span asp-validation-for="Image"
+                          class="text-danger"></span>
+
+                    <div class="form-text">
+                        Leave empty to keep the current image.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AltText"
+                           class="form-label fw-semibold">
+                        Alternative Text
+                    </label>
+
+                    <input asp-for="AltText"
+                           class="form-control" />
+
+                    <span asp-validation-for="AltText"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="DisplayOrder"
+                           class="form-label fw-semibold">
+                        Display Order
+                    </label>
+
+                    <input asp-for="DisplayOrder"
+                           type="number"
+                           min="0"
+                           class="form-control" />
+
+                    <span asp-validation-for="DisplayOrder"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Changes
+                    </button>
+
+                    <a asp-action="Index"
+                       asp-route-variantId="@ViewBag.VariantId"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

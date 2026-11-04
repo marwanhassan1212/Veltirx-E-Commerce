@@ -14,6 +14,12 @@ namespace Veltrix.Repositories.Category
         void Update(Models.Category category);
         Task<bool> HasActiveSubCategoriesAsync(int categoryId);
         Task<bool> HasPublishedProductsAsync(int categoryId);
+        Task<PagedResultDto> GetPagedCategoriesAsync(string? search, string? status,
+            int page, int pageSize);
+
+        Task<CategoryStatisticsDTo> GetStatisticsAsync();
+
+
 
     }
 }

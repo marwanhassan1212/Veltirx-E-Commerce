@@ -18,6 +18,9 @@ namespace Veltrix.Configurations
             builder.Property(x => x.DisplayOrder).HasDefaultValue(0);
             builder.Property(x => x.CreatedAt).IsRequired();
 
+            // Indexes
+            builder.HasIndex(x => x.ProductId).IsUnique().HasFilter("[IsPrimary] = 1");
+
             //Relations
             builder.HasOne(x => x.Product).WithMany(x => x.ProductImages)
                 .HasForeignKey(x => x.ProductId).IsRequired()

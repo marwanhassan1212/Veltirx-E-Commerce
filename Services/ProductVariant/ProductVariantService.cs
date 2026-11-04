@@ -1,5 +1,6 @@
 ﻿
 using Veltrix.DTOs.ProductVariantDTO;
+using Veltrix.Models;
 using Veltrix.UnitOfWork;
 
 namespace Veltrix.Services.ProductVariant
@@ -13,12 +14,8 @@ namespace Veltrix.Services.ProductVariant
             this.unitOfWork = unitOfWork;
         }
 
-        // =====================================================
         // Mapping
-        // =====================================================
-
-        private static ProductVariantDto MapToDto(
-            Models.ProductVariant variant)
+        private static ProductVariantDto MapToDto(Models.ProductVariant variant)
         {
             return new ProductVariantDto
             {
@@ -29,13 +26,29 @@ namespace Veltrix.Services.ProductVariant
                 IsActive = variant.IsActive,
                 ProductId = variant.ProductId,
                 CreatedAt = variant.CreatedAt,
-                UpdatedAt = variant.UpdatedAt
+                UpdatedAt = variant.UpdatedAt,
+
+                VariantOptionValueIds = variant.VariantOptions?
+                    .Where(x => x.VariantOptionValue != null)
+                    .Select(x => x.VariantOptionValueId)
+                    .ToList() ?? new List<int>(),
+
+                SelectedOptions = variant.VariantOptions?
+                    .Where(x =>
+                        x.VariantOptionValue != null &&
+                        x.VariantOptionValue.VariantOption != null)
+                    .Select(x => new ProductVariantOptionDto
+                    {
+                        OptionName = x.VariantOptionValue.VariantOption.Name,
+                        Value = x.VariantOptionValue.Value
+                    })
+                    .OrderBy(x => x.OptionName)
+                    .ToList() ?? new List<ProductVariantOptionDto>()
             };
         }
 
-        // =====================================================
+
         // Get Variant By ID
-        // =====================================================
 
         public async Task<ProductVariantDto?> GetByIdAsync(int id)
         {
@@ -51,9 +64,7 @@ namespace Veltrix.Services.ProductVariant
             return MapToDto(variant);
         }
 
-        // =====================================================
         // Get All Variants By Product ID
-        // =====================================================
 
         public async Task<IReadOnlyList<ProductVariantDto>>
             GetByProductIdAsync(int productId)
@@ -70,12 +81,8 @@ namespace Veltrix.Services.ProductVariant
                 .ToList();
         }
 
-        // =====================================================
         // Create Variant
-        // =====================================================
-
-        public async Task<ProductVariantDto> CreateAsync(
-            CreateProductVariantDto dto)
+        public async Task<ProductVariantDto> CreateAsync(CreateProductVariantDto dto)
         {
             // Check Product
             var product =
@@ -94,9 +101,11 @@ namespace Veltrix.Services.ProductVariant
             bool isFirstVariant = !existingVariants.Any();
 
             // Check SKU
+            var sku = dto.SKU.Trim();
+
             var existingSKU =
                 await unitOfWork.productVariant
-                    .GetBySkuAsync(dto.SKU);
+                    .GetBySkuAsync(sku);
 
             if (existingSKU != null)
                 throw new InvalidOperationException(
@@ -105,7 +114,7 @@ namespace Veltrix.Services.ProductVariant
             // Create Variant
             var variant = new Models.ProductVariant
             {
-                SKU = dto.SKU.Trim(),
+                SKU = sku,
                 Price = dto.Price,
                 ProductId = dto.ProductId,
                 IsDefault = isFirstVariant,
@@ -120,13 +129,8 @@ namespace Veltrix.Services.ProductVariant
             return MapToDto(variant);
         }
 
-        // =====================================================
         // Update Variant
-        // =====================================================
-
-        public async Task<ProductVariantDto?> UpdateAsync(
-            int id,
-            UpdateProductVariantDto dto)
+        public async Task<ProductVariantDto?> UpdateAsync(int id, UpdateProductVariantDto dto)
         {
             var variant =
                 await unitOfWork.productVariant.GetByIdAsync(id);
@@ -135,16 +139,18 @@ namespace Veltrix.Services.ProductVariant
                 return null;
 
             // Check SKU
+            var sku = dto.SKU.Trim();
+
             var existingSKU =
                 await unitOfWork.productVariant
-                    .GetBySkuAsync(dto.SKU);
+                    .GetBySkuAsync(sku);
 
             if (existingSKU != null && existingSKU.Id != id)
                 throw new InvalidOperationException(
                     "SKU already exists.");
 
             // Update Properties
-            variant.SKU = dto.SKU.Trim();
+            variant.SKU = sku;
             variant.Price = dto.Price;
             variant.UpdatedAt = DateTime.UtcNow;
 
@@ -153,19 +159,14 @@ namespace Veltrix.Services.ProductVariant
             return MapToDto(variant);
         }
 
-        // =====================================================
         // Set Default Variant
-        // =====================================================
-
         public async Task<bool> SetDefaultAsync(int id)
         {
-            var variant =
-                await unitOfWork.productVariant.GetByIdAsync(id);
+            var variant = await unitOfWork.productVariant.GetByIdAsync(id);
 
             if (variant == null)
                 return false;
 
-            // Default Variant Must Be Active
             if (!variant.IsActive)
                 throw new InvalidOperationException(
                     "Cannot set an inactive variant as default.");
@@ -173,36 +174,52 @@ namespace Veltrix.Services.ProductVariant
             if (variant.IsDefault)
                 return true;
 
-            // Get All Tracked Variants
-            var variants =
-                await unitOfWork.productVariant
-                    .GetByProductIdForUpdateAsync(variant.ProductId);
+            var variants = await unitOfWork.productVariant
+                .GetByProductIdForUpdateAsync(variant.ProductId);
 
-            if (!variants.Any(x => x.Id == id))
+            var targetVariant = variants.FirstOrDefault(x => x.Id == id);
+
+            if (targetVariant == null)
                 return false;
 
             var now = DateTime.UtcNow;
 
-            // Update Default Status
-            foreach (var item in variants)
+            await using var transaction =
+                await unitOfWork.BeginTransactionAsync();
+
+            try
             {
-                bool shouldBeDefault = item.Id == id;
-
-                if (item.IsDefault != shouldBeDefault)
+                // Step 1: Remove the current default
+                foreach (var item in variants)
                 {
-                    item.IsDefault = shouldBeDefault;
-                    item.UpdatedAt = now;
+                    if (item.IsDefault)
+                    {
+                        item.IsDefault = false;
+                        item.UpdatedAt = now;
+                    }
                 }
+
+                await unitOfWork.SaveChangesAsync();
+
+                // Step 2: Set the new default
+                targetVariant.IsDefault = true;
+                targetVariant.UpdatedAt = now;
+
+                await unitOfWork.SaveChangesAsync();
+
+                // Step 3: Commit transaction
+                await transaction.CommitAsync();
+
+                return true;
             }
-
-            await unitOfWork.SaveChangesAsync();
-
-            return true;
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
-        // =====================================================
         // Activate Variant
-        // =====================================================
 
         public async Task<bool> ActivateAsync(int id)
         {
@@ -223,10 +240,9 @@ namespace Veltrix.Services.ProductVariant
             return true;
         }
 
-        // =====================================================
-        // Deactivate Variant
-        // =====================================================
 
+        // Deactivate Variant
+     
         public async Task<bool> DeactivateAsync(int id)
         {
             var variant =
@@ -252,10 +268,8 @@ namespace Veltrix.Services.ProductVariant
             return true;
         }
 
-        // =====================================================
+      
         // Delete Variant
-        // =====================================================
-
         public async Task<bool> DeleteAsync(int id)
         {
             var variant =
@@ -297,14 +311,9 @@ namespace Veltrix.Services.ProductVariant
             return true;
         }
 
-        // =====================================================
         // Validate Selected Option Values
-        // =====================================================
-
-        private async Task<IReadOnlyList<Models.VariantOptionValue>>
-            ValidateSelectedOptionsAsync(
-                int productId,
-                SetVariantOptionsDto dto)
+        private async Task<IReadOnlyList<Models.VariantOptionValue>> ValidateSelectedOptionsAsync(
+                int productId, SetVariantOptionsDto dto)
         {
             if (dto.VariantOptionValueIds == null ||
                 dto.VariantOptionValueIds.Count == 0)
@@ -371,10 +380,8 @@ namespace Veltrix.Services.ProductVariant
             return values;
         }
 
-        // =====================================================
-        // Set Variant Options
-        // =====================================================
 
+        // Set Variant Options   
         public async Task<bool> SetOptionsAsync(
             int variantId,
             SetVariantOptionsDto dto)
@@ -422,10 +429,8 @@ namespace Veltrix.Services.ProductVariant
             return true;
         }
 
-        // =====================================================
+   
         // Update Variant Options
-        // =====================================================
-
         public async Task<bool> UpdateOptionsAsync(
             int variantId,
             SetVariantOptionsDto dto)
@@ -484,5 +489,15 @@ namespace Veltrix.Services.ProductVariant
 
             return true;
         }
+
+        public async Task<IReadOnlyList<Models.VariantOptions>> GetOptionGroupsWithValuesAsync(int productId)
+        {
+            if (productId <= 0)
+                return Array.Empty<Models.VariantOptions>();
+
+            return await unitOfWork.VariantOptionValues
+                .GetGroupsWithValuesByProductIdAsync(productId);
+        }
     }
 }
+

@@ -26,10 +26,15 @@ namespace Veltrix.Configurations
                     "CK_ProductVariants_Price",
                     "[Price] >= 0");
             });
-   
+
             // Indexes
-            builder.HasIndex(x => x.SKU).IsUnique();
-            builder.HasIndex(x => x.ProductId).IsUnique().HasFilter("[IsDefault] = 1");
+            builder.HasIndex(x => x.SKU)
+                .IsUnique();
+
+            builder.HasIndex(x => x.ProductId)
+                .IsUnique()
+                .HasFilter("[IsDefault] = 1")
+                .HasDatabaseName("IX_ProductVariants_ProductId_Default");
 
             // Relationships
             builder.HasOne(x => x.Product).WithMany(x => x.Variants)

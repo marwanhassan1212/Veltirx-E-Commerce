@@ -1,0 +1,215 @@
+﻿@model Veltrix.DTOs.ProductDTO.UpdateProductDto
+@using Veltrix.DTOs.CategoryDTO
+
+@{
+    ViewData["Title"] = "Edit Product";
+    var categories = ViewBag.Categories as IEnumerable<CategoryDto>
+                     ?? Enumerable.Empty<CategoryDto>();
+    int productId = (int)ViewBag.ProductId;
+}
+
+@section Styles {
+    <style>
+        .vx-page {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .vx-heading h1 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 750;
+        }
+
+        .vx-heading p {
+            margin: 7px 0 0;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+        }
+
+        .vx-card {
+            background: #fff;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            box-shadow: var(--vx-shadow-sm);
+            overflow: hidden;
+        }
+
+        .vx-card-header {
+            padding: 19px 21px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .vx-card-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+        .vx-card-body {
+            padding: 22px;
+        }
+
+        .vx-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 18px;
+        }
+
+        .vx-field.full {
+            grid-column: 1/-1;
+        }
+
+        .vx-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--vx-text-secondary);
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        .vx-control {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            outline: none;
+            background: #fff;
+            color: var(--vx-text);
+            font-size: 12px;
+        }
+
+            .vx-control:focus {
+                border-color: var(--vx-primary);
+                box-shadow: 0 0 0 3px rgba(118,87,246,.1);
+            }
+
+        textarea.vx-control {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .field-validation-error, .validation-summary-errors {
+            color: #D94B5B;
+            font-size: 11px;
+        }
+
+        .input-validation-error {
+            border-color: #E05260;
+        }
+
+        .vx-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 20px;
+        }
+
+        .vx-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        @@media(max-width:650px) {
+            .vx-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .vx-field.full {
+                grid-column: auto;
+            }
+
+            .vx-card-body {
+                padding: 16px;
+            }
+
+            .vx-form-actions > * {
+                flex: 1;
+            }
+        }
+    </style>
+}
+
+<div class="vx-page">
+    <div class="vx-heading">
+        <h1>Edit Product</h1>
+        <p>Update product information and catalog details.</p>
+    </div>
+
+    <form asp-action="Edit" asp-route-id="@productId" method="post">
+        @Html.AntiForgeryToken()
+
+        <section class="vx-card">
+            <div class="vx-card-header">
+                <h2>Product Information</h2>
+            </div>
+
+            <div class="vx-card-body">
+                <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+
+                <div class="vx-form-grid">
+                    <div class="vx-field">
+                        <label asp-for="Name">Product Name</label>
+                        <input asp-for="Name" class="vx-control" />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+
+                    <div class="vx-field">
+                        <label asp-for="Slug">Slug</label>
+                        <input asp-for="Slug" class="vx-control" />
+                        <span asp-validation-for="Slug"></span>
+                    </div>
+
+                    <div class="vx-field">
+                        <label asp-for="CategoryId">Category</label>
+                        <select asp-for="CategoryId" class="vx-control">
+                            <option value="">Select a category</option>
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId"></span>
+                    </div>
+
+                    <div class="vx-field full">
+                        <label asp-for="ShortDescription">Short Description</label>
+                        <textarea asp-for="ShortDescription" class="vx-control"></textarea>
+                        <span asp-validation-for="ShortDescription"></span>
+                    </div>
+
+                    <div class="vx-field full">
+                        <label asp-for="Description">Full Description</label>
+                        <textarea asp-for="Description" class="vx-control" style="min-height:160px"></textarea>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                </div>
+
+                <div class="vx-form-actions">
+                    <a asp-action="Index" asp-route-id="@productId" class="vx-btn-outline">Cancel</a>
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </section>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

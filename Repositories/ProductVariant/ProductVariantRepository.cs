@@ -27,12 +27,13 @@ namespace Veltrix.Repositories.ProductVariant
             _db.ProductVariants.Remove(variant);
         }
 
-           public async Task<Models.ProductVariant?> GetByIdAsync(int id)
+        public async Task<Models.ProductVariant?> GetByIdAsync(int id)
         {
             return await _db.ProductVariants
                 .Include(x => x.Product)
                 .Include(x => x.VariantOptions)
                     .ThenInclude(x => x.VariantOptionValue)
+                        .ThenInclude(x => x.VariantOption)
                 .Include(x => x.OrderItems)
                 .Include(x => x.CartItems)
                 .Include(x => x.Inventory)
@@ -42,11 +43,12 @@ namespace Veltrix.Repositories.ProductVariant
         public async Task<IReadOnlyList<Models.ProductVariant>> GetByProductIdAsync(int productId)
         {
             return await _db.ProductVariants
-             .Where(x => x.ProductId == productId)
-             .Include(x => x.VariantOptions)
-                 .ThenInclude(x => x.VariantOptionValue)
-             .AsNoTracking()
-             .ToListAsync();
+                .Where(x => x.ProductId == productId)
+                .Include(x => x.VariantOptions)
+                    .ThenInclude(x => x.VariantOptionValue)
+                        .ThenInclude(x => x.VariantOption)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<Models.ProductVariant>> GetByProductIdForUpdateAsync(int productId)
@@ -58,7 +60,7 @@ namespace Veltrix.Repositories.ProductVariant
 
         public async Task<Models.ProductVariant?> GetBySkuAsync(string sku)
         {
-            return await _db.ProductVariants.FirstOrDefaultAsync(x => x.SKU == sku);
+            return await _db.ProductVariants.AsNoTracking().FirstOrDefaultAsync(x => x.SKU == sku);
         }
 
         public async Task RemoveOptionsNotInAsync(int variantId, IReadOnlyCollection<int> selectedValueIds)

@@ -1,0 +1,272 @@
+﻿@model IReadOnlyList<Veltrix.DTOs.VariantOptionsDTO.VariantOptionsDto>
+
+@{
+    ViewData["Title"] = "Product Options";
+    int productId = (int)ViewBag.ProductId;
+}
+
+@section Styles {
+    <style>
+        .vx-options {
+            max-width: 1400px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .vx-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+            .vx-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+            }
+
+            .vx-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        .vx-card {
+            overflow: hidden;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .vx-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 19px 20px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .vx-card-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+        .vx-table-wrap {
+            overflow-x: auto;
+        }
+
+        .vx-table {
+            width: 100%;
+            min-width: 650px;
+            border-collapse: collapse;
+        }
+
+            .vx-table th {
+                padding: 14px 17px;
+                background: #FAFAFC;
+                color: var(--vx-text-muted);
+                font-size: 9px;
+                text-align: left;
+                letter-spacing: .5px;
+            }
+
+            .vx-table td {
+                padding: 15px 17px;
+                border-top: 1px solid #F1F1F5;
+                font-size: 11px;
+                vertical-align: middle;
+            }
+
+            .vx-table tr:hover td {
+                background: #FCFBFF;
+            }
+
+        .vx-name {
+            font-weight: 700;
+            color: var(--vx-text-primary);
+        }
+
+        .vx-count {
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 7px;
+            background: #F0EDFF;
+            color: #7657F6;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .vx-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .vx-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 10px;
+            border: 1px solid var(--vx-border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+            .vx-action:hover {
+                border-color: #D8D0FF;
+                background: #F3F0FF;
+                color: var(--vx-primary);
+            }
+
+            .vx-action.danger:hover {
+                border-color: #F5C6CB;
+                background: #FDECEF;
+                color: #D9485B;
+            }
+
+        .vx-empty {
+            padding: 55px 20px;
+            text-align: center;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+        }
+
+            .vx-empty i {
+                display: block;
+                margin-bottom: 12px;
+                color: var(--vx-primary);
+                font-size: 32px;
+            }
+
+        .vx-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--vx-border);
+            color: var(--vx-text-muted);
+            font-size: 10px;
+        }
+
+        @@media(max-width:600px) {
+            .vx-heading {
+                align-items: stretch;
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+<div class="vx-options">
+    <div class="vx-heading">
+        <div>
+            <h1>Product Options</h1>
+            <p>Configure the available options for each product variant.</p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="ProductVariant" asp-action="Index"
+               asp-route-productId="@productId" class="vx-btn-outline">
+                <i class="bi bi-arrow-left me-1"></i> Back to Variants
+            </a>
+
+            <a asp-action="Create" asp-route-productId="@productId"
+               class="vx-btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Add Option Group
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success mb-0 small">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger mb-0 small">@TempData["Error"]</div>
+    }
+
+    <section class="vx-card">
+        <div class="vx-card-header">
+            <h2>Available Option Groups</h2>
+            <span class="text-secondary small">Product #@productId</span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="vx-table-wrap">
+                <table class="vx-table">
+                    <thead>
+                        <tr>
+                            <th>OPTION GROUP</th>
+                            <th>DISPLAY ORDER</th>
+                            <th>VALUES</th>
+                            <th style="text-align:right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var option in Model)
+                        {
+                            <tr>
+                                <td><span class="vx-name">@option.Name</span></td>
+                                <td>@option.DisplayOrder</td>
+                                <td><span class="vx-count">@option.Values.Count Values</span></td>
+                                <td>
+                                    <div class="vx-actions">
+                                        <a asp-controller="VariantOptionValues"
+                                           asp-action="Index"
+                                           asp-route-groupId="@option.Id"
+                                           class="vx-action">
+                                            <i class="bi bi-list-ul"></i> Manage Values
+                                        </a>
+
+                                        <a asp-action="Edit"
+                                           asp-route-id="@option.Id"
+                                           asp-route-productId="@productId"
+                                           class="vx-action">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+
+                                        <form asp-action="Delete" method="post"
+                                              onsubmit="return confirm('Delete this option group?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@option.Id" />
+                                            <input type="hidden" name="productId" value="@productId" />
+                                            <button type="submit" class="vx-action danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="vx-footer">Showing @Model.Count option group(s)</div>
+        }
+        else
+        {
+            <div class="vx-empty">
+                <i class="bi bi-sliders"></i>
+                <h3 class="fs-6 fw-bold text-dark">No option groups yet</h3>
+                <p>Create groups such as Storage, RAM and Color.</p>
+                <a asp-action="Create" asp-route-productId="@productId"
+                   class="vx-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create First Group
+                </a>
+            </div>
+        }
+    </section>
+</div>

@@ -1,0 +1,269 @@
+﻿@model Veltrix.DTOs.ProductDTO.ProductDto
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+@section Styles {
+    <style>
+        .vx-page {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .vx-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+            .vx-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+                letter-spacing: -.7px;
+            }
+
+            .vx-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        .vx-card {
+            background: #fff;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            box-shadow: var(--vx-shadow-sm);
+            overflow: hidden;
+        }
+
+        .vx-card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .vx-card-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+        .vx-card-body {
+            padding: 22px;
+        }
+
+        .vx-label {
+            display: block;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 7px;
+        }
+
+        .vx-value {
+            color: var(--vx-text);
+            font-size: 13px;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .vx-muted {
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 22px;
+        }
+
+        .vx-status {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+            .vx-status.on {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .vx-status.off {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+        .vx-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
+            gap: 12px;
+        }
+
+            .vx-gallery img {
+                width: 100%;
+                height: 135px;
+                object-fit: cover;
+                border: 1px solid var(--vx-border);
+                border-radius: 10px;
+            }
+
+        .vx-empty-image {
+            display: grid;
+            place-items: center;
+            height: 135px;
+            border: 1px dashed var(--vx-border);
+            border-radius: 10px;
+            color: var(--vx-text-muted);
+            background: #FAFAFC;
+        }
+
+        .vx-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .vx-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 14px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            color: var(--vx-text-secondary);
+            background: #fff;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+            .vx-btn-outline:hover {
+                border-color: #D8D0FF;
+                background: #F5F2FF;
+                color: var(--vx-primary);
+            }
+
+        @@media(max-width:650px) {
+            .vx-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .vx-card-body {
+                padding: 16px;
+            }
+        }
+    </style>
+}
+
+<div class="vx-page">
+    <div class="vx-heading">
+        <div>
+            <h1>Product Details</h1>
+            <p>Review product information and catalog settings.</p>
+        </div>
+        <div class="vx-actions">
+            <a asp-action="Index" class="vx-btn-outline"><i class="bi bi-arrow-left me-1"></i> Back</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="vx-btn-primary"><i class="bi bi-pencil me-1"></i> Edit Product</a>
+        </div>
+    </div>
+
+    <section class="vx-card">
+        <div class="vx-card-header"><h2>Product Overview</h2></div>
+        <div class="vx-card-body">
+            <div class="vx-grid">
+                <div>
+                    <span class="vx-label">Product Name</span>
+                    <div class="vx-value">@Model.Name</div>
+                </div>
+                <div>
+                    <span class="vx-label">Default Variant SKU</span>
+                    <div class="vx-value">
+                        @(string.IsNullOrWhiteSpace(Model.SKU) ? "Not configured" : Model.SKU)
+                    </div>
+                </div>
+                <div>
+                    <span class="vx-label">Slug</span>
+                    <div class="vx-value">@Model.Slug</div>
+                </div>
+                <div>
+                    <span class="vx-label">Category</span>
+                    <div class="vx-value">@Model.CategoryName</div>
+                </div>
+                <div>
+                    <span class="vx-label">Default Variant Price</span>
+                    <div class="vx-value">
+                        @(string.IsNullOrWhiteSpace(Model.SKU)
+                                                ? "Not configured"
+                                                : $"{Model.Price:N2} EGP")
+                    </div>
+                </div>
+                <div>
+                    <span class="vx-label">Publication Status</span>
+                    <div>
+                        @if (Model.IsPublished)
+                        {
+                            <span class="vx-status on">Published</span>
+                        }
+                        else
+                        {
+                            <span class="vx-status off">Unpublished</span>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <span class="vx-label">Created At</span>
+                    <div class="vx-value">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</div>
+                </div>
+                <div>
+                    <span class="vx-label">Last Updated</span>
+                    <div class="vx-value">@(Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Never")</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vx-card">
+        <div class="vx-card-header"><h2>Descriptions</h2></div>
+        <div class="vx-card-body">
+            <div class="mb-4">
+                <span class="vx-label">Short Description</span>
+                <div class="vx-muted">@(string.IsNullOrWhiteSpace(Model.ShortDescription) ? "No short description provided." : Model.ShortDescription)</div>
+            </div>
+            <div>
+                <span class="vx-label">Full Description</span>
+                <div class="vx-muted">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vx-card">
+        <div class="vx-card-header d-flex justify-content-between align-items-center">
+            <h2>Product Images</h2>
+
+            <a asp-controller="ProductImage"
+               asp-action="Index"
+               asp-route-productId="@Model.Id"
+               class="vx-btn-primary">
+                <i class="bi bi-images me-1"></i> Manage Images
+            </a>
+        </div>
+    </section>
+
+    <div class="vx-actions">
+        <a asp-controller="ProductVariant" asp-action="Index" asp-route-productId="@Model.Id" class="vx-btn-primary">
+            <i class="bi bi-layers me-1"></i> Manage Variants
+        </a>
+    </div>
+</div>

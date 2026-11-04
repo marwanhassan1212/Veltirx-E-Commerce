@@ -16,6 +16,8 @@
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<ProductVariantOption> VariantOptions { get; set; } = new List<ProductVariantOption>();
+        public ICollection<ProductVariantImage> Images { get; set; } = new List<ProductVariantImage>();
+
 
         public Inventory? Inventory { get; set; }
     }

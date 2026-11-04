@@ -11,7 +11,7 @@ namespace Veltrix.Services.ProductVariant
         Task<bool> SetOptionsAsync(int variantId, SetVariantOptionsDto dto);
         Task<bool> SetDefaultAsync(int id);
         Task<bool> UpdateOptionsAsync(int variantId, SetVariantOptionsDto dto);
- 
+        Task<IReadOnlyList<Models.VariantOptions>> GetOptionGroupsWithValuesAsync(int productId);
         Task<bool> ActivateAsync(int id);
         Task<bool> DeactivateAsync(int id);
         Task<bool> DeleteAsync(int id);

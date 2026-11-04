@@ -31,6 +31,7 @@ namespace Veltrix.Data
         public DbSet<VariantOptions> VariantOptions { get; set; } = null!;
         public DbSet<VariantOptionValue> VariantOptionValues { get; set; } = null!;
         public DbSet<ProductVariantOption> ProductVariantOptions { get; set; } = null!;
+        public DbSet<ProductVariantImage> ProductVariantImages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

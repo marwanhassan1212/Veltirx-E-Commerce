@@ -10,7 +10,11 @@ namespace Veltrix.Services.Category
         Task<CategoryDto?> GetBySlugAsync(string slug);
         Task<CategoryDto> CreateAsync(CreateCategoryDto dto);
         Task<CategoryDto?> UpdateAsync(int id , UpdateCategoryDto dto);
-      
+
+        Task<PagedResultDto> GetPagedCategoriesAsync(string? search,
+           string? status, int page, int pageSize);
+        Task<CategoryStatisticsDTo> GetStatisticsAsync();
+
 
 
 

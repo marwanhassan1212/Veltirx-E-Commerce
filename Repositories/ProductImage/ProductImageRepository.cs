@@ -26,11 +26,13 @@ namespace Veltrix.Repositories.ProductImage
             return await _db.ProductImages.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<IReadOnlyList<Models.ProductImage>> GetByProductId(int productId)
+        public async Task<IReadOnlyList<Models.ProductImage>> GetByProductIdAsync(int productId)
         {
-            return await _db.ProductImages.AsNoTracking()
+            return await _db.ProductImages
                 .Where(x => x.ProductId == productId)
-                .OrderBy(x => x.DisplayOrder)
+                .OrderByDescending(x => x.IsPrimary)
+                .ThenBy(x => x.DisplayOrder)
+                .ThenBy(x => x.Id)
                 .ToListAsync();
         }
 

@@ -1,0 +1,109 @@
+﻿@model Veltrix.DTOs.VariantOptionValueDTO.UpdateVariantOptionValueDto
+
+@{
+    ViewData["Title"] = "Edit Option Value";
+    int groupId = (int)ViewBag.GroupId;
+    int valueId = (int)ViewBag.ValueId;
+}
+
+@section Styles {
+    <style>
+        .vx-form-page {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .vx-form-card {
+            padding: 25px;
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+        }
+
+        .vx-form-title {
+            margin-bottom: 7px;
+            font-size: 23px;
+            font-weight: 750;
+        }
+
+        .vx-form-subtitle {
+            margin-bottom: 25px;
+            color: var(--vx-text-secondary);
+            font-size: 12px;
+        }
+
+        .vx-field {
+            margin-bottom: 20px;
+        }
+
+            .vx-field label {
+                display: block;
+                margin-bottom: 8px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .vx-field input {
+                width: 100%;
+                padding: 12px 13px;
+                border: 1px solid var(--vx-border);
+                border-radius: 9px;
+                outline: none;
+                font-size: 12px;
+            }
+
+                .vx-field input:focus {
+                    border-color: var(--vx-primary);
+                    box-shadow: 0 0 0 3px rgba(118,87,246,.1);
+                }
+
+        .vx-form-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--vx-border);
+        }
+    </style>
+}
+
+<div class="vx-form-page">
+    <div class="vx-form-card">
+        <h1 class="vx-form-title">Edit Option Value</h1>
+        <p class="vx-form-subtitle">Update this option value and its display order.</p>
+
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+            <input type="hidden" name="id" value="@valueId" />
+            <input type="hidden" name="groupId" value="@groupId" />
+
+            <div class="vx-field">
+                <label asp-for="Value">Value</label>
+                <input asp-for="Value" />
+                <span asp-validation-for="Value" class="text-danger small"></span>
+            </div>
+
+            <div class="vx-field">
+                <label asp-for="DisplayOrder">Display Order</label>
+                <input asp-for="DisplayOrder" type="number" min="0" />
+                <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+            </div>
+
+            <div class="vx-form-actions">
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-check-lg me-1"></i> Save Changes
+                </button>
+
+                <a asp-action="Index" asp-route-groupId="@groupId"
+                   class="vx-btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

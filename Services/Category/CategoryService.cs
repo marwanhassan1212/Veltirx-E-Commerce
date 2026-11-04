@@ -361,5 +361,26 @@ namespace Veltrix.Services.Category
                     "Cannot deactivate a category that contains published products");
             }
         }
+
+        public async Task<PagedResultDto> GetPagedCategoriesAsync(string? search, string? status, int page, int pageSize)
+        {
+            // Allow only supported page sizes.
+            int[] allowedPageSizes = [10, 20, 50];
+
+            if (!allowedPageSizes.Contains(pageSize))
+            {
+                pageSize = 10;
+            }
+
+            page = Math.Max(1, page);
+
+            return await _unitOfWork.Category.GetPagedCategoriesAsync(search,
+                status, page, pageSize);
+        }
+
+        public async Task<CategoryStatisticsDTo> GetStatisticsAsync()
+        {
+            return await _unitOfWork.Category.GetStatisticsAsync();
+        }
     }
 }

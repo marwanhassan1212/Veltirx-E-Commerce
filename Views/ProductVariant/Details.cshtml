@@ -1,0 +1,216 @@
+﻿@model Veltrix.DTOs.ProductVariantDTO.ProductVariantDto
+
+@{
+    ViewData["Title"] = "Variant Details";
+}
+
+@section Styles {
+    <style>
+        .vx-page {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .vx-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+            .vx-heading h1 {
+                margin: 0;
+                font-size: 25px;
+                font-weight: 750;
+            }
+
+            .vx-heading p {
+                margin: 7px 0 0;
+                color: var(--vx-text-secondary);
+                font-size: 12px;
+            }
+
+        .vx-card {
+            border: 1px solid var(--vx-border);
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: var(--vx-shadow-sm);
+            overflow: hidden;
+        }
+
+        .vx-card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--vx-border);
+        }
+
+            .vx-card-header h2 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+        .vx-card-body {
+            padding: 22px;
+        }
+
+        .vx-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 22px;
+        }
+
+        .vx-label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--vx-text-muted);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .vx-value {
+            color: var(--vx-text);
+            font-size: 13px;
+            font-weight: 650;
+            overflow-wrap: anywhere;
+        }
+
+        .vx-pill {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+            .vx-pill.active {
+                background: #E6F7F0;
+                color: #16A779;
+            }
+
+            .vx-pill.inactive {
+                background: #FDECEF;
+                color: #E05260;
+            }
+
+            .vx-pill.default {
+                background: #F0EDFF;
+                color: #7657F6;
+            }
+
+        .vx-actions {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .vx-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px;
+            border: 1px solid var(--vx-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--vx-text-secondary);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        @@media(max-width:600px) {
+            .vx-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .vx-card-body {
+                padding: 16px;
+            }
+        }
+    </style>
+}
+
+<div class="vx-page">
+    <div class="vx-heading">
+        <div>
+            <h1>Variant Details</h1>
+            <p>Review SKU, price and availability information.</p>
+        </div>
+        <div class="vx-actions">
+            <a asp-action="Index" asp-route-productId="@Model.ProductId" class="vx-btn-outline">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="vx-btn-primary">
+                <i class="bi bi-pencil me-1"></i> Edit Variant
+            </a>
+        </div>
+    </div>
+
+    <section class="vx-card">
+        <div class="vx-card-header"><h2>Variant Information</h2></div>
+        <div class="vx-card-body">
+            <div class="vx-grid">
+                <div><span class="vx-label">Variant ID</span><div class="vx-value">#@Model.Id</div></div>
+                <div><span class="vx-label">Product ID</span><div class="vx-value">#@Model.ProductId</div></div>
+                <div><span class="vx-label">SKU</span><div class="vx-value">@Model.SKU</div></div>
+                <div><span class="vx-label">Price</span><div class="vx-value">@Model.Price.ToString("N2") EGP</div></div>
+                <div>
+                    <span class="vx-label">Status</span>
+                    @if (Model.IsActive)
+                    {
+                        <span class="vx-pill active">Active</span>
+                    }
+                    else
+                    {
+
+                        <span class="vx-pill inactive">Inactive</span>
+                    }
+                </div>
+                <div>
+                    <span class="vx-label">Default Variant</span>
+                    @if (Model.IsDefault)
+                    {
+                        <span class="vx-pill default">Default</span>
+                    }
+                    else
+                    {
+
+                        <span class="vx-value">No</span>
+                    }
+                </div>
+                <div><span class="vx-label">Created At</span><div class="vx-value">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</div></div>
+                <div><span class="vx-label">Updated At</span><div class="vx-value">@(Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Never")</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vx-card">
+        <div class="vx-card-header"><h2>Selected Option Values</h2></div>
+        <div class="vx-card-body">
+            @if (Model.SelectedOptions != null && Model.SelectedOptions.Any())
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var option in Model.SelectedOptions)
+                    {
+                        <span class="vx-pill default">
+                            @option.OptionName: @option.Value
+                        </span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-secondary small mb-0">No option values assigned to this variant.</p>
+            }
+        </div>
+    </section>
+
+    <div class="vx-actions">
+        <a asp-action="SetOptions" asp-route-id="@Model.Id" class="vx-btn-primary">
+            <i class="bi bi-sliders me-1"></i> Manage Options
+        </a>
+    </div>
+</div>

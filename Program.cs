@@ -16,15 +16,22 @@ using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
 using Veltrix.Repositories.ProductVariant;
+using Veltrix.Repositories.ProductVariantImage;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptions;
 using Veltrix.Repositories.VariantOptionValue;
 using Veltrix.Services.Category;
+using Veltrix.Services.FileStorage;
 using Veltrix.Services.Images;
 using Veltrix.Services.Product;
+using Veltrix.Services.ProductImage;
 using Veltrix.Services.ProductVariant;
+using Veltrix.Services.ProductVariantImage;
+using Veltrix.Services.VariantOptions;
+using Veltrix.Services.VariantOptionValues;
 using Veltrix.UnitOfWork;
 
 namespace Veltrix
@@ -37,7 +44,10 @@ namespace Veltrix
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Constr")));
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(
+            builder.Configuration.GetConnectionString("Constr"),
+            sqlOptions => sqlOptions.UseCompatibilityLevel(110)));
 
             // Repositories
             builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
@@ -60,6 +70,7 @@ namespace Veltrix
             builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
             builder.Services.AddScoped<IVariantOptionValueRepository, VariantOptionValueRepository>();
             builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+            builder.Services.AddScoped<IVariantOptionsRepository, VariantOptionsRepository>();
 
 
 
@@ -71,7 +82,13 @@ namespace Veltrix
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
             builder.Services.AddScoped<IImageStorageService, LocalImageStorageService>();
-            
+            builder.Services.AddScoped<IVariantOptionsService, VariantOptionsService>();
+            builder.Services.AddScoped<IVariantOptionValueService, VariantOptionValueService>();
+            builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+            builder.Services.AddScoped<IProductImageService, ProductImageService>();
+            builder.Services.AddScoped<IProductVariantImageRepository, ProductVariantImageRepository>();
+            builder.Services.AddScoped<IProductVariantImageService, ProductVariantImageService>();
+
 
             var app = builder.Build();
 

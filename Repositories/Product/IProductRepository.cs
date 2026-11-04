@@ -1,4 +1,5 @@
-﻿using Veltrix.Models;
+﻿using Veltrix.DTOs.Common;
+using Veltrix.Models;
 
 namespace Veltrix.Repositories.Product
 {
@@ -8,8 +9,13 @@ namespace Veltrix.Repositories.Product
         Task<Models.Product?> GetBySlugAsync(string slug);
         Task<IReadOnlyList<Models.Product>> GetAllAsync();
         Task<IReadOnlyList<Models.Product>> GetPublishedProductsAsync();
-        Task<Models.ProductVariant?> GetBySkuAsync(string sku);
         Task AddAsync(Models.Product product);
         void Update(Models.Product product);
+        Task<Models.Product?> GetPublishedForStorefrontAsync(string slug);
+        Task<PagedResultDto<Models.Product>> GetPagedAsync(int pageNumber, int pageSize,
+                string? search, string? status);
+
+
+
     }
 }

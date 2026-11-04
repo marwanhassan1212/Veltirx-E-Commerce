@@ -1,4 +1,5 @@
-﻿using Veltrix.Data;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Veltrix.Data;
 using Veltrix.Models;
 using Veltrix.Repositories.Cart;
 using Veltrix.Repositories.CartItem;
@@ -15,10 +16,12 @@ using Veltrix.Repositories.Product;
 using Veltrix.Repositories.ProductImage;
 using Veltrix.Repositories.ProductReview;
 using Veltrix.Repositories.ProductVariant;
+using Veltrix.Repositories.ProductVariantImage;
 using Veltrix.Repositories.ShippingSettings;
 using Veltrix.Repositories.StoreSettings;
 using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
+using Veltrix.Repositories.VariantOptions;
 using Veltrix.Repositories.VariantOptionValue;
 
 namespace Veltrix.UnitOfWork
@@ -62,8 +65,9 @@ namespace Veltrix.UnitOfWork
 
         public IStoreSettingsRepository StoreSettings { get; }
         public IProductVariantRepository productVariant { get; }
-
+        public IProductVariantImageRepository ProductVariantImages { get; }
         public IVariantOptionValueRepository VariantOptionValues { get; }
+        public IVariantOptionsRepository VariantOptions { get; }
 
 
         public UnitOfWork(
@@ -87,7 +91,9 @@ namespace Veltrix.UnitOfWork
             IShippingSettingsRepository shippingSettings,
             IStoreSettingsRepository storeSettings,
             IProductVariantRepository productVariant,
-            IVariantOptionValueRepository variantOptionValues)
+            IVariantOptionValueRepository variantOptionValues,
+            IVariantOptionsRepository variantOptions ,
+            IProductVariantImageRepository productVariantImages)
         {
             _db = db;
             Product = products;
@@ -97,7 +103,9 @@ namespace Veltrix.UnitOfWork
             ProductImages = productImages;
             ProductReviews = productReviews;
             this.productVariant = productVariant;
-            this.VariantOptionValues = variantOptionValues;
+            ProductVariantImages = productVariantImages;
+            VariantOptionValues = variantOptionValues;
+            VariantOptions = variantOptions;
             
             Carts = carts;
             CartItems = cartItems;
@@ -119,6 +127,12 @@ namespace Veltrix.UnitOfWork
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+
+        {
+            return await _db.Database.BeginTransactionAsync(cancellationToken);
         }
     }
 }
