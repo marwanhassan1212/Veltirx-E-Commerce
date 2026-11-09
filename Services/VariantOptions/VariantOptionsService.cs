@@ -33,7 +33,8 @@ namespace Veltrix.Services.VariantOptions
             };
         }
 
-        public async Task<IReadOnlyList<VariantOptionsDto>> GetByProductIdAsync(int productId)
+        public async Task<IReadOnlyList<VariantOptionsDto>> GetByProductIdAsync(
+            int productId)
         {
             if (productId <= 0)
                 return Array.Empty<VariantOptionsDto>();
@@ -41,11 +42,20 @@ namespace Veltrix.Services.VariantOptions
             var options = await _unitOfWork.VariantOptions
                 .GetByProductIdAsync(productId);
 
-            return options.Select(MapToDto).ToList();
+            return options
+                .OrderBy(x => x.DisplayOrder)
+                .ThenBy(x => x.Id)
+                .Select(MapToDto)
+                .ToList();
         }
 
-        public async Task<VariantOptionsDto> CreateAsync(CreateVariantOptionsDto dto)
+        public async Task<VariantOptionsDto> CreateAsync(
+            CreateVariantOptionsDto dto)
         {
+            if (dto.ProductId <= 0)
+                throw new InvalidOperationException(
+                    "Invalid product.");
+
             var product = await _unitOfWork.Product
                 .GetByIdAsync(dto.ProductId);
 
@@ -53,7 +63,7 @@ namespace Veltrix.Services.VariantOptions
                 throw new InvalidOperationException(
                     "Product does not exist.");
 
-            var name = dto.Name.Trim();
+            var name = dto.Name?.Trim();
 
             if (string.IsNullOrWhiteSpace(name))
                 throw new InvalidOperationException(
@@ -72,10 +82,14 @@ namespace Veltrix.Services.VariantOptions
                     "An option group with this name already exists.");
             }
 
+            var nextDisplayOrder = existingOptions.Any()
+                ? existingOptions.Max(x => x.DisplayOrder) + 1
+                : 1;
+
             var option = new Models.VariantOptions
             {
                 Name = name,
-                DisplayOrder = dto.DisplayOrder,
+                DisplayOrder = nextDisplayOrder,
                 ProductId = dto.ProductId
             };
 
@@ -86,7 +100,9 @@ namespace Veltrix.Services.VariantOptions
             return MapToDto(option);
         }
 
-        public async Task<VariantOptionsDto?> UpdateAsync(int id, UpdateVariantOptionsDto dto)
+        public async Task<VariantOptionsDto?> UpdateAsync(
+            int id,
+            UpdateVariantOptionsDto dto)
         {
             if (id <= 0)
                 return null;
@@ -97,7 +113,7 @@ namespace Veltrix.Services.VariantOptions
             if (option == null)
                 return null;
 
-            var name = dto.Name.Trim();
+            var name = dto.Name?.Trim();
 
             if (string.IsNullOrWhiteSpace(name))
                 throw new InvalidOperationException(
@@ -118,7 +134,8 @@ namespace Veltrix.Services.VariantOptions
             }
 
             option.Name = name;
-            option.DisplayOrder = dto.DisplayOrder;
+
+            // DisplayOrder is intentionally preserved.
 
             await _unitOfWork.SaveChangesAsync();
 

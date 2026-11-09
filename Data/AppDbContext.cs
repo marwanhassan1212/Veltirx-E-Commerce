@@ -32,6 +32,17 @@ namespace Veltrix.Data
         public DbSet<VariantOptionValue> VariantOptionValues { get; set; } = null!;
         public DbSet<ProductVariantOption> ProductVariantOptions { get; set; } = null!;
         public DbSet<ProductVariantImage> ProductVariantImages { get; set; } = null!;
+        public DbSet<OrderFulfillment> OrderFulfillments { get; set; }
+        public DbSet<FulfillmentItem> FulfillmentItems { get; set; }
+        public DbSet<Shipment> Shipments { get; set; }
+        public DbSet<ShipmentTrackingEvent> ShipmentTrackingEvents { get; set; }
+        public DbSet<OrderReturn> OrderReturns { get; set; }
+        public DbSet<OrderReturnItem> OrderReturnItems { get; set; }
+        public DbSet<Refund> Refunds { get; set; }
+        public DbSet<CodReconciliation> CodReconciliations { get; set; }
+        public DbSet<CodReconciliationItem> CodReconciliationItems { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

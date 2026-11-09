@@ -5,8 +5,9 @@
         Pending,
         Confirmed,
         Processing,
-        Shipped,
-        Delivered,
-        Cancelled
+        OnHold,
+        Completed,
+        Cancelled,
+        PartiallyCancelled
     }
 }

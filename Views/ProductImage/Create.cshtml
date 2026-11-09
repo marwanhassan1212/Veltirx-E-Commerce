@@ -5,17 +5,212 @@
     int productId = (int)ViewBag.ProductId;
 }
 
+<style>
+    .vx-page-title {
+        font-size: 25px;
+        font-weight: 750;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .vx-page-subtitle {
+        color: #64748b;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .vx-form-card {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
+        overflow: hidden;
+    }
+
+    .vx-form-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .vx-form-body {
+        padding: 24px;
+    }
+
+    .vx-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 18px;
+    }
+
+    .vx-form-label {
+        display: block;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 650;
+        margin-bottom: 8px;
+    }
+
+    .vx-form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        width: 100%;
+        color: #334155;
+        background: #fff;
+    }
+
+        .vx-form-control:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .09);
+            outline: none;
+        }
+
+    .vx-help-text {
+        display: block;
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 7px;
+    }
+
+    .vx-upload-area {
+        border: 1px dashed #cbd5e1;
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 25px;
+        text-align: center;
+    }
+
+    .vx-upload-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 12px;
+        border-radius: 14px;
+        background: #eef2ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+    }
+
+    .vx-image-preview {
+        max-height: 280px;
+        max-width: 100%;
+        object-fit: contain;
+        border-radius: 9px;
+        border: 1px solid #eef0f4;
+        padding: 6px;
+        background: #fff;
+    }
+
+    .vx-primary-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        background: #fafbfc;
+    }
+
+        .vx-primary-option .form-check-input {
+            margin-top: 3px;
+            width: 17px;
+            height: 17px;
+        }
+
+            .vx-primary-option .form-check-input:checked {
+                background-color: #4f46e5;
+                border-color: #4f46e5;
+            }
+
+        .vx-primary-option label {
+            color: #334155;
+            font-size: 12px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+    .vx-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 17px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .vx-btn-primary {
+        background: #4f46e5;
+        color: #fff;
+        border: 1px solid #4f46e5;
+    }
+
+        .vx-btn-primary:hover {
+            background: #4338ca;
+            color: #fff;
+        }
+
+    .vx-btn-outline {
+        background: #fff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+        .vx-btn-outline:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+    @@media (max-width: 576px) {
+        .vx-page-title {
+            font-size: 21px;
+        }
+
+        .vx-form-body {
+            padding: 18px;
+        }
+
+        .vx-upload-area {
+            padding: 18px;
+        }
+    }
+</style>
+
 <div class="container-fluid py-4">
 
-    <div class="mb-4">
-        <h2 class="fw-bold">Upload Product Image</h2>
-        <p class="text-muted mb-0">
-            Add a new image to Product #@productId
-        </p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="vx-page-title">Upload Product Image</h2>
+            <p class="vx-page-subtitle">
+                Add a new image to Product #@productId
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn vx-btn-outline">
+            <i class="bi bi-arrow-left"></i>
+            Back to Images
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <div class="vx-form-card">
+
+        <div class="vx-form-header">
+            <h5 class="fw-bold mb-1">New Image Information</h5>
+            <p class="text-muted small mb-0">
+                Upload and configure a product image.
+            </p>
+        </div>
+
+        <div class="vx-form-body">
 
             <form asp-action="Create"
                   asp-route-productId="@productId"
@@ -25,83 +220,110 @@
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger"></div>
+                     class="alert alert-danger small"></div>
 
                 <div class="mb-4">
-                    <label asp-for="Image" class="form-label fw-semibold">
-                        Product Image
-                    </label>
+                    <h6 class="vx-section-title">
+                        <i class="bi bi-cloud-arrow-up me-2"></i>
+                        Image Upload
+                    </h6>
 
-                    <input asp-for="Image"
-                           type="file"
-                           class="form-control"
-                           accept=".jpg,.jpeg,.png,.webp"
-                           id="imageInput" />
+                    <div class="vx-upload-area">
 
-                    <span asp-validation-for="Image"
-                          class="text-danger"></span>
+                        <div class="vx-upload-icon">
+                            <i class="bi bi-image"></i>
+                        </div>
 
-                    <small class="text-muted">
-                        Supported formats: JPG, JPEG, PNG, WEBP. Maximum size: 5 MB.
-                    </small>
+                        <h6 class="fw-bold mb-1">
+                            Choose Product Image
+                        </h6>
+
+                        <p class="text-muted small mb-3">
+                            Select an image from your device.
+                        </p>
+
+                        <input asp-for="Image"
+                               type="file"
+                               class="form-control vx-form-control text-start"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               id="imageInput" />
+
+                        <span asp-validation-for="Image"
+                              class="text-danger small d-block mt-2"></span>
+
+                        <small class="vx-help-text">
+                            JPG, JPEG, PNG, WEBP · Maximum file size: 5 MB
+                        </small>
+
+                    </div>
                 </div>
 
                 <div class="mb-4 text-center">
                     <img id="imagePreview"
                          src="#"
                          alt="Image Preview"
-                         class="img-fluid rounded shadow-sm d-none"
-                         style="max-height:300px;" />
+                         class="vx-image-preview d-none" />
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="AltText" class="form-label fw-semibold">
+                <hr class="border-light my-4" />
+
+                <div class="mb-4">
+                    <h6 class="vx-section-title">
+                        <i class="bi bi-card-text me-2"></i>
+                        Image Details
+                    </h6>
+
+                    <label asp-for="AltText" class="vx-form-label">
                         Alternative Text
                     </label>
 
                     <input asp-for="AltText"
-                           class="form-control"
+                           class="form-control vx-form-control"
                            placeholder="Describe the image..." />
 
                     <span asp-validation-for="AltText"
-                          class="text-danger"></span>
+                          class="text-danger small"></span>
+
+                    <small class="vx-help-text">
+                        Helps describe the image for accessibility and search engines.
+                    </small>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="DisplayOrder"
-                           class="form-label fw-semibold">
-                        Display Order
-                    </label>
-
-                    <input asp-for="DisplayOrder"
-                           type="number"
-                           min="0"
-                           class="form-control" />
-
-                    <span asp-validation-for="DisplayOrder"
-                          class="text-danger"></span>
+                <div class="mb-4">
+                    <small class="vx-help-text">
+                        Determines the order in which this image appears in the gallery.
+                    </small>
                 </div>
 
-                <div class="form-check mb-4">
+                <div class="vx-primary-option mb-4">
                     <input asp-for="IsPrimary"
-                           class="form-check-input" />
+                           class="form-check-input"
+                           id="isPrimary" />
 
-                    <label asp-for="IsPrimary"
-                           class="form-check-label">
-                        Set as Primary Image
-                    </label>
+                    <div>
+                        <label asp-for="IsPrimary" class="form-check-label">
+                            Set as Primary Image
+                        </label>
+
+                        <small class="vx-help-text mt-1">
+                            Use this image as the main image displayed for the product.
+                        </small>
+                    </div>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-cloud-upload"></i> Upload Image
+                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+
+                    <button type="submit" class="vx-btn vx-btn-primary">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        Upload Image
                     </button>
 
                     <a asp-action="Index"
                        asp-route-productId="@productId"
-                       class="btn btn-outline-secondary">
+                       class="vx-btn vx-btn-outline">
                         Cancel
                     </a>
+
                 </div>
 
             </form>

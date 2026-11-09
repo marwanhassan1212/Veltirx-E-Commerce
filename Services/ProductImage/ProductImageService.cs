@@ -48,6 +48,8 @@ namespace Veltrix.Services.ProductImage
             var existingImages = await _unitOfWork.ProductImages
                 .GetByProductIdAsync(productId);
 
+            var nextDisplayOrder = existingImages.Any() ? existingImages.Max(x => x.DisplayOrder) + 1 : 1;
+
             bool shouldBePrimary =
                 dto.IsPrimary || !existingImages.Any();
 
@@ -82,7 +84,7 @@ namespace Veltrix.Services.ProductImage
                         ImageUrl = imagePath,
                         AltText = dto.AltText?.Trim(),
                         IsPrimary = shouldBePrimary,
-                        DisplayOrder = dto.DisplayOrder,
+                        DisplayOrder = nextDisplayOrder,
                         CreatedAt = DateTime.UtcNow
                     };
 
@@ -264,7 +266,6 @@ namespace Veltrix.Services.ProductImage
             try
             {
                 image.AltText = dto.AltText?.Trim();
-                image.DisplayOrder = dto.DisplayOrder;
 
                 if (newImagePath != null)
                     image.ImageUrl = newImagePath;

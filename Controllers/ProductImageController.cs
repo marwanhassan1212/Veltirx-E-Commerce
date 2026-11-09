@@ -91,7 +91,6 @@ namespace Veltrix.Controllers
             var dto = new UpdateProductImageDto
             {
                 AltText = image.AltText,
-                DisplayOrder = image.DisplayOrder
             };
 
             ViewBag.ImageId = image.Id;

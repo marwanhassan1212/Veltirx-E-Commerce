@@ -431,6 +431,110 @@ namespace Veltrix.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Veltrix.Models.CodReconciliation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CollectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DifferenceAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReconciledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReconciledByUserId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ReconciliationNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ReconciledByUserId");
+
+                    b.HasIndex("ReconciliationNumber")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("CodReconciliations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CodReconciliations_Amounts", "[ExpectedAmount] >= 0 AND [CollectedAmount] >= 0");
+
+                            t.HasCheckConstraint("CK_CodReconciliations_Difference", "[DifferenceAmount] = [CollectedAmount] - [ExpectedAmount]");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.CodReconciliationItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CollectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("DifferenceAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReconciliationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ReconciliationId");
+
+                    b.ToTable("CodReconciliationItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CodReconciliationItems_Amounts", "[ExpectedAmount] >= 0 AND [CollectedAmount] >= 0");
+
+                            t.HasCheckConstraint("CK_CodReconciliationItems_Difference", "[DifferenceAmount] = [CollectedAmount] - [ExpectedAmount]");
+                        });
+                });
+
             modelBuilder.Entity("Veltrix.Models.Coupon", b =>
                 {
                     b.Property<int>("Id")
@@ -554,6 +658,36 @@ namespace Veltrix.Migrations
                     b.ToTable("CouponUsages", null, t =>
                         {
                             t.HasCheckConstraint("CK_DiscountAmount_CouponUsages", "[DiscountAmount] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.FulfillmentItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FulfillmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.HasIndex("FulfillmentId", "OrderItemId")
+                        .IsUnique();
+
+                    b.ToTable("FulfillmentItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FulfillmentItems_Quantity", "[Quantity] > 0");
                         });
                 });
 
@@ -711,6 +845,9 @@ namespace Veltrix.Migrations
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("datetime2");
 
@@ -719,6 +856,10 @@ namespace Veltrix.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("datetime2");
@@ -827,6 +968,55 @@ namespace Veltrix.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Veltrix.Models.OrderFulfillment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FulfillmentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FulfillmentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("OrderFulfillments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderFulfillments_CompletedAt", "[CompletedAt] IS NULL OR [CompletedAt] >= [CreatedAt]");
+                        });
+                });
+
             modelBuilder.Entity("Veltrix.Models.OrderItem", b =>
                 {
                     b.Property<int>("Id")
@@ -834,6 +1024,12 @@ namespace Veltrix.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CancelledQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FulfilledQuantity")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("LineTotal")
                         .HasPrecision(18, 2)
@@ -862,6 +1058,15 @@ namespace Veltrix.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("VariantName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("VariantOptionsSnapshot")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
@@ -870,11 +1075,116 @@ namespace Veltrix.Migrations
 
                     b.ToTable("OrderItems", null, t =>
                         {
+                            t.HasCheckConstraint("CK_OrderItems_CancelledQuantity", "[CancelledQuantity] >= 0");
+
+                            t.HasCheckConstraint("CK_OrderItems_FulfilledQuantity", "[FulfilledQuantity] >= 0");
+
                             t.HasCheckConstraint("CK_OrderItems_LineTotal", "[LineTotal] >= 0");
+
+                            t.HasCheckConstraint("CK_OrderItems_ProcessedQuantity", "[CancelledQuantity] + [FulfilledQuantity] <= [Quantity]");
 
                             t.HasCheckConstraint("CK_OrderItems_Quantity", "[Quantity] > 0");
 
                             t.HasCheckConstraint("CK_OrderItems_UnitPrice", "[UnitPrice] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderReturn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ReceivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReturnNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ReturnNumber")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("OrderReturns", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderReturns_ApprovedAt", "[ApprovedAt] IS NULL OR [ApprovedAt] >= [RequestedAt]");
+
+                            t.HasCheckConstraint("CK_OrderReturns_CompletedAt", "[CompletedAt] IS NULL OR [CompletedAt] >= [RequestedAt]");
+
+                            t.HasCheckConstraint("CK_OrderReturns_ReceivedAt", "[ReceivedAt] IS NULL OR [ReceivedAt] >= [RequestedAt]");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderReturnItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConditionNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("OrderItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReturnId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.HasIndex("ReturnId", "OrderItemId")
+                        .IsUnique();
+
+                    b.ToTable("OrderReturnItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderReturnItems_Quantity", "[Quantity] > 0");
                         });
                 });
 
@@ -1185,6 +1495,164 @@ namespace Veltrix.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductVariantOptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.Refund", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProcessedByUserId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RefundNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ReturnId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessedByUserId");
+
+                    b.HasIndex("RefundNumber")
+                        .IsUnique();
+
+                    b.HasIndex("ReturnId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Refunds", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Refunds_Amount", "[Amount] > 0");
+
+                            t.HasCheckConstraint("CK_Refunds_ProcessedAt", "[ProcessedAt] IS NULL OR [ProcessedAt] >= [CreatedAt]");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.Shipment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CarrierName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EstimatedDeliveryAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TrackingNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TrackingNumber")
+                        .IsUnique();
+
+                    b.ToTable("Shipments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Shipments_DeliveredAt", "[DeliveredAt] IS NULL OR [ShippedAt] IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_Shipments_ShippedAt", "[ShippedAt] IS NULL OR [ShippedAt] >= [CreatedAt]");
+                        });
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ShipmentTrackingEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId", "OccurredAt");
+
+                    b.ToTable("ShipmentTrackingEvents", (string)null);
                 });
 
             modelBuilder.Entity("Veltrix.Models.ShippingSettings", b =>
@@ -1541,6 +2009,35 @@ namespace Veltrix.Migrations
                     b.Navigation("ParentCategory");
                 });
 
+            modelBuilder.Entity("Veltrix.Models.CodReconciliation", b =>
+                {
+                    b.HasOne("Veltrix.Models.ApplicationUser", "ReconciledByUser")
+                        .WithMany()
+                        .HasForeignKey("ReconciledByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ReconciledByUser");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.CodReconciliationItem", b =>
+                {
+                    b.HasOne("Veltrix.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Models.CodReconciliation", "Reconciliation")
+                        .WithMany("Items")
+                        .HasForeignKey("ReconciliationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Reconciliation");
+                });
+
             modelBuilder.Entity("Veltrix.Models.CouponUsage", b =>
                 {
                     b.HasOne("Veltrix.Models.Coupon", "Coupon")
@@ -1566,6 +2063,25 @@ namespace Veltrix.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("UsedBy");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.FulfillmentItem", b =>
+                {
+                    b.HasOne("Veltrix.Models.OrderFulfillment", "Fulfillment")
+                        .WithMany("Items")
+                        .HasForeignKey("FulfillmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Models.OrderItem", "OrderItem")
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Fulfillment");
+
+                    b.Navigation("OrderItem");
                 });
 
             modelBuilder.Entity("Veltrix.Models.Inventory", b =>
@@ -1640,6 +2156,17 @@ namespace Veltrix.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Veltrix.Models.OrderFulfillment", b =>
+                {
+                    b.HasOne("Veltrix.Models.Order", "Order")
+                        .WithMany("Fulfillments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Veltrix.Models.OrderItem", b =>
                 {
                     b.HasOne("Veltrix.Models.Order", "Order")
@@ -1657,6 +2184,36 @@ namespace Veltrix.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderReturn", b =>
+                {
+                    b.HasOne("Veltrix.Models.Order", "Order")
+                        .WithMany("Returns")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderReturnItem", b =>
+                {
+                    b.HasOne("Veltrix.Models.OrderItem", "OrderItem")
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Models.OrderReturn", "Return")
+                        .WithMany("Items")
+                        .HasForeignKey("ReturnId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OrderItem");
+
+                    b.Navigation("Return");
                 });
 
             modelBuilder.Entity("Veltrix.Models.OrderStatusHistory", b =>
@@ -1767,6 +2324,46 @@ namespace Veltrix.Migrations
                     b.Navigation("VariantOptionValue");
                 });
 
+            modelBuilder.Entity("Veltrix.Models.Refund", b =>
+                {
+                    b.HasOne("Veltrix.Models.ApplicationUser", "ProcessedByUser")
+                        .WithMany()
+                        .HasForeignKey("ProcessedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Veltrix.Models.OrderReturn", "Return")
+                        .WithMany("Refunds")
+                        .HasForeignKey("ReturnId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProcessedByUser");
+
+                    b.Navigation("Return");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.Shipment", b =>
+                {
+                    b.HasOne("Veltrix.Models.Order", "Order")
+                        .WithOne("Shipment")
+                        .HasForeignKey("Veltrix.Models.Shipment", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.ShipmentTrackingEvent", b =>
+                {
+                    b.HasOne("Veltrix.Models.Shipment", "Shipment")
+                        .WithMany("TrackingEvents")
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Shipment");
+                });
+
             modelBuilder.Entity("Veltrix.Models.ShippingSettings", b =>
                 {
                     b.HasOne("Veltrix.Models.ApplicationUser", "UpdatedByUser")
@@ -1857,6 +2454,11 @@ namespace Veltrix.Migrations
                     b.Navigation("SubCategories");
                 });
 
+            modelBuilder.Entity("Veltrix.Models.CodReconciliation", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("Veltrix.Models.Coupon", b =>
                 {
                     b.Navigation("CouponUsages");
@@ -1873,18 +2475,36 @@ namespace Veltrix.Migrations
                 {
                     b.Navigation("CouponUsage");
 
+                    b.Navigation("Fulfillments");
+
                     b.Navigation("InventoryTransactions");
 
                     b.Navigation("Notifications");
 
                     b.Navigation("OrderItems");
 
+                    b.Navigation("Returns");
+
+                    b.Navigation("Shipment");
+
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderFulfillment", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Veltrix.Models.OrderItem", b =>
                 {
                     b.Navigation("ProductReviews");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.OrderReturn", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Refunds");
                 });
 
             modelBuilder.Entity("Veltrix.Models.Product", b =>
@@ -1909,6 +2529,11 @@ namespace Veltrix.Migrations
                     b.Navigation("OrderItems");
 
                     b.Navigation("VariantOptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Models.Shipment", b =>
+                {
+                    b.Navigation("TrackingEvents");
                 });
 
             modelBuilder.Entity("Veltrix.Models.VariantOptionValue", b =>

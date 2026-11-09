@@ -83,9 +83,9 @@ namespace Veltrix.Services.VariantOptionValues
             return MapToDto(optionValue);
         }
 
-        public async Task<VariantOptionValueDto?> UpdateAsync(
-    int id,
-    UpdateVariantOptionValueDto dto)
+        public async Task<VariantOptionValueDto?> UpdateAsync(int id, UpdateVariantOptionValueDto dto)
+
+
         {
             if (id <= 0)
                 return null;
@@ -125,24 +125,6 @@ namespace Veltrix.Services.VariantOptionValues
                 .ThenBy(x => x.Id)
                 .ToList();
 
-            int oldPosition = values.FindIndex(x => x.Id == id) + 1;
-
-            int newPosition = Math.Clamp(
-                dto.DisplayOrder,
-                1,
-                values.Count);
-
-            if (oldPosition != newPosition)
-            {
-                values.Remove(optionValue);
-
-                values.Insert(newPosition - 1, optionValue);
-
-                for (int i = 0; i < values.Count; i++)
-                {
-                    values[i].DisplayOrder = i + 1;
-                }
-            }
 
             optionValue.Value = valueText;
 

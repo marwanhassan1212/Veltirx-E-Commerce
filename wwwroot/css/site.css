@@ -28,8 +28,8 @@
     --vx-warning-soft: #FFF5DF;
     --vx-info: #3985E8;
     --vx-info-soft: #EAF3FF;
-    --vx-sidebar-width: 264px;
-    --vx-topbar-height: 76px;
+    --vx-sidebar-width: 240px;
+    --vx-topbar-height: 68px;
     --vx-radius-sm: 8px;
     --vx-radius-md: 12px;
     --vx-radius-lg: 16px;
@@ -92,7 +92,7 @@ button {
 .app-content {
     flex: 1;
     width: 100%;
-    padding: 32px;
+    padding: 24px;
 }
 
 /* 04. Sidebar */
@@ -318,7 +318,7 @@ button {
     align-items: center;
     justify-content: space-between;
     min-height: var(--vx-topbar-height);
-    padding: 0 32px;
+    padding: 0 24px;
     border-bottom: 1px solid var(--vx-border);
     background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(14px);
@@ -399,7 +399,7 @@ button {
     display: flex;
     align-items: center;
     gap: 10px;
-    width: 250px;
+    width: 220px;
     height: 39px;
     padding: 0 11px;
     border: 1px solid var(--vx-border);
@@ -495,7 +495,7 @@ button {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 19px 32px;
+    padding: 16px 24px;
     border-top: 1px solid var(--vx-border);
     background: #FFFFFF;
     color: var(--vx-text-muted);
@@ -733,15 +733,15 @@ button {
 /* 16. Responsive Layout */
 @media (max-width: 1199.98px) {
     .app-content {
-        padding: 25px;
+        padding: 22px;
     }
 
     .app-topbar {
-        padding: 0 25px;
+        padding: 0 22px;
     }
 
     .topbar-search {
-        width: 210px;
+        width: 190px;
     }
 }
 

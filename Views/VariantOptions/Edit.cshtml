@@ -70,35 +70,40 @@
 <div class="vx-form-page">
     <div class="vx-form-card">
         <h1 class="vx-form-title">Edit Option Group</h1>
-        <p class="vx-form-subtitle">Update the name and display order of this group.</p>
+
+        <p class="vx-form-subtitle">
+            Update the name of this product option group.
+        </p>
 
         <form asp-action="Edit" method="post">
             @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+            <div asp-validation-summary="All"
+                 class="text-danger small mb-3"></div>
 
             <input type="hidden" name="id" value="@optionId" />
             <input type="hidden" name="productId" value="@productId" />
 
             <div class="vx-field">
                 <label asp-for="Name">Group Name</label>
-                <input asp-for="Name" />
-                <span asp-validation-for="Name" class="text-danger small"></span>
-            </div>
 
-            <div class="vx-field">
-                <label asp-for="DisplayOrder">Display Order</label>
-                <input asp-for="DisplayOrder" type="number" min="0" />
-                <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                <input asp-for="Name" />
+
+                <span asp-validation-for="Name"
+                      class="text-danger small"></span>
             </div>
 
             <div class="vx-form-actions">
                 <button type="submit" class="vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Save Changes
+                    <i class="bi bi-check-lg me-1"></i>
+                    Save Changes
                 </button>
 
-                <a asp-action="Index" asp-route-productId="@productId"
-                   class="vx-btn-outline">Cancel</a>
+                <a asp-action="Index"
+                   asp-route-productId="@productId"
+                   class="vx-btn-outline">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>

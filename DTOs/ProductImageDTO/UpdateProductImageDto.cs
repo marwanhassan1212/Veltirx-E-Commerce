@@ -10,7 +10,5 @@ namespace Veltrix.DTOs.ProductImageDTO
         [StringLength(300)]
         public string? AltText { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int DisplayOrder { get; set; }
     }
 }

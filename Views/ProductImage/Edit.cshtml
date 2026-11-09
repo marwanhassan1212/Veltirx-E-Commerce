@@ -6,17 +6,169 @@
     string imageUrl = ViewBag.ImageUrl;
 }
 
+<style>
+    .vx-page-title {
+        font-size: 25px;
+        font-weight: 750;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .vx-page-subtitle {
+        color: #64748b;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .vx-form-card {
+        background: #fff;
+        border: 1px solid #eef0f4;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
+        overflow: hidden;
+    }
+
+    .vx-form-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .vx-form-body {
+        padding: 24px;
+    }
+
+    .vx-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 18px;
+    }
+
+    .vx-form-label {
+        display: block;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 650;
+        margin-bottom: 8px;
+    }
+
+    .vx-form-control {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        width: 100%;
+        color: #334155;
+        background: #fff;
+    }
+
+        .vx-form-control:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .09);
+            outline: none;
+        }
+
+    .vx-help-text {
+        display: block;
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 7px;
+    }
+
+    .vx-image-preview-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: 1px solid #eef0f4;
+        border-radius: 10px;
+        padding: 10px;
+        min-height: 180px;
+        max-width: 100%;
+    }
+
+        .vx-image-preview-box img {
+            display: block;
+            max-height: 250px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 7px;
+        }
+
+    .vx-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 17px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .vx-btn-primary {
+        background: #4f46e5;
+        color: #fff;
+        border: 1px solid #4f46e5;
+    }
+
+        .vx-btn-primary:hover {
+            background: #4338ca;
+            color: #fff;
+        }
+
+    .vx-btn-outline {
+        background: #fff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+        .vx-btn-outline:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+    @@media (max-width: 576px) {
+        .vx-page-title {
+            font-size: 21px;
+        }
+
+        .vx-form-body {
+            padding: 18px;
+        }
+    }
+</style>
+
 <div class="container-fluid py-4">
 
-    <div class="mb-4">
-        <h2 class="fw-bold">Edit Product Image</h2>
-        <p class="text-muted mb-0">
-            Update image information or replace the file.
-        </p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="vx-page-title">Edit Product Image</h2>
+            <p class="vx-page-subtitle">
+                Update image information or replace the existing file.
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn vx-btn-outline">
+            <i class="bi bi-arrow-left"></i>
+            Back to Images
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <div class="vx-form-card">
+
+        <div class="vx-form-header">
+            <h5 class="fw-bold mb-1">Image Information</h5>
+            <p class="text-muted small mb-0">
+                Editing image #@ViewBag.ImageId
+            </p>
+        </div>
+
+        <div class="vx-form-body">
 
             <form asp-action="Edit"
                   asp-route-id="@ViewBag.ImageId"
@@ -26,79 +178,73 @@
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger"></div>
+                     class="alert alert-danger small"></div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">
+                    <h6 class="vx-section-title">
+                        <i class="bi bi-image me-2"></i>
                         Current Image
-                    </label>
+                    </h6>
 
-                    <div>
+                    <div class="vx-image-preview-box">
                         <img src="@imageUrl"
                              id="imagePreview"
-                             alt="Current Product Image"
-                             class="img-fluid rounded shadow-sm"
-                             style="max-height:250px;" />
+                             alt="Current Product Image" />
                     </div>
                 </div>
 
+                <hr class="border-light my-4" />
+
                 <div class="mb-4">
-                    <label asp-for="Image"
-                           class="form-label fw-semibold">
-                        Replace Image (Optional)
+                    <label asp-for="Image" class="vx-form-label">
+                        Replace Image
+                        <span class="text-muted fw-normal">(Optional)</span>
                     </label>
 
                     <input asp-for="Image"
                            type="file"
-                           class="form-control"
+                           class="form-control vx-form-control"
                            accept=".jpg,.jpeg,.png,.webp"
                            id="imageInput" />
 
                     <span asp-validation-for="Image"
-                          class="text-danger"></span>
+                          class="text-danger small"></span>
 
-                    <small class="text-muted">
-                        Leave empty to keep the current image. Maximum size: 5 MB.
+                    <small class="vx-help-text">
+                        Leave empty to keep the current image. Supported formats:
+                        JPG, JPEG, PNG, WEBP. Maximum size: 5 MB.
                     </small>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="AltText"
-                           class="form-label fw-semibold">
+                <div class="mb-4">
+                    <label asp-for="AltText" class="vx-form-label">
                         Alternative Text
                     </label>
 
                     <input asp-for="AltText"
-                           class="form-control" />
+                           class="form-control vx-form-control"
+                           placeholder="Describe the image..." />
 
                     <span asp-validation-for="AltText"
-                          class="text-danger"></span>
+                          class="text-danger small"></span>
                 </div>
 
                 <div class="mb-4">
-                    <label asp-for="DisplayOrder"
-                           class="form-label fw-semibold">
-                        Display Order
-                    </label>
-
-                    <input asp-for="DisplayOrder"
-                           type="number"
-                           min="0"
-                           class="form-control" />
-
-                    <span asp-validation-for="DisplayOrder"
-                          class="text-danger"></span>
+                    <small class="vx-help-text">
+                        Determines the display sequence of this image.
+                    </small>
                 </div>
 
-                <div class="d-flex gap-2">
+                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
 
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Save Changes
+                    <button type="submit" class="vx-btn vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
                     </button>
 
                     <a asp-action="Index"
                        asp-route-productId="@productId"
-                       class="btn btn-outline-secondary">
+                       class="vx-btn vx-btn-outline">
                         Cancel
                     </a>
 

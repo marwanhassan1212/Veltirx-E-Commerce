@@ -1,11 +1,13 @@
-﻿namespace Veltrix.Models
+﻿using Veltrix.Enums;
+
+namespace Veltrix.Models
 {
     public class OrderStatusHistory
     {
         public long Id { get; set; }
 
-        public string? PreviousStatus { get; set; }
-        public string NewStatus { get; set; } = string.Empty;
+        public OrderStatus? PreviousStatus { get; set; }
+        public OrderStatus NewStatus { get; set; }
 
         public string? Note { get; set; }
         public DateTime ChangedAt { get; set; }

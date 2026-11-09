@@ -21,13 +21,16 @@ namespace Veltrix.Models
         public string ShippingGovernorate { get; set; } = string.Empty;
         public string? ShippingPostalCode { get; set; }
         public string? ShippingInstructions { get; set; }
+        public string? CustomerNotes { get; set; }
         public string? CancelReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? ShippedAt { get; set; }
         public DateTime? DeliveredAt { get; set; }
         public DateTime? ConfirmedAt { get; set; }
-        public DateTime? CancelledAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+
 
 
         public ApplicationUser User { get; set; } = null!;
@@ -36,6 +39,11 @@ namespace Veltrix.Models
         public ICollection<OrderStatusHistory> StatusHistory { get; set; } = new List<OrderStatusHistory>();
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+        public ICollection<OrderFulfillment> Fulfillments { get; set; } = new List<OrderFulfillment>();
+        public Shipment? Shipment { get; set; }
+        public ICollection<OrderReturn> Returns { get; set; } = new List<OrderReturn>();
+
         public CouponUsage? CouponUsage { get; set; }
         public Coupon? Coupon { get; set; }
         public int? CouponId { get; set; }

@@ -38,13 +38,16 @@ namespace Veltrix.Configurations
             builder.Property(x => x.ShippingGovernorate).IsRequired().HasMaxLength(100);
             builder.Property(x => x.ShippingPostalCode).HasMaxLength(20);
             builder.Property(x => x.ShippingInstructions).HasMaxLength(1000);
+            builder.Property(x => x.CustomerNotes).HasMaxLength(1000);
             builder.Property(x => x.CancelReason).HasMaxLength(1000);
             builder.Property(x => x.CreatedAt).IsRequired();
             builder.Property(x => x.UpdatedAt);
             builder.Property(x => x.ConfirmedAt);
             builder.Property(x => x.ShippedAt);
             builder.Property(x => x.DeliveredAt);
+            builder.Property(x => x.CompletedAt);
             builder.Property(x => x.CancelledAt);
+
 
 
 

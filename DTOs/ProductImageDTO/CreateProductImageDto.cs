@@ -13,7 +13,5 @@ namespace Veltrix.DTOs.ProductImageDTO
 
         public bool IsPrimary { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int DisplayOrder { get; set; }
     }
 }

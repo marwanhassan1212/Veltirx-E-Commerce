@@ -66,6 +66,9 @@ namespace Veltrix.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id, int productId)
         {
+            if (id <= 0 || productId <= 0)
+                return BadRequest();
+
             var options = await _variantOptionsService.GetByProductIdAsync(productId);
             var option = options.FirstOrDefault(x => x.Id == id);
 
@@ -75,7 +78,6 @@ namespace Veltrix.Controllers
             var dto = new UpdateVariantOptionsDto
             {
                 Name = option.Name,
-                DisplayOrder = option.DisplayOrder
             };
 
             ViewBag.ProductId = productId;
@@ -91,6 +93,9 @@ namespace Veltrix.Controllers
             int productId,
             UpdateVariantOptionsDto dto)
         {
+            if (id <= 0 || productId <= 0)
+                return BadRequest();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.ProductId = productId;
@@ -100,6 +105,15 @@ namespace Veltrix.Controllers
 
             try
             {
+                var options = await _variantOptionsService
+                    .GetByProductIdAsync(productId);
+
+                var existingOption = options.FirstOrDefault(x => x.Id == id);
+
+                if (existingOption == null)
+                    return NotFound();
+
+
                 var result = await _variantOptionsService.UpdateAsync(id, dto);
 
                 if (result == null)

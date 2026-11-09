@@ -75,7 +75,6 @@ namespace Veltrix.Controllers
             var dto = new UpdateVariantOptionValueDto
             {
                 Value = value.Value,
-                DisplayOrder = value.DisplayOrder
             };
 
             ViewBag.GroupId = groupId;
