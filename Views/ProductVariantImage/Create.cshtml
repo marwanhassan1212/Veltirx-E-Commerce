@@ -2,110 +2,283 @@
 
 @{
     ViewData["Title"] = "Upload Variant Image";
+    var variantId = (int)ViewBag.VariantId;
 }
 
-<div class="container-fluid py-4">
+<div class="vx-page">
 
-    <div class="mb-4">
-        <h2 class="fw-bold">Upload Variant Image</h2>
-        <p class="text-muted">
-            Add a new image to this product variant.
-        </p>
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Upload Variant Image</h1>
+            <p class="vx-page-subtitle">
+                Add a new image to this product variant.
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           asp-route-variantId="@variantId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Images
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <div class="vx-form-layout">
+
+        <div class="vx-content-card">
+
+            <div class="vx-section-header">
+                <div>
+                    <h2>Image Information</h2>
+                    <p>Upload and configure your variant image.</p>
+                </div>
+            </div>
 
             <form asp-action="Create"
-                  asp-route-variantId="@ViewBag.VariantId"
+                  asp-route-variantId="@variantId"
                   method="post"
                   enctype="multipart/form-data">
 
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3"></div>
+                     class="vx-validation-summary"></div>
 
-                <div class="mb-3">
-                    <label asp-for="Image"
-                           class="form-label fw-semibold">
-                        Select Image
+                <div class="vx-form-group">
+                    <label asp-for="Image" class="vx-form-label">
+                        Image <span class="vx-required">*</span>
                     </label>
 
-                    <input asp-for="Image"
-                           type="file"
-                           class="form-control"
-                           accept=".jpg,.jpeg,.png,.webp" />
+                    <div class="vx-upload-area" id="uploadArea">
+
+                        <input asp-for="Image"
+                               type="file"
+                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                               id="imageInput"
+                               class="vx-upload-input" />
+
+                        <div id="uploadPlaceholder" class="vx-upload-placeholder">
+                            <div class="vx-upload-icon">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+
+                            <h3>Choose an image or drag it here</h3>
+
+                            <p>JPG, JPEG, PNG or WEBP · Maximum 5 MB</p>
+
+                            <span class="vx-upload-browse">
+                                Browse Files
+                            </span>
+                        </div>
+
+                        <div id="imagePreviewContainer"
+                             class="vx-upload-preview"
+                             style="display:none;">
+
+                            <img id="imagePreview" src="" alt="Selected image preview" />
+
+                            <button type="button"
+                                    id="removeImage"
+                                    class="vx-remove-preview"
+                                    title="Remove selected image">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+
+                            <span id="selectedFileName"
+                                  class="vx-selected-file-name"></span>
+                        </div>
+
+                    </div>
 
                     <span asp-validation-for="Image"
-                          class="text-danger"></span>
-
-                    <div class="form-text">
-                        Supported formats: JPG, JPEG, PNG, WEBP.
-                    </div>
+                          class="vx-field-error"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="AltText"
-                           class="form-label fw-semibold">
-                        Alternative Text
+                <div class="vx-form-group">
+                    <label asp-for="AltText" class="vx-form-label">
+                        Alt Text
                     </label>
 
                     <input asp-for="AltText"
-                           class="form-control"
-                           placeholder="Example: Black iPhone back view" />
+                           class="vx-form-control"
+                           placeholder="Describe the image for accessibility..."
+                           maxlength="300" />
 
                     <span asp-validation-for="AltText"
-                          class="text-danger"></span>
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        A short description helps screen readers and image accessibility.
+                    </small>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="DisplayOrder"
-                           class="form-label fw-semibold">
-                        Display Order
-                    </label>
+                <div class="vx-form-row">
 
-                    <input asp-for="DisplayOrder"
-                           type="number"
-                           min="0"
-                           class="form-control" />
+                    <div class="vx-form-group">
+                        <label asp-for="DisplayOrder" class="vx-form-label">
+                            Display Order
+                        </label>
 
-                    <span asp-validation-for="DisplayOrder"
-                          class="text-danger"></span>
+                        <input asp-for="DisplayOrder"
+                               type="number"
+                               min="0"
+                               class="vx-form-control"
+                               placeholder="0" />
+
+                        <span asp-validation-for="DisplayOrder"
+                              class="vx-field-error"></span>
+
+                        <small class="vx-form-hint">
+                            Lower numbers appear first.
+                        </small>
+                    </div>
+
+                    <div class="vx-form-group vx-checkbox-group">
+                        <label class="vx-checkbox-card">
+                            <input asp-for="IsPrimary" type="checkbox" />
+
+                            <span class="vx-custom-checkbox"></span>
+
+                            <span class="vx-checkbox-content">
+                                <strong>Set as Primary Image</strong>
+                                <small>
+                                    Use this image as the main image for this variant.
+                                </small>
+                            </span>
+                        </label>
+                    </div>
+
                 </div>
 
-                <div class="form-check mb-4">
-                    <input asp-for="IsPrimary"
-                           class="form-check-input" />
-
-                    <label asp-for="IsPrimary"
-                           class="form-check-label">
-                        Set as primary image
-                    </label>
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Upload Image
-                    </button>
-
+                <div class="vx-form-footer">
                     <a asp-action="Index"
-                       asp-route-variantId="@ViewBag.VariantId"
-                       class="btn btn-outline-secondary">
+                       asp-route-variantId="@variantId"
+                       class="vx-btn-secondary">
                         Cancel
                     </a>
 
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-cloud-upload"></i>
+                        Upload Image
+                    </button>
                 </div>
 
             </form>
-
         </div>
-    </div>
 
+        <aside class="vx-content-card vx-form-aside">
+            <div class="vx-aside-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+
+            <h3>Image Guidelines</h3>
+
+            <ul class="vx-guidelines-list">
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Use clear, high-quality product images.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Supported formats: JPG, JPEG, PNG and WEBP.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Maximum file size: 5 MB.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Add descriptive Alt Text when possible.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Only one image should be primary per variant.
+                </li>
+            </ul>
+        </aside>
+
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const uploadPlaceholder = document.getElementById("uploadPlaceholder");
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        const imagePreview = document.getElementById("imagePreview");
+        const fileName = document.getElementById("selectedFileName");
+        const removeButton = document.getElementById("removeImage");
+        const uploadArea = document.getElementById("uploadArea");
+
+        function showPreview(file) {
+            if (!file) return;
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Please select a JPG, PNG or WEBP image.");
+                imageInput.value = "";
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image size must not exceed 5 MB.");
+                imageInput.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                imagePreview.src = event.target.result;
+                fileName.textContent = file.name;
+
+                uploadPlaceholder.style.display = "none";
+                previewContainer.style.display = "flex";
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        imageInput.addEventListener("change", function () {
+            showPreview(this.files[0]);
+        });
+
+        removeButton.addEventListener("click", function () {
+            imageInput.value = "";
+            imagePreview.src = "";
+
+            previewContainer.style.display = "none";
+            uploadPlaceholder.style.display = "flex";
+        });
+
+        ["dragenter", "dragover"].forEach(eventName => {
+            uploadArea.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadArea.classList.add("is-dragging");
+            });
+        });
+
+        ["dragleave", "drop"].forEach(eventName => {
+            uploadArea.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadArea.classList.remove("is-dragging");
+            });
+        });
+
+        uploadArea.addEventListener("drop", function (event) {
+            const files = event.dataTransfer.files;
+
+            if (files.length > 0) {
+                imageInput.files = files;
+                showPreview(files[0]);
+            }
+        });
+    </script>
 }

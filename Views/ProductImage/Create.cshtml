@@ -2,327 +2,189 @@
 
 @{
     ViewData["Title"] = "Upload Product Image";
-    int productId = (int)ViewBag.ProductId;
+    var productId = (int)ViewBag.ProductId;
 }
 
-<style>
-    .vx-page-title {
-        font-size: 25px;
-        font-weight: 750;
-        color: #1e293b;
-        margin-bottom: 5px;
-    }
+<div class="container-fluid products-page product-image-form-page">
 
-    .vx-page-subtitle {
-        color: #64748b;
-        font-size: 13px;
-        margin: 0;
-    }
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
-    .vx-form-card {
-        background: #fff;
-        border: 1px solid #eef0f4;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
-        overflow: hidden;
-    }
-
-    .vx-form-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .vx-form-body {
-        padding: 24px;
-    }
-
-    .vx-section-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #334155;
-        margin-bottom: 18px;
-    }
-
-    .vx-form-label {
-        display: block;
-        color: #334155;
-        font-size: 12px;
-        font-weight: 650;
-        margin-bottom: 8px;
-    }
-
-    .vx-form-control {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 13px;
-        width: 100%;
-        color: #334155;
-        background: #fff;
-    }
-
-        .vx-form-control:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, .09);
-            outline: none;
-        }
-
-    .vx-help-text {
-        display: block;
-        color: #94a3b8;
-        font-size: 11px;
-        margin-top: 7px;
-    }
-
-    .vx-upload-area {
-        border: 1px dashed #cbd5e1;
-        background: #f8fafc;
-        border-radius: 10px;
-        padding: 25px;
-        text-align: center;
-    }
-
-    .vx-upload-icon {
-        width: 54px;
-        height: 54px;
-        margin: 0 auto 12px;
-        border-radius: 14px;
-        background: #eef2ff;
-        color: #4f46e5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 23px;
-    }
-
-    .vx-image-preview {
-        max-height: 280px;
-        max-width: 100%;
-        object-fit: contain;
-        border-radius: 9px;
-        border: 1px solid #eef0f4;
-        padding: 6px;
-        background: #fff;
-    }
-
-    .vx-primary-option {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px;
-        border: 1px solid #e2e8f0;
-        border-radius: 9px;
-        background: #fafbfc;
-    }
-
-        .vx-primary-option .form-check-input {
-            margin-top: 3px;
-            width: 17px;
-            height: 17px;
-        }
-
-            .vx-primary-option .form-check-input:checked {
-                background-color: #4f46e5;
-                border-color: #4f46e5;
-            }
-
-        .vx-primary-option label {
-            color: #334155;
-            font-size: 12px;
-            font-weight: 650;
-            cursor: pointer;
-        }
-
-    .vx-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 9px 17px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all .2s ease;
-    }
-
-    .vx-btn-primary {
-        background: #4f46e5;
-        color: #fff;
-        border: 1px solid #4f46e5;
-    }
-
-        .vx-btn-primary:hover {
-            background: #4338ca;
-            color: #fff;
-        }
-
-    .vx-btn-outline {
-        background: #fff;
-        color: #475569;
-        border: 1px solid #e2e8f0;
-    }
-
-        .vx-btn-outline:hover {
-            background: #f8fafc;
-            color: #1e293b;
-        }
-
-    @@media (max-width: 576px) {
-        .vx-page-title {
-            font-size: 21px;
-        }
-
-        .vx-form-body {
-            padding: 18px;
-        }
-
-        .vx-upload-area {
-            padding: 18px;
-        }
-    }
-</style>
-
-<div class="container-fluid py-4">
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
-            <h2 class="vx-page-title">Upload Product Image</h2>
-            <p class="vx-page-subtitle">
-                Add a new image to Product #@productId
+            <h2 class="fw-bold mb-1">Upload Product Image</h2>
+            <p class="text-muted mb-0">
+                Add a new image to your product gallery.
             </p>
         </div>
 
         <a asp-action="Index"
            asp-route-productId="@productId"
-           class="vx-btn vx-btn-outline">
+           class="vx-btn-secondary">
             <i class="bi bi-arrow-left"></i>
-            Back to Images
+            Back to Gallery
         </a>
+
     </div>
 
-    <div class="vx-form-card">
+    <!-- Form Card -->
+    <div class="card border-0 product-image-form-card">
 
-        <div class="vx-form-header">
-            <h5 class="fw-bold mb-1">New Image Information</h5>
-            <p class="text-muted small mb-0">
-                Upload and configure a product image.
-            </p>
-        </div>
-
-        <div class="vx-form-body">
+        <div class="card-body p-4">
 
             <form asp-action="Create"
                   asp-route-productId="@productId"
                   method="post"
-                  enctype="multipart/form-data">
+                  enctype="multipart/form-data"
+                  id="createProductImageForm">
 
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger small"></div>
+                     class="alert alert-danger"
+                     role="alert"></div>
 
-                <div class="mb-4">
-                    <h6 class="vx-section-title">
-                        <i class="bi bi-cloud-arrow-up me-2"></i>
-                        Image Upload
-                    </h6>
+                <div class="row g-4">
 
-                    <div class="vx-upload-area">
+                    <!-- Image Upload -->
+                    <div class="col-lg-7">
 
-                        <div class="vx-upload-icon">
-                            <i class="bi bi-image"></i>
-                        </div>
-
-                        <h6 class="fw-bold mb-1">
-                            Choose Product Image
-                        </h6>
-
-                        <p class="text-muted small mb-3">
-                            Select an image from your device.
-                        </p>
-
-                        <input asp-for="Image"
-                               type="file"
-                               class="form-control vx-form-control text-start"
-                               accept=".jpg,.jpeg,.png,.webp"
-                               id="imageInput" />
-
-                        <span asp-validation-for="Image"
-                              class="text-danger small d-block mt-2"></span>
-
-                        <small class="vx-help-text">
-                            JPG, JPEG, PNG, WEBP · Maximum file size: 5 MB
-                        </small>
-
-                    </div>
-                </div>
-
-                <div class="mb-4 text-center">
-                    <img id="imagePreview"
-                         src="#"
-                         alt="Image Preview"
-                         class="vx-image-preview d-none" />
-                </div>
-
-                <hr class="border-light my-4" />
-
-                <div class="mb-4">
-                    <h6 class="vx-section-title">
-                        <i class="bi bi-card-text me-2"></i>
-                        Image Details
-                    </h6>
-
-                    <label asp-for="AltText" class="vx-form-label">
-                        Alternative Text
-                    </label>
-
-                    <input asp-for="AltText"
-                           class="form-control vx-form-control"
-                           placeholder="Describe the image..." />
-
-                    <span asp-validation-for="AltText"
-                          class="text-danger small"></span>
-
-                    <small class="vx-help-text">
-                        Helps describe the image for accessibility and search engines.
-                    </small>
-                </div>
-
-                <div class="mb-4">
-                    <small class="vx-help-text">
-                        Determines the order in which this image appears in the gallery.
-                    </small>
-                </div>
-
-                <div class="vx-primary-option mb-4">
-                    <input asp-for="IsPrimary"
-                           class="form-check-input"
-                           id="isPrimary" />
-
-                    <div>
-                        <label asp-for="IsPrimary" class="form-check-label">
-                            Set as Primary Image
+                        <label asp-for="Image" class="form-label fw-semibold">
+                            Product Image <span class="text-danger">*</span>
                         </label>
 
-                        <small class="vx-help-text mt-1">
-                            Use this image as the main image displayed for the product.
-                        </small>
+                        <div class="product-image-upload-area" id="uploadArea">
+
+                            <input asp-for="Image"
+                                   type="file"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                   class="form-control"
+                                   id="imageInput" />
+
+                            <div class="product-upload-placeholder" id="uploadPlaceholder">
+
+                                <i class="bi bi-cloud-arrow-up"></i>
+
+                                <h6>Choose an image to upload</h6>
+
+                                <p class="text-muted small mb-2">
+                                    JPG, JPEG, PNG or WEBP
+                                </p>
+
+                                <span class="product-upload-limit">
+                                    Maximum file size: 5 MB
+                                </span>
+
+                            </div>
+
+                            <div class="product-upload-preview d-none" id="previewContainer">
+
+                                <img id="imagePreview"
+                                     src=""
+                                     alt="Selected image preview" />
+
+                                <button type="button"
+                                        id="removeImageButton"
+                                        class="product-remove-preview"
+                                        title="Remove selected image">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+
+                                <div class="product-preview-info">
+                                    <span id="fileName"></span>
+                                    <span id="fileSize"></span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <span asp-validation-for="Image"
+                              class="text-danger small"></span>
+
+                        <div class="product-upload-error d-none"
+                             id="uploadError"
+                             role="alert"></div>
+
                     </div>
+
+                    <!-- Image Settings -->
+                    <div class="col-lg-5">
+
+                        <div class="product-image-settings">
+
+                            <h6 class="fw-semibold mb-3">
+                                <i class="bi bi-sliders me-2"></i>
+                                Image Settings
+                            </h6>
+
+                            <div class="mb-4">
+
+                                <label asp-for="AltText" class="form-label">
+                                    Alternative Text
+                                </label>
+
+                                <input asp-for="AltText"
+                                       class="form-control"
+                                       maxlength="300"
+                                       placeholder="Describe the product image..." />
+
+                                <span asp-validation-for="AltText"
+                                      class="text-danger small"></span>
+
+                                <div class="form-text">
+                                    Helps accessibility and image understanding.
+                                </div>
+
+                            </div>
+
+                            <div class="product-primary-option">
+
+                                <div>
+                                    <label asp-for="IsPrimary"
+                                           class="fw-semibold mb-1">
+                                        Primary Image
+                                    </label>
+
+                                    <p class="text-muted small mb-0">
+                                        Use this as the main product image.
+                                    </p>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsPrimary"
+                                           class="form-check-input"
+                                           role="switch" />
+                                </div>
+
+                            </div>
+
+                            <div class="product-image-hint mt-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                The first uploaded image is automatically
+                                assigned as the primary image.
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-
-                    <button type="submit" class="vx-btn vx-btn-primary">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        Upload Image
-                    </button>
+                <!-- Actions -->
+                <div class="product-image-form-actions mt-4 pt-3">
 
                     <a asp-action="Index"
                        asp-route-productId="@productId"
-                       class="vx-btn vx-btn-outline">
+                       class="vx-btn-secondary">
                         Cancel
                     </a>
+
+                    <button type="submit"
+                            class="vx-btn-primary"
+                            id="uploadSubmitButton">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        Upload Image
+                    </button>
 
                 </div>
 
@@ -334,49 +196,133 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
 
     <script>
-        const imageInput = document.getElementById("imageInput");
-        const imagePreview = document.getElementById("imagePreview");
+        document.addEventListener("DOMContentLoaded", function () {
 
-        imageInput.addEventListener("change", function () {
+            const imageInput = document.getElementById("imageInput");
+            const previewContainer = document.getElementById("previewContainer");
+            const uploadPlaceholder = document.getElementById("uploadPlaceholder");
+            const imagePreview = document.getElementById("imagePreview");
+            const removeButton = document.getElementById("removeImageButton");
+            const uploadError = document.getElementById("uploadError");
+            const fileName = document.getElementById("fileName");
+            const fileSize = document.getElementById("fileSize");
+            const form = document.getElementById("createProductImageForm");
 
-            const file = this.files[0];
+            const maxFileSize = 5 * 1024 * 1024;
+            const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
-            if (!file) {
-                imagePreview.classList.add("d-none");
-                return;
+            let previewUrl = null;
+
+            function showError(message) {
+                uploadError.textContent = message;
+                uploadError.classList.remove("d-none");
             }
 
-            const allowedTypes = [
-                "image/jpeg",
-                "image/png",
-                "image/webp"
-            ];
-
-            if (!allowedTypes.includes(file.type)) {
-                alert("Please select a valid image.");
-                this.value = "";
-                imagePreview.classList.add("d-none");
-                return;
+            function clearError() {
+                uploadError.textContent = "";
+                uploadError.classList.add("d-none");
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-                alert("Image size cannot exceed 5 MB.");
-                this.value = "";
-                imagePreview.classList.add("d-none");
-                return;
+            function removePreview() {
+
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    previewUrl = null;
+                }
+
+                imageInput.value = "";
+                imagePreview.src = "";
+
+                previewContainer.classList.add("d-none");
+                uploadPlaceholder.classList.remove("d-none");
+
+                fileName.textContent = "";
+                fileSize.textContent = "";
+
+                clearError();
             }
 
-            const reader = new FileReader();
+            imageInput.addEventListener("change", function () {
 
-            reader.onload = function (e) {
-                imagePreview.src = e.target.result;
-                imagePreview.classList.remove("d-none");
-            };
+                clearError();
 
-            reader.readAsDataURL(file);
+                const file = this.files[0];
+
+                if (!file) {
+                    removePreview();
+                    return;
+                }
+
+                const extension = file.name.substring(
+                    file.name.lastIndexOf(".")
+                ).toLowerCase();
+
+                if (!allowedExtensions.includes(extension)) {
+                    showError("Unsupported image format. Use JPG, JPEG, PNG or WEBP.");
+                    removePreview();
+                    return;
+                }
+
+                if (file.size > maxFileSize) {
+                    showError("Image size cannot exceed 5 MB.");
+                    removePreview();
+                    return;
+                }
+
+                if (file.size === 0) {
+                    showError("The selected image is empty.");
+                    removePreview();
+                    return;
+                }
+
+                previewUrl = URL.createObjectURL(file);
+
+                imagePreview.src = previewUrl;
+                fileName.textContent = file.name;
+                fileSize.textContent =
+                    (file.size / (1024 * 1024)).toFixed(2) + " MB";
+
+                uploadPlaceholder.classList.add("d-none");
+                previewContainer.classList.remove("d-none");
+
+            });
+
+            removeButton.addEventListener("click", removePreview);
+
+            form.addEventListener("submit", function (event) {
+
+                clearError();
+
+                const file = imageInput.files[0];
+
+                if (!file) {
+                    event.preventDefault();
+                    showError("Please select an image before uploading.");
+                    return;
+                }
+
+                const extension = file.name.substring(
+                    file.name.lastIndexOf(".")
+                ).toLowerCase();
+
+                if (!allowedExtensions.includes(extension) ||
+                    file.size === 0 ||
+                    file.size > maxFileSize) {
+
+                    event.preventDefault();
+                    showError("Please select a valid image not exceeding 5 MB.");
+                }
+
+            });
+
+            window.addEventListener("beforeunload", function () {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+            });
+
         });
     </script>
 }

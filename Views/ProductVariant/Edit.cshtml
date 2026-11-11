@@ -2,155 +2,146 @@
 
 @{
     ViewData["Title"] = "Edit Variant";
-    int variantId = (int)ViewBag.VariantId;
-    int productId = (int)ViewBag.ProductId;
+
+    var variantId = (int)ViewBag.VariantId;
+    var productId = (int)ViewBag.ProductId;
 }
 
-@section Styles {
-    <style>
-        .vx-page {
-            max-width: 850px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
+<div class="container-fluid products-page product-variant-form-page">
 
-        .vx-heading h1 {
-            margin: 0;
-            font-size: 25px;
-            font-weight: 750;
-        }
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-        .vx-heading p {
-            margin: 7px 0 0;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
+        <div>
+            <h2 class="fw-bold mb-1">Edit Variant</h2>
+            <p class="text-muted mb-0">
+                Update the SKU or price of this variant.
+            </p>
+        </div>
 
-        .vx-card {
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-            overflow: hidden;
-        }
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Variants
+        </a>
 
-        .vx-card-header {
-            padding: 19px 21px;
-            border-bottom: 1px solid var(--vx-border);
-        }
-
-            .vx-card-header h2 {
-                margin: 0;
-                font-size: 14px;
-                font-weight: 700;
-            }
-
-        .vx-card-body {
-            padding: 22px;
-        }
-
-        .vx-field {
-            margin-bottom: 18px;
-        }
-
-            .vx-field label {
-                display: block;
-                margin-bottom: 7px;
-                color: var(--vx-text-secondary);
-                font-size: 11px;
-                font-weight: 650;
-            }
-
-        .vx-control {
-            width: 100%;
-            min-height: 42px;
-            padding: 10px 12px;
-            border: 1px solid var(--vx-border);
-            border-radius: 9px;
-            outline: none;
-            font-size: 12px;
-        }
-
-            .vx-control:focus {
-                border-color: var(--vx-primary);
-                box-shadow: 0 0 0 3px rgba(118,87,246,.1);
-            }
-
-        .field-validation-error, .validation-summary-errors {
-            color: #D94B5B;
-            font-size: 11px;
-        }
-
-        .vx-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 9px;
-            flex-wrap: wrap;
-        }
-
-        .vx-btn-outline {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 16px;
-            border: 1px solid var(--vx-border);
-            border-radius: 9px;
-            color: var(--vx-text-secondary);
-            background: #fff;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 650;
-        }
-
-        @@media(max-width:600px) {
-            .vx-card-body {
-                padding: 16px;
-            }
-
-            .vx-actions > * {
-                flex: 1;
-                justify-content: center;
-            }
-        }
-    </style>
-}
-
-<div class="vx-page">
-    <div class="vx-heading">
-        <h1>Edit Variant</h1>
-        <p>Update SKU and pricing information.</p>
     </div>
 
-    <form asp-action="Edit" asp-route-id="@variantId" method="post">
-        @Html.AntiForgeryToken()
+    <div class="card border-0 variant-form-card">
 
-        <section class="vx-card">
-            <div class="vx-card-header"><h2>Variant Information</h2></div>
-            <div class="vx-card-body">
-                <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+        <div class="card-body p-4">
 
-                <div class="vx-field">
-                    <label asp-for="SKU">Variant SKU</label>
-                    <input asp-for="SKU" class="vx-control" />
-                    <span asp-validation-for="SKU"></span>
+            <form asp-action="Edit"
+                  asp-route-id="@variantId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"
+                     role="alert"></div>
+
+                <div class="row g-4">
+
+                    <div class="col-lg-7">
+
+                        <div class="mb-4">
+                            <label asp-for="SKU" class="form-label">
+                                SKU <span class="text-danger">*</span>
+                            </label>
+
+                            <input asp-for="SKU"
+                                   class="form-control"
+                                   maxlength="50"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="SKU"
+                                  class="text-danger small"></span>
+
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Price" class="form-label">
+                                Price <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="input-group">
+                                <input asp-for="Price"
+                                       type="number"
+                                       class="form-control"
+                                       min="0.01"
+                                       max="9999999999999999.99"
+                                       step="0.01" />
+
+                                <span class="input-group-text">EGP</span>
+                            </div>
+
+                            <span asp-validation-for="Price"
+                                  class="text-danger small"></span>
+
+                        </div>
+
+                        <div class="variant-form-info">
+                            <i class="bi bi-shield-check"></i>
+                            <div>
+                                <strong>Variant #@variantId</strong>
+                                <p class="mb-0">
+                                    Only SKU and price can be changed from this page.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-5">
+
+                        <div class="variant-form-side-panel">
+
+                            <div class="variant-form-side-icon">
+                                <i class="bi bi-pencil-square"></i>
+                            </div>
+
+                            <h6>Editing Variant</h6>
+
+                            <p>
+                                Update the variant information carefully.
+                                Its assigned options and default status will remain unchanged.
+                            </p>
+
+                            <div class="variant-form-rule">
+                                <i class="bi bi-box"></i>
+                                Product #@productId
+                            </div>
+
+                            <div class="variant-form-rule">
+                                <i class="bi bi-upc-scan"></i>
+                                Variant #@variantId
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <div class="vx-field">
-                    <label asp-for="Price">Price (EGP)</label>
-                    <input asp-for="Price" type="number" step="0.01" min="0.01" class="vx-control" />
-                    <span asp-validation-for="Price"></span>
+                <div class="variant-form-actions mt-4 pt-3">
+
+                    <a asp-action="Index"
+                       asp-route-productId="@productId"
+                       class="vx-btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
+                    </button>
+
                 </div>
 
-                <div class="vx-actions">
-                    <a asp-action="Index" asp-route-productId="@productId" class="vx-btn-outline">Cancel</a>
-                    <button type="submit" class="vx-btn-primary"><i class="bi bi-save me-1"></i> Save Changes</button>
-                </div>
-            </div>
-        </section>
-    </form>
+            </form>
+
+        </div>
+    </div>
+
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

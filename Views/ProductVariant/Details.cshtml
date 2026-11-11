@@ -4,213 +4,184 @@
     ViewData["Title"] = "Variant Details";
 }
 
-@section Styles {
-    <style>
-        .vx-page {
-            max-width: 1000px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
+<div class="container-fluid products-page product-variant-details-page">
 
-        .vx-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-            .vx-heading h1 {
-                margin: 0;
-                font-size: 25px;
-                font-weight: 750;
-            }
-
-            .vx-heading p {
-                margin: 7px 0 0;
-                color: var(--vx-text-secondary);
-                font-size: 12px;
-            }
-
-        .vx-card {
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-            overflow: hidden;
-        }
-
-        .vx-card-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid var(--vx-border);
-        }
-
-            .vx-card-header h2 {
-                margin: 0;
-                font-size: 14px;
-                font-weight: 700;
-            }
-
-        .vx-card-body {
-            padding: 22px;
-        }
-
-        .vx-grid {
-            display: grid;
-            grid-template-columns: repeat(2,minmax(0,1fr));
-            gap: 22px;
-        }
-
-        .vx-label {
-            display: block;
-            margin-bottom: 7px;
-            color: var(--vx-text-muted);
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .vx-value {
-            color: var(--vx-text);
-            font-size: 13px;
-            font-weight: 650;
-            overflow-wrap: anywhere;
-        }
-
-        .vx-pill {
-            display: inline-flex;
-            padding: 6px 10px;
-            border-radius: 7px;
-            font-size: 10px;
-            font-weight: 700;
-        }
-
-            .vx-pill.active {
-                background: #E6F7F0;
-                color: #16A779;
-            }
-
-            .vx-pill.inactive {
-                background: #FDECEF;
-                color: #E05260;
-            }
-
-            .vx-pill.default {
-                background: #F0EDFF;
-                color: #7657F6;
-            }
-
-        .vx-actions {
-            display: flex;
-            gap: 9px;
-            flex-wrap: wrap;
-        }
-
-        .vx-btn-outline {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 15px;
-            border: 1px solid var(--vx-border);
-            border-radius: 9px;
-            background: #fff;
-            color: var(--vx-text-secondary);
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 650;
-        }
-
-        @@media(max-width:600px) {
-            .vx-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .vx-card-body {
-                padding: 16px;
-            }
-        }
-    </style>
-}
-
-<div class="vx-page">
-    <div class="vx-heading">
         <div>
-            <h1>Variant Details</h1>
-            <p>Review SKU, price and availability information.</p>
+            <h2 class="fw-bold mb-1">Variant Details</h2>
+            <p class="text-muted mb-0">
+                Review variant information and selected options.
+            </p>
         </div>
-        <div class="vx-actions">
-            <a asp-action="Index" asp-route-productId="@Model.ProductId" class="vx-btn-outline">
-                <i class="bi bi-arrow-left me-1"></i> Back
+
+        <div class="d-flex gap-2">
+            <a asp-action="Index"
+               asp-route-productId="@Model.ProductId"
+               class="vx-btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back to Variants
             </a>
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="vx-btn-primary">
-                <i class="bi bi-pencil me-1"></i> Edit Variant
+
+            <a asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="vx-btn-primary">
+                <i class="bi bi-pencil"></i>
+                Edit Variant
             </a>
         </div>
+
     </div>
 
-    <section class="vx-card">
-        <div class="vx-card-header"><h2>Variant Information</h2></div>
-        <div class="vx-card-body">
-            <div class="vx-grid">
-                <div><span class="vx-label">Variant ID</span><div class="vx-value">#@Model.Id</div></div>
-                <div><span class="vx-label">Product ID</span><div class="vx-value">#@Model.ProductId</div></div>
-                <div><span class="vx-label">SKU</span><div class="vx-value">@Model.SKU</div></div>
-                <div><span class="vx-label">Price</span><div class="vx-value">@Model.Price.ToString("N2") EGP</div></div>
-                <div>
-                    <span class="vx-label">Status</span>
-                    @if (Model.IsActive)
-                    {
-                        <span class="vx-pill active">Active</span>
-                    }
-                    else
-                    {
+    <div class="row g-4">
 
-                        <span class="vx-pill inactive">Inactive</span>
-                    }
-                </div>
-                <div>
-                    <span class="vx-label">Default Variant</span>
-                    @if (Model.IsDefault)
-                    {
-                        <span class="vx-pill default">Default</span>
-                    }
-                    else
-                    {
+        <!-- Main Information -->
+        <div class="col-lg-7">
 
-                        <span class="vx-value">No</span>
-                    }
+            <div class="card border-0 variant-details-card h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+
+                        <div>
+                            <span class="text-muted small">SKU</span>
+                            <h3 class="fw-bold mt-1 mb-0">@Model.SKU</h3>
+                            <span class="text-muted small">
+                                Variant #@Model.Id
+                            </span>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2 align-items-end">
+
+                            @if (Model.IsDefault)
+                            {
+                                <span class="variant-default-badge">
+                                    <i class="bi bi-star-fill"></i> Default Variant
+                                </span>
+                            }
+
+                            @if (Model.IsActive)
+                            {
+                                <span class="variant-status active">
+                                    <span></span> Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="variant-status inactive">
+                                    <span></span> Inactive
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                    <div class="variant-detail-price">
+                        <span>Variant Price</span>
+                        <h2>@Model.Price.ToString("N2")</h2>
+                    </div>
+
+                    <div class="row g-3 mt-3">
+
+                        <div class="col-md-6">
+                            <div class="variant-detail-info">
+                                <span>Product ID</span>
+                                <strong>#@Model.ProductId</strong>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="variant-detail-info">
+                                <span>Variant ID</span>
+                                <strong>#@Model.Id</strong>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="variant-detail-info">
+                                <span>Created At</span>
+                                <strong>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") UTC</strong>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="variant-detail-info">
+                                <span>Last Updated</span>
+                                <strong>
+                                    @(Model.UpdatedAt.HasValue
+                                                                        ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") + " UTC"
+                                                                        : "Never updated")
+                                </strong>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-                <div><span class="vx-label">Created At</span><div class="vx-value">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</div></div>
-                <div><span class="vx-label">Updated At</span><div class="vx-value">@(Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Never")</div></div>
             </div>
-        </div>
-    </section>
 
-    <section class="vx-card">
-        <div class="vx-card-header"><h2>Selected Option Values</h2></div>
-        <div class="vx-card-body">
-            @if (Model.SelectedOptions != null && Model.SelectedOptions.Any())
-            {
-                <div class="d-flex flex-wrap gap-2">
-                    @foreach (var option in Model.SelectedOptions)
-                    {
-                        <span class="vx-pill default">
-                            @option.OptionName: @option.Value
-                        </span>
-                    }
+        </div>
+
+        <!-- Options -->
+        <div class="col-lg-5">
+
+            <div class="card border-0 variant-details-card h-100">
+
+                <div class="card-header bg-white border-0 p-4 pb-0">
+                    <h5 class="fw-bold mb-1">Selected Options</h5>
+                    <p class="text-muted small mb-0">
+                        Attributes assigned to this variant.
+                    </p>
                 </div>
-            }
-            else
-            {
-                <p class="text-secondary small mb-0">No option values assigned to this variant.</p>
-            }
-        </div>
-    </section>
 
-    <div class="vx-actions">
-        <a asp-action="SetOptions" asp-route-id="@Model.Id" class="vx-btn-primary">
-            <i class="bi bi-sliders me-1"></i> Manage Options
-        </a>
+                <div class="card-body p-4">
+
+                    @if (Model.SelectedOptions.Any())
+                    {
+                        <div class="variant-details-options">
+
+                            @foreach (var option in Model.SelectedOptions)
+                            {
+                                <div class="variant-details-option">
+                                    <span>@option.OptionName</span>
+                                    <strong>@option.Value</strong>
+                                </div>
+                            }
+
+                        </div>
+
+                        <a asp-action="EditOptions"
+                           asp-route-id="@Model.Id"
+                           class="vx-btn-secondary w-100 mt-4 justify-content-center">
+                            <i class="bi bi-sliders"></i>
+                            Edit Options
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="variant-no-options">
+                            <i class="bi bi-list-check"></i>
+                            <h6>No Options Assigned</h6>
+                            <p>
+                                Assign option values to describe this variant.
+                            </p>
+
+                            <a asp-action="SetOptions"
+                               asp-route-id="@Model.Id"
+                               class="vx-btn-primary">
+                                <i class="bi bi-plus-lg"></i>
+                                Assign Options
+                            </a>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
     </div>
+
 </div>

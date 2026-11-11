@@ -17,10 +17,58 @@ namespace Veltrix.Repositories.Order
             await _db.Orders.AddAsync(order);
         }
 
-        public async Task<IReadOnlyList<Models.Order>> GetAllAsync()
+        public async Task<(IReadOnlyList<Models.Order> Items, int TotalCount)>
+           GetPagedAsync(OrderFilterParameters filters)
         {
-            return await _db.Orders.AsNoTracking().OrderByDescending(x => x.CreatedAt)
+            var query = _db.Orders.AsNoTracking();
+
+            // Filtering
+
+            if (!string.IsNullOrWhiteSpace(filters.OrderNumber))
+            {
+                query = query.Where(x =>
+                    x.OrderNumber.Contains(filters.OrderNumber));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.UserId))
+            {
+                query = query.Where(x =>
+                    x.UserId == filters.UserId);
+            }
+
+            if (filters.OrderStatus.HasValue)
+            {
+                query = query.Where(x =>
+                    x.OrderStatus == filters.OrderStatus.Value);
+            }
+
+            if (filters.FromDate.HasValue)
+            {
+                query = query.Where(x =>
+                    x.CreatedAt >= filters.FromDate.Value.Date);
+            }
+
+            if (filters.ToDate.HasValue)
+            {
+                var toDate = filters.ToDate.Value.Date.AddDays(1);
+
+                query = query.Where(x =>
+                    x.CreatedAt < toDate);
+            }
+
+           
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task<Models.Order?> GetByIdAsync(int id)

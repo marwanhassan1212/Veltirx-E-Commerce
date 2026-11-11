@@ -2,251 +2,168 @@
 
 @{
     ViewData["Title"] = "Edit Product Image";
-    int productId = (int)ViewBag.ProductId;
-    string imageUrl = ViewBag.ImageUrl;
+
+    var productId = (int)ViewBag.ProductId;
+    var imageId = (int)ViewBag.ImageId;
+    var imageUrl = (string)ViewBag.ImageUrl;
 }
 
-<style>
-    .vx-page-title {
-        font-size: 25px;
-        font-weight: 750;
-        color: #1e293b;
-        margin-bottom: 5px;
-    }
+<div class="container-fluid products-page product-image-form-page">
 
-    .vx-page-subtitle {
-        color: #64748b;
-        font-size: 13px;
-        margin: 0;
-    }
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
-    .vx-form-card {
-        background: #fff;
-        border: 1px solid #eef0f4;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
-        overflow: hidden;
-    }
-
-    .vx-form-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .vx-form-body {
-        padding: 24px;
-    }
-
-    .vx-section-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: #334155;
-        margin-bottom: 18px;
-    }
-
-    .vx-form-label {
-        display: block;
-        color: #334155;
-        font-size: 12px;
-        font-weight: 650;
-        margin-bottom: 8px;
-    }
-
-    .vx-form-control {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 13px;
-        width: 100%;
-        color: #334155;
-        background: #fff;
-    }
-
-        .vx-form-control:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, .09);
-            outline: none;
-        }
-
-    .vx-help-text {
-        display: block;
-        color: #94a3b8;
-        font-size: 11px;
-        margin-top: 7px;
-    }
-
-    .vx-image-preview-box {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #f8fafc;
-        border: 1px solid #eef0f4;
-        border-radius: 10px;
-        padding: 10px;
-        min-height: 180px;
-        max-width: 100%;
-    }
-
-        .vx-image-preview-box img {
-            display: block;
-            max-height: 250px;
-            max-width: 100%;
-            object-fit: contain;
-            border-radius: 7px;
-        }
-
-    .vx-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 9px 17px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all .2s ease;
-    }
-
-    .vx-btn-primary {
-        background: #4f46e5;
-        color: #fff;
-        border: 1px solid #4f46e5;
-    }
-
-        .vx-btn-primary:hover {
-            background: #4338ca;
-            color: #fff;
-        }
-
-    .vx-btn-outline {
-        background: #fff;
-        color: #475569;
-        border: 1px solid #e2e8f0;
-    }
-
-        .vx-btn-outline:hover {
-            background: #f8fafc;
-            color: #1e293b;
-        }
-
-    @@media (max-width: 576px) {
-        .vx-page-title {
-            font-size: 21px;
-        }
-
-        .vx-form-body {
-            padding: 18px;
-        }
-    }
-</style>
-
-<div class="container-fluid py-4">
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
-            <h2 class="vx-page-title">Edit Product Image</h2>
-            <p class="vx-page-subtitle">
-                Update image information or replace the existing file.
+            <h2 class="fw-bold mb-1">Edit Product Image</h2>
+            <p class="text-muted mb-0">
+                Update the image or its alternative text.
             </p>
         </div>
 
         <a asp-action="Index"
            asp-route-productId="@productId"
-           class="vx-btn vx-btn-outline">
+           class="vx-btn-secondary">
             <i class="bi bi-arrow-left"></i>
-            Back to Images
+            Back to Gallery
         </a>
+
     </div>
 
-    <div class="vx-form-card">
+    <!-- Form Card -->
+    <div class="card border-0 product-image-form-card">
 
-        <div class="vx-form-header">
-            <h5 class="fw-bold mb-1">Image Information</h5>
-            <p class="text-muted small mb-0">
-                Editing image #@ViewBag.ImageId
-            </p>
-        </div>
-
-        <div class="vx-form-body">
+        <div class="card-body p-4">
 
             <form asp-action="Edit"
-                  asp-route-id="@ViewBag.ImageId"
+                  asp-route-id="@imageId"
                   method="post"
-                  enctype="multipart/form-data">
+                  enctype="multipart/form-data"
+                  id="editProductImageForm">
 
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="alert alert-danger small"></div>
+                     class="alert alert-danger"
+                     role="alert"></div>
 
-                <div class="mb-4">
-                    <h6 class="vx-section-title">
-                        <i class="bi bi-image me-2"></i>
-                        Current Image
-                    </h6>
+                <div class="row g-4">
 
-                    <div class="vx-image-preview-box">
-                        <img src="@imageUrl"
-                             id="imagePreview"
-                             alt="Current Product Image" />
+                    <!-- Current / New Image -->
+                    <div class="col-lg-7">
+
+                        <label class="form-label fw-semibold">
+                            Image Preview
+                        </label>
+
+                        <div class="product-image-upload-area">
+
+                            <div class="product-upload-preview" id="previewContainer">
+
+                                <img id="imagePreview"
+                                     src="@imageUrl"
+                                     alt="Current product image" />
+
+                                <div class="product-preview-info">
+                                    <span id="previewStatus">
+                                        Current image
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mt-3">
+
+                            <label asp-for="Image" class="form-label">
+                                Replace Image <span class="text-muted">(Optional)</span>
+                            </label>
+
+                            <input asp-for="Image"
+                                   type="file"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                   class="form-control"
+                                   id="imageInput" />
+
+                            <span asp-validation-for="Image"
+                                  class="text-danger small"></span>
+
+                            <div class="form-text">
+                                Leave empty to keep the current image.
+                                JPG, JPEG, PNG or WEBP. Maximum 5 MB.
+                            </div>
+
+                            <div class="product-upload-error d-none mt-2"
+                                 id="uploadError"
+                                 role="alert"></div>
+
+                            <button type="button"
+                                    id="restoreImageButton"
+                                    class="product-restore-image d-none mt-2">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Keep Current Image
+                            </button>
+
+                        </div>
+
                     </div>
+
+                    <!-- Settings -->
+                    <div class="col-lg-5">
+
+                        <div class="product-image-settings">
+
+                            <h6 class="fw-semibold mb-3">
+                                <i class="bi bi-sliders me-2"></i>
+                                Image Settings
+                            </h6>
+
+                            <div class="mb-4">
+
+                                <label asp-for="AltText" class="form-label">
+                                    Alternative Text
+                                </label>
+
+                                <input asp-for="AltText"
+                                       class="form-control"
+                                       maxlength="300"
+                                       placeholder="Describe the product image..." />
+
+                                <span asp-validation-for="AltText"
+                                      class="text-danger small"></span>
+
+                                <div class="form-text">
+                                    Describe the image for accessibility.
+                                </div>
+
+                            </div>
+
+                            <div class="product-image-hint">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Replacing the image will not change its primary status.
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <hr class="border-light my-4" />
-
-                <div class="mb-4">
-                    <label asp-for="Image" class="vx-form-label">
-                        Replace Image
-                        <span class="text-muted fw-normal">(Optional)</span>
-                    </label>
-
-                    <input asp-for="Image"
-                           type="file"
-                           class="form-control vx-form-control"
-                           accept=".jpg,.jpeg,.png,.webp"
-                           id="imageInput" />
-
-                    <span asp-validation-for="Image"
-                          class="text-danger small"></span>
-
-                    <small class="vx-help-text">
-                        Leave empty to keep the current image. Supported formats:
-                        JPG, JPEG, PNG, WEBP. Maximum size: 5 MB.
-                    </small>
-                </div>
-
-                <div class="mb-4">
-                    <label asp-for="AltText" class="vx-form-label">
-                        Alternative Text
-                    </label>
-
-                    <input asp-for="AltText"
-                           class="form-control vx-form-control"
-                           placeholder="Describe the image..." />
-
-                    <span asp-validation-for="AltText"
-                          class="text-danger small"></span>
-                </div>
-
-                <div class="mb-4">
-                    <small class="vx-help-text">
-                        Determines the display sequence of this image.
-                    </small>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-
-                    <button type="submit" class="vx-btn vx-btn-primary">
-                        <i class="bi bi-check-lg"></i>
-                        Save Changes
-                    </button>
+                <!-- Actions -->
+                <div class="product-image-form-actions mt-4 pt-3">
 
                     <a asp-action="Index"
                        asp-route-productId="@productId"
-                       class="vx-btn vx-btn-outline">
+                       class="vx-btn-secondary">
                         Cancel
                     </a>
+
+                    <button type="submit"
+                            class="vx-btn-primary"
+                            id="saveImageButton">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
+                    </button>
 
                 </div>
 
@@ -258,44 +175,127 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
 
     <script>
-        const imageInput = document.getElementById("imageInput");
-        const imagePreview = document.getElementById("imagePreview");
+        document.addEventListener("DOMContentLoaded", function () {
 
-        imageInput.addEventListener("change", function () {
+            const imageInput = document.getElementById("imageInput");
+            const imagePreview = document.getElementById("imagePreview");
+            const previewStatus = document.getElementById("previewStatus");
+            const uploadError = document.getElementById("uploadError");
+            const restoreButton = document.getElementById("restoreImageButton");
+            const form = document.getElementById("editProductImageForm");
 
-            const file = this.files[0];
+            const currentImageUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(imageUrl));
 
-            if (!file)
-                return;
+            const maxFileSize = 5 * 1024 * 1024;
+            const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
-            const allowedTypes = [
-                "image/jpeg",
-                "image/png",
-                "image/webp"
-            ];
+            let previewUrl = null;
 
-            if (!allowedTypes.includes(file.type)) {
-                alert("Please select a valid image.");
-                this.value = "";
-                return;
+            function showError(message) {
+                uploadError.textContent = message;
+                uploadError.classList.remove("d-none");
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-                alert("Image size cannot exceed 5 MB.");
-                this.value = "";
-                return;
+            function clearError() {
+                uploadError.textContent = "";
+                uploadError.classList.add("d-none");
             }
 
-            const reader = new FileReader();
+            function restoreCurrentImage() {
 
-            reader.onload = function (e) {
-                imagePreview.src = e.target.result;
-            };
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    previewUrl = null;
+                }
 
-            reader.readAsDataURL(file);
+                imageInput.value = "";
+                imagePreview.src = currentImageUrl;
+
+                previewStatus.textContent = "Current image";
+                restoreButton.classList.add("d-none");
+
+                clearError();
+            }
+
+            imageInput.addEventListener("change", function () {
+
+                clearError();
+
+                const file = this.files[0];
+
+                if (!file) {
+                    restoreCurrentImage();
+                    return;
+                }
+
+                const extension = file.name.substring(
+                    file.name.lastIndexOf(".")
+                ).toLowerCase();
+
+                if (!allowedExtensions.includes(extension)) {
+                    showError("Unsupported image format. Use JPG, JPEG, PNG or WEBP.");
+                    restoreCurrentImage();
+                    return;
+                }
+
+                if (file.size > maxFileSize) {
+                    showError("Image size cannot exceed 5 MB.");
+                    restoreCurrentImage();
+                    return;
+                }
+
+                if (file.size === 0) {
+                    showError("The selected image is empty.");
+                    restoreCurrentImage();
+                    return;
+                }
+
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+
+                previewUrl = URL.createObjectURL(file);
+
+                imagePreview.src = previewUrl;
+                previewStatus.textContent = "New image preview";
+
+                restoreButton.classList.remove("d-none");
+
+            });
+
+            restoreButton.addEventListener("click", restoreCurrentImage);
+
+            form.addEventListener("submit", function (event) {
+
+                clearError();
+
+                const file = imageInput.files[0];
+
+                // Replacing the image is optional.
+                if (!file) return;
+
+                const extension = file.name.substring(
+                    file.name.lastIndexOf(".")
+                ).toLowerCase();
+
+                if (!allowedExtensions.includes(extension) ||
+                    file.size === 0 ||
+                    file.size > maxFileSize) {
+
+                    event.preventDefault();
+                    showError("Please select a valid image not exceeding 5 MB.");
+                }
+
+            });
+
+            window.addEventListener("beforeunload", function () {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+            });
+
         });
     </script>
 }

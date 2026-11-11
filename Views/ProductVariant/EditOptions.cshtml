@@ -1,214 +1,242 @@
 ﻿@model Veltrix.DTOs.ProductVariantDTO.SetVariantOptionsDto
+
 @using Veltrix.Models
 
 @{
     ViewData["Title"] = "Edit Variant Options";
-    int variantId = (int)ViewBag.VariantId;
-    int productId = (int)ViewBag.ProductId;
 
-    var optionGroups = ViewBag.OptionGroups as IReadOnlyList<VariantOptions>
-                       ?? Array.Empty<VariantOptions>();
+    var variantId = (int)ViewBag.VariantId;
+    var productId = (int)ViewBag.ProductId;
 
-    var selectedIds = Model.VariantOptionValueIds ?? new List<int>();
+    var optionGroups =
+        ViewBag.OptionGroups as IReadOnlyList<VariantOptions>
+        ?? Array.Empty<VariantOptions>();
+
+    var selectedIds = Model.VariantOptionValueIds?.ToHashSet()
+        ?? new HashSet<int>();
 }
 
-@section Styles {
-    <style>
-        .vx-page {
-            max-width: 950px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
+<div class="container-fluid products-page variant-options-page">
 
-        .vx-heading h1 {
-            margin: 0;
-            font-size: 25px;
-            font-weight: 750;
-        }
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-        .vx-heading p {
-            margin: 7px 0 0;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
+        <div>
+            <h2 class="fw-bold mb-1">Edit Variant Options</h2>
+            <p class="text-muted mb-0">
+                Update the selected values for this variant.
+            </p>
+        </div>
 
-        .vx-card {
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-            overflow: hidden;
-        }
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Variants
+        </a>
 
-        .vx-card-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid var(--vx-border);
-        }
-
-            .vx-card-header h2 {
-                margin: 0;
-                font-size: 14px;
-                font-weight: 700;
-            }
-
-        .vx-card-body {
-            padding: 20px;
-        }
-
-        .vx-group {
-            margin-bottom: 17px;
-            border: 1px solid var(--vx-border);
-            border-radius: 11px;
-            overflow: hidden;
-        }
-
-            .vx-group:last-child {
-                margin-bottom: 0;
-            }
-
-        .vx-group-title {
-            padding: 13px 15px;
-            background: #FAFAFC;
-            border-bottom: 1px solid var(--vx-border);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .vx-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
-            gap: 10px;
-            padding: 15px;
-        }
-
-        .vx-option {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            min-height: 40px;
-            padding: 9px 11px;
-            border: 1px solid var(--vx-border);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 11px;
-            color: var(--vx-text-secondary);
-        }
-
-            .vx-option:has(input:checked) {
-                border-color: #BFB2FF;
-                background: #F5F2FF;
-                color: var(--vx-primary);
-            }
-
-            .vx-option input {
-                accent-color: var(--vx-primary);
-            }
-
-        .vx-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 9px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .vx-btn-outline {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 16px;
-            border: 1px solid var(--vx-border);
-            border-radius: 9px;
-            color: var(--vx-text-secondary);
-            background: #fff;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 650;
-        }
-
-        .field-validation-error, .validation-summary-errors {
-            color: #D94B5B;
-            font-size: 11px;
-        }
-
-        .vx-empty {
-            padding: 35px 15px;
-            text-align: center;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
-
-        @@media(max-width:600px) {
-            .vx-card-body {
-                padding: 14px;
-            }
-
-            .vx-actions > * {
-                flex: 1;
-                justify-content: center;
-            }
-        }
-    </style>
-}
-
-<div class="vx-page">
-    <div class="vx-heading">
-        <h1>Edit Variant Options</h1>
-        <p>Update the selected values for variant #@variantId.</p>
     </div>
 
-    <form asp-action="EditOptions" asp-route-id="@variantId" method="post">
-        @Html.AntiForgeryToken()
+    <div class="card border-0 variant-options-card">
 
-        <section class="vx-card">
-            <div class="vx-card-header">
-                <h2>Configure Option Values</h2>
-            </div>
+        <div class="card-body p-4">
 
-            <div class="vx-card-body">
-                <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+            <form asp-action="EditOptions"
+                  asp-route-id="@variantId"
+                  method="post"
+                  id="editVariantOptionsForm">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"
+                     role="alert"></div>
+
+                <div class="variant-options-intro mb-4">
+                    <div class="variant-options-intro-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+
+                    <div>
+                        <h6>Variant #@variantId</h6>
+                        <p class="mb-0">
+                            Product #@productId — Update one value
+                            in every option group.
+                        </p>
+                    </div>
+                </div>
 
                 @if (optionGroups.Any())
                 {
-                    @foreach (var group in optionGroups)
-                    {
-                        <div class="vx-group">
-                            <div class="vx-group-title">@group.Name</div>
-                            <div class="vx-options">
-                                @foreach (var value in group.Values.OrderBy(x => x.DisplayOrder))
-                                {
-                                    <label class="vx-option">
-                                        <input type="checkbox"
-                                               name="VariantOptionValueIds"
-                                               value="@value.Id"
-                                               checked="@(selectedIds.Contains(value.Id))" />
-                                        <span>@value.Value</span>
-                                    </label>
-                                }
-                            </div>
-                        </div>
-                    }
+                    <div class="row g-4">
 
-                    <div class="vx-actions">
-                        <a asp-action="Index" asp-route-productId="@productId" class="vx-btn-outline">Cancel</a>
-                        <button type="submit" class="vx-btn-primary">
-                            <i class="bi bi-save me-1"></i> Save Options
-                        </button>
+                        @foreach (var group in optionGroups.OrderBy(x => x.DisplayOrder))
+                        {
+                            <div class="col-lg-6">
+
+                                <div class="variant-option-group-card"
+                                     data-option-group="@group.Id">
+
+                                    <div class="variant-option-group-header">
+                                        <div>
+                                            <h6>@group.Name</h6>
+                                            <span>Select one value</span>
+                                        </div>
+
+                                        <span class="variant-option-required">
+                                            Required
+                                        </span>
+                                    </div>
+
+                                    <div class="variant-option-values">
+
+                                        @foreach (var value in group.Values.OrderBy(x => x.DisplayOrder))
+                                        {
+                                            <label class="variant-option-choice">
+
+                                                <input type="checkbox"
+                                                       name="VariantOptionValueIds"
+                                                       value="@value.Id"
+                                                       data-group="@group.Id"
+                                                       checked="@selectedIds.Contains(value.Id)" />
+
+                                                <span class="variant-option-choice-content">
+                                                    @value.Value
+                                                </span>
+
+                                                <i class="bi bi-check-circle-fill"></i>
+
+                                            </label>
+                                        }
+
+                                    </div>
+
+                                    <div class="variant-option-group-error">
+                                        Choose exactly one value from this group.
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="variant-options-footer mt-4">
+
+                        <div class="variant-options-help">
+                            <i class="bi bi-info-circle"></i>
+                            Exactly one value is required from every group.
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+
+                            <a asp-action="Index"
+                               asp-route-productId="@productId"
+                               class="vx-btn-secondary">
+                                Cancel
+                            </a>
+
+                            <button type="submit" class="vx-btn-primary">
+                                <i class="bi bi-check-lg"></i>
+                                Save Options
+                            </button>
+
+                        </div>
+
                     </div>
                 }
                 else
                 {
-                    <div class="vx-empty">
-                        <i class="bi bi-sliders fs-2 d-block mb-2"></i>
-                        <strong>No option groups available</strong>
-                        <p class="mt-2 mb-0">There are no option groups configured for this product.</p>
-                    </div>
-                    <div class="vx-actions">
-                        <a asp-action="Index" asp-route-productId="@productId" class="vx-btn-outline">Back to Variants</a>
+                    <div class="variant-empty-state">
+                        <div class="variant-empty-icon">
+                            <i class="bi bi-sliders"></i>
+                        </div>
+
+                        <h5>No Option Groups Available</h5>
+
+                        <p>
+                            This product currently has no option groups.
+                        </p>
                     </div>
                 }
-            </div>
-        </section>
-    </form>
+
+            </form>
+
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const form = document.getElementById("editVariantOptionsForm");
+
+            if (!form) return;
+
+            const groups = form.querySelectorAll("[data-option-group]");
+
+            groups.forEach(group => {
+
+                const checkboxes = group.querySelectorAll(
+                    'input[type="checkbox"]'
+                );
+
+                checkboxes.forEach(checkbox => {
+
+                    checkbox.addEventListener("change", function () {
+
+                        // Allow only one selected value per group.
+                        if (this.checked) {
+                            checkboxes.forEach(other => {
+                                if (other !== this) {
+                                    other.checked = false;
+                                }
+                            });
+                        }
+
+                        group.classList.remove("has-error");
+
+                    });
+
+                });
+
+            });
+
+            form.addEventListener("submit", function (event) {
+
+                let valid = true;
+
+                groups.forEach(group => {
+
+                    const selected = group.querySelectorAll(
+                        'input[type="checkbox"]:checked'
+                    );
+
+                    if (selected.length !== 1) {
+                        group.classList.add("has-error");
+                        valid = false;
+                    } else {
+                        group.classList.remove("has-error");
+                    }
+
+                });
+
+                if (!valid) {
+                    event.preventDefault();
+
+                    const firstInvalid = form.querySelector(".has-error");
+
+                    firstInvalid?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+
+            });
+
+        });
+    </script>
+}

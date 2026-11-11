@@ -2,155 +2,186 @@
 
 @{
     ViewData["Title"] = "Variant Images";
+    var variantId = (int)ViewBag.VariantId;
 }
 
-<div class="container-fluid py-4">
+<div class="vx-page">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="vx-page-header">
         <div>
-            <h2 class="fw-bold mb-1">Variant Images</h2>
-            <p class="text-muted mb-0">
-                Manage images for this product variant.
+            <h1 class="vx-page-title">Variant Images</h1>
+            <p class="vx-page-subtitle">
+                Manage images assigned to this product variant.
             </p>
         </div>
 
-        <a asp-action="Create"
-           asp-route-variantId="@ViewBag.VariantId"
-           class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>
-            Upload Image
-        </a>
+        <div class="vx-page-actions">
+            <a asp-controller="ProductVariant"
+               asp-action="Index"
+               asp-route-productId="0"
+               class="vx-btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+            <a asp-action="Create"
+               asp-route-variantId="@variantId"
+               class="vx-btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Upload Image
+            </a>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">
-            @TempData["Success"]
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="alert"></button>
+        <div class="vx-alert vx-alert-success">
+            <i class="bi bi-check-circle"></i>
+            <span>@TempData["Success"]</span>
         </div>
     }
 
-    @if (Model == null || !Model.Any())
+    @if (TempData["Error"] != null)
     {
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-images display-4 text-muted"></i>
+        <div class="vx-alert vx-alert-danger">
+            <i class="bi bi-exclamation-circle"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
 
-                <h5 class="mt-3">No images found</h5>
+    <div class="vx-content-card">
 
-                <p class="text-muted">
-                    Upload images for this variant to get started.
+        <div class="vx-section-header">
+            <div>
+                <h2>Uploaded Images</h2>
+                <p>
+                    @Model.Count image(s) assigned to this variant.
                 </p>
-
-                <a asp-action="Create"
-                   asp-route-variantId="@ViewBag.VariantId"
-                   class="btn btn-primary">
-                    Upload First Image
-                </a>
             </div>
+
+            <span class="vx-count-badge">@Model.Count</span>
         </div>
-    }
-    else
-    {
-        <div class="row g-4">
 
-            @foreach (var image in Model)
-            {
-                <div class="col-md-6 col-lg-4 col-xl-3">
+        @if (Model.Any())
+        {
+            <div class="vx-variant-images-grid">
 
-                    <div class="card border-0 shadow-sm h-100">
+                @foreach (var image in Model.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Id))
+                {
+                    <div class="vx-variant-image-card">
 
-                        <div class="position-relative">
-
+                        <div class="vx-variant-image-preview">
                             <img src="@image.ImageUrl"
-                                 alt="@image.AltText"
-                                 class="card-img-top"
-                                 style="height:220px; object-fit:cover;" />
+                                 alt="@(image.AltText ?? "Variant image")"
+                                 loading="lazy" />
 
                             @if (image.IsPrimary)
                             {
-                                <span class="badge bg-success position-absolute top-0 start-0 m-2">
+                                <span class="vx-primary-badge">
+                                    <i class="bi bi-star-fill"></i>
                                     Primary
                                 </span>
                             }
-
                     </div>
 
-                    <div class="card-body">
+                    <div class="vx-variant-image-info">
 
-                        <h6 class="fw-semibold">
+                        <div class="vx-image-meta">
+                            <span class="vx-image-order">
+                                Order: @image.DisplayOrder
+                            </span>
+
+                            <span class="vx-image-id">
+                                #@image.Id
+                            </span>
+                        </div>
+
+                        <p class="vx-image-alt-text"
+                           title="@(image.AltText ?? "No alt text")">
                             @(string.IsNullOrWhiteSpace(image.AltText)
                                                     ? "No alt text"
                                                     : image.AltText)
-                    </h6>
+                    </p>
 
-                            <p class="text-muted small mb-2">
-                                Display Order: @image.DisplayOrder
-                            </p>
-
-                            <p class="text-muted small mb-3">
-                                Added: @image.CreatedAt.ToString("dd MMM yyyy")
-                            </p>
-
-                            <div class="d-flex flex-wrap gap-2">
+                            <div class="vx-image-actions">
 
                                 <a asp-action="Edit"
                                    asp-route-id="@image.Id"
-                                   class="btn btn-sm btn-outline-primary">
-                                    Edit
+                                   class="vx-icon-action"
+                                   title="Edit image">
+                                    <i class="bi bi-pencil"></i>
                                 </a>
 
                         @if (!image.IsPrimary)
                                 {
                                     <form asp-action="SetPrimary"
-                                          method="post">
+                                          asp-route-id="@image.Id"
+                                          method="post"
+                                          class="vx-inline-form"
+                                          onsubmit="return confirm('Make this the primary image?');">
+
                                         @Html.AntiForgeryToken()
 
-                                        <input type="hidden"
-                                               name="id"
-                                               value="@image.Id" />
-
                                         <button type="submit"
-                                                class="btn btn-sm btn-outline-success">
-                                            Set Primary
+                                                class="vx-icon-action vx-primary-action"
+                                                title="Make primary">
+                                            <i class="bi bi-star"></i>
                                         </button>
                                     </form>
                                 }
+                                else
+                                {
+                                    <button type="button"
+                                            class="vx-icon-action vx-primary-action is-active"
+                                            title="Current primary image"
+                                            disabled>
+                                        <i class="bi bi-star-fill"></i>
+                                    </button>
+                                }
 
                                 <form asp-action="Delete"
+                                      asp-route-id="@image.Id"
                                       method="post"
+                                      class="vx-inline-form"
                                       onsubmit="return confirm('Are you sure you want to delete this image?');">
+
                                     @Html.AntiForgeryToken()
 
-                                    <input type="hidden"
-                                           name="id"
-                                           value="@image.Id" />
-
                                     <button type="submit"
-                                            class="btn btn-sm btn-outline-danger">
-                                        Delete
+                                            class="vx-icon-action vx-delete-action"
+                                            title="Delete image">
+                                        <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
 
                             </div>
-
                         </div>
                     </div>
+                }
 
+            </div>
+        }
+        else
+        {
+            <div class="vx-empty-state">
+                <div class="vx-empty-icon">
+                    <i class="bi bi-images"></i>
                 </div>
-            }
 
-        </div>
-    }
+                <h3>No images uploaded yet</h3>
 
-    <div class="mt-4">
-        <a asp-controller="ProductVariant"
-           asp-action="Edit"
-           asp-route-id="@ViewBag.VariantId"
-           class="btn btn-outline-secondary">
-            Back to Variant
-        </a>
+                <p>
+                    Upload images to showcase this product variant.
+                </p>
+
+                <a asp-action="Create"
+                   asp-route-variantId="@variantId"
+                   class="vx-btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Upload First Image
+                </a>
+            </div>
+        }
+
     </div>
-
 </div>

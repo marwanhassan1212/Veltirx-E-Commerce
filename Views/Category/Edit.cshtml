@@ -2,267 +2,68 @@
 
 @{
     ViewData["Title"] = "Edit Category";
+    Layout = "_Layout";
+
+    var categoryId = (int)ViewBag.CategoryId;
     var currentImageUrl = ViewBag.CurrentImageUrl as string;
 }
 
-@section Styles {
-    <style>
-        .category-form {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+<div class="category-page">
 
-        .category-form-card {
-            background: var(--vx-surface, #fff);
-            border: 1px solid var(--vx-border);
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: var(--vx-shadow-sm);
-        }
-
-        .form-section-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .form-control {
-            min-height: 44px;
-            border-color: var(--vx-border);
-            border-radius: 9px;
-        }
-
-        textarea.form-control {
-            min-height: 110px;
-        }
-
-        .image-upload-box {
-            border: 2px dashed var(--vx-border);
-            border-radius: 14px;
-            padding: 25px;
-            text-align: center;
-            background: var(--vx-bg, #fafafa);
-            cursor: pointer;
-            transition: .2s ease;
-        }
-
-            .image-upload-box:hover {
-                border-color: var(--vx-primary);
-            }
-
-            .image-upload-box input {
-                display: none;
-            }
-
-        .upload-icon {
-            font-size: 32px;
-            color: var(--vx-primary);
-            margin-bottom: 10px;
-        }
-
-        .current-image-wrapper,
-        .new-image-preview-wrapper {
-            margin-bottom: 20px;
-        }
-
-        .category-image-preview {
-            width: 180px;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 1px solid var(--vx-border);
-        }
-
-        .image-preview-name {
-            font-size: 12px;
-            color: var(--vx-text-secondary);
-            margin-top: 8px;
-            overflow-wrap: anywhere;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 28px;
-            flex-wrap: wrap;
-        }
-
-        @@media (max-width: 576px) {
-            .category-form-card {
-                padding: 18px;
-            }
-
-            .form-actions {
-                flex-direction: column-reverse;
-            }
-
-                .form-actions .btn {
-                    width: 100%;
-                }
-
-            .category-image-preview {
-                max-width: 100%;
-            }
-        }
-    </style>
-}
-
-<div class="category-form">
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div class="category-heading">
         <div>
-            <h2 class="fw-bold mb-1">Edit Category</h2>
-            <p class="text-secondary mb-0">
-                Update category information and image.
-            </p>
+            <h1>Edit Category</h1>
+            <p>Update category information and settings.</p>
         </div>
 
-        <a asp-action="Index" class="btn vx-btn-outline">
-            <i class="bi bi-arrow-left me-1"></i>
+        <a asp-action="Index" class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
             Back to Categories
         </a>
     </div>
 
-    <div class="category-form-card">
+    <div class="category-form-panel">
+
+        <div class="category-form-header">
+            <h5>Edit Category Information</h5>
+            <p>Update the information below and save your changes.</p>
+        </div>
 
         <form asp-action="Edit"
-              asp-route-id="@ViewBag.CategoryId"
+              asp-route-id="@categoryId"
               method="post"
               enctype="multipart/form-data">
 
             @Html.AntiForgeryToken()
 
             <div asp-validation-summary="ModelOnly"
-                 class="alert alert-danger"
-                 role="alert"></div>
+                 class="alert alert-danger"></div>
 
-            <h5 class="form-section-title">General Information</h5>
-
-            <div class="row g-3">
+            <div class="row g-4">
 
                 <div class="col-md-6">
                     <label asp-for="Name" class="form-label">
-                        Category Name
+                        Category Name <span class="text-danger">*</span>
                     </label>
 
                     <input asp-for="Name"
                            class="form-control"
                            placeholder="Category name" />
 
-                    <span asp-validation-for="Name"
-                          class="text-danger small"></span>
+                    <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6">
                     <label asp-for="Slug" class="form-label">
-                        Slug
+                        Slug <span class="text-danger">*</span>
                     </label>
 
                     <input asp-for="Slug"
                            class="form-control"
                            placeholder="category-slug" />
 
-                    <span asp-validation-for="Slug"
-                          class="text-danger small"></span>
+                    <span asp-validation-for="Slug" class="text-danger"></span>
                 </div>
-
-                <div class="col-12">
-                    <label asp-for="Description" class="form-label">
-                        Description
-                    </label>
-
-                    <textarea asp-for="Description"
-                              class="form-control"
-                              placeholder="Category description..."></textarea>
-
-                    <span asp-validation-for="Description"
-                          class="text-danger small"></span>
-                </div>
-
-            </div>
-
-            <hr class="my-4" />
-
-            <h5 class="form-section-title">Category Image</h5>
-
-            @if (!string.IsNullOrWhiteSpace(currentImageUrl))
-            {
-                <div id="currentImageWrapper" class="current-image-wrapper">
-
-                    <p class="fw-semibold small mb-2">Current Image</p>
-
-                    <img src="@currentImageUrl"
-                         class="category-image-preview"
-                         alt="Current category image"
-                         onerror="this.style.display='none';" />
-
-                </div>
-            }
-
-            <label for="ImageFile" class="image-upload-box w-100">
-
-                <div class="upload-icon">
-                    <i class="bi bi-cloud-arrow-up"></i>
-                </div>
-
-                <h6 class="fw-bold mb-1">Choose a New Image</h6>
-
-                <p class="text-secondary small mb-1">
-                    Click here to browse your device
-                </p>
-
-                <small class="text-secondary">
-                    JPG, JPEG, PNG or WEBP — Maximum 5 MB
-                </small>
-
-                <input asp-for="ImageFile"
-                       id="ImageFile"
-                       type="file"
-                       accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
-
-            </label>
-
-            <span asp-validation-for="ImageFile"
-                  class="text-danger small"></span>
-
-            <div id="newImagePreviewWrapper"
-                 class="new-image-preview-wrapper"
-                 style="display:none;">
-
-                <p class="fw-semibold small mb-2">New Image Preview</p>
-
-                <img id="newImagePreview"
-                     class="category-image-preview"
-                     alt="New category image preview" />
-
-                <div id="newImagePreviewName"
-                     class="image-preview-name"></div>
-
-                <button type="button"
-                        id="removeNewImageButton"
-                        class="btn btn-sm btn-outline-danger mt-2">
-                    <i class="bi bi-trash me-1"></i>
-                    Cancel New Image
-                </button>
-
-            </div>
-
-            <small class="text-secondary d-block mt-2">
-                Leave this field empty to keep the current image.
-            </small>
-
-            <hr class="my-4" />
-
-            <h5 class="form-section-title">Category Organization</h5>
-
-            <div class="row g-3">
 
                 <div class="col-md-6">
                     <label asp-for="ParentCategoryId" class="form-label">
@@ -272,17 +73,11 @@
                     <select asp-for="ParentCategoryId"
                             asp-items="ViewBag.ParentCategories"
                             class="form-select">
-
-                        <option value="">No Parent (Main Category)</option>
-
+                        <option value="">No Parent Category</option>
                     </select>
 
                     <span asp-validation-for="ParentCategoryId"
-                          class="text-danger small"></span>
-
-                    <small class="text-secondary">
-                        Leave empty if this is a main category.
-                    </small>
+                          class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6">
@@ -296,41 +91,93 @@
                            class="form-control" />
 
                     <span asp-validation-for="DisplayOrder"
-                          class="text-danger small"></span>
+                          class="text-danger"></span>
                 </div>
 
                 <div class="col-12">
-                    <div class="form-check form-switch">
+                    <label asp-for="Description" class="form-label">
+                        Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Write a short description..."></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+
+                    <label asp-for="ImageFile" class="form-label">
+                        Replace Category Image
+                    </label>
+
+                    <input asp-for="ImageFile"
+                           type="file"
+                           class="form-control"
+                           accept="image/*" />
+
+                    <span asp-validation-for="ImageFile"
+                          class="text-danger"></span>
+
+                    <small class="form-text text-muted">
+                        Leave empty to keep the current image.
+                    </small>
+
+                    <div class="category-image-preview mt-3">
+
+                        @if (!string.IsNullOrWhiteSpace(currentImageUrl))
+                        {
+                            <img id="categoryImagePreview"
+                                 src="@currentImageUrl"
+                                 alt="Current category image" />
+                        }
+                        else
+                        {
+                            <img id="categoryImagePreview"
+                                 src=""
+                                 alt="Image preview"
+                                 style="display:none;" />
+                        }
+
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label d-block">Status</label>
+
+                    <div class="category-toggle-wrapper">
                         <input asp-for="IsActive"
                                class="form-check-input"
                                type="checkbox" />
 
-                        <label asp-for="IsActive"
-                               class="form-check-label fw-semibold">
+                        <label asp-for="IsActive" class="form-check-label">
                             Active Category
                         </label>
                     </div>
+
+                    <span asp-validation-for="IsActive"
+                          class="text-danger"></span>
                 </div>
 
             </div>
 
-            <div class="form-actions">
+            <div class="category-form-actions">
 
-                <a asp-action="Index"
-                   class="btn vx-btn-outline">
+                <a asp-action="Index" class="vx-btn-secondary">
                     Cancel
                 </a>
 
-                <button type="submit"
-                        class="btn vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i>
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-check-lg"></i>
                     Save Changes
                 </button>
 
             </div>
 
         </form>
-
     </div>
 </div>
 
@@ -339,75 +186,17 @@
 
     <script>
         const imageInput = document.getElementById("ImageFile");
-        const previewWrapper = document.getElementById("newImagePreviewWrapper");
-        const imagePreview = document.getElementById("newImagePreview");
-        const imagePreviewName = document.getElementById("newImagePreviewName");
-        const removeButton = document.getElementById("removeNewImageButton");
-        const currentImageWrapper = document.getElementById("currentImageWrapper");
+        const imagePreview = document.getElementById("categoryImagePreview");
 
-        let previewUrl = null;
-
-        imageInput.addEventListener("change", function () {
+        imageInput?.addEventListener("change", function () {
             const file = this.files[0];
 
             if (!file) {
-                clearPreview();
                 return;
             }
 
-            const allowedTypes = [
-                "image/jpeg",
-                "image/png",
-                "image/webp"
-            ];
-
-            if (!allowedTypes.includes(file.type)) {
-                alert("Please select a JPG, PNG or WEBP image.");
-                this.value = "";
-                clearPreview();
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                alert("Image size cannot exceed 5 MB.");
-                this.value = "";
-                clearPreview();
-                return;
-            }
-
-            if (previewUrl) {
-                URL.revokeObjectURL(previewUrl);
-            }
-
-            previewUrl = URL.createObjectURL(file);
-
-            imagePreview.src = previewUrl;
-            imagePreviewName.textContent = file.name;
-            previewWrapper.style.display = "block";
-
-            if (currentImageWrapper) {
-                currentImageWrapper.style.opacity = "0.5";
-            }
+            imagePreview.src = URL.createObjectURL(file);
+            imagePreview.style.display = "block";
         });
-
-        removeButton.addEventListener("click", function () {
-            imageInput.value = "";
-            clearPreview();
-        });
-
-        function clearPreview() {
-            if (previewUrl) {
-                URL.revokeObjectURL(previewUrl);
-                previewUrl = null;
-            }
-
-            imagePreview.removeAttribute("src");
-            imagePreviewName.textContent = "";
-            previewWrapper.style.display = "none";
-
-            if (currentImageWrapper) {
-                currentImageWrapper.style.opacity = "1";
-            }
-        }
     </script>
 }

@@ -2,107 +2,126 @@
 
 @{
     ViewData["Title"] = "Create Option Group";
+    var productId = Model.ProductId;
 }
 
-@section Styles {
-    <style>
-        .vx-form-page {
-            max-width: 850px;
-            margin: auto;
-        }
+<div class="vx-page">
 
-        .vx-form-card {
-            padding: 25px;
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Create Option Group</h1>
+            <p class="vx-page-subtitle">
+                Add a new attribute to distinguish product variants.
+            </p>
+        </div>
 
-        .vx-form-title {
-            margin-bottom: 7px;
-            font-size: 23px;
-            font-weight: 750;
-        }
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Options
+        </a>
+    </div>
 
-        .vx-form-subtitle {
-            margin-bottom: 25px;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
+    <div class="vx-form-layout">
 
-        .vx-field {
-            margin-bottom: 20px;
-        }
+        <div class="vx-content-card">
 
-            .vx-field label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .vx-field input {
-                width: 100%;
-                padding: 12px 13px;
-                border: 1px solid var(--vx-border);
-                border-radius: 9px;
-                outline: none;
-                font-size: 12px;
-            }
-
-                .vx-field input:focus {
-                    border-color: var(--vx-primary);
-                    box-shadow: 0 0 0 3px rgba(118,87,246,.1);
-                }
-
-        .vx-form-actions {
-            display: flex;
-            gap: 10px;
-            padding-top: 15px;
-            border-top: 1px solid var(--vx-border);
-        }
-    </style>
-}
-
-<div class="vx-form-page">
-    <div class="vx-form-card">
-        <h1 class="vx-form-title">Create Option Group</h1>
-        <p class="vx-form-subtitle">
-            Add a new configurable option to this product.
-        </p>
-
-        <form asp-action="Create" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="All"
-                 class="text-danger small mb-3"></div>
-
-            <input asp-for="ProductId" type="hidden" />
-
-            <div class="vx-field">
-                <label asp-for="Name">Group Name</label>
-
-                <input asp-for="Name"
-                       placeholder="Example: Storage, RAM, Color" />
-
-                <span asp-validation-for="Name"
-                      class="text-danger small"></span>
+            <div class="vx-section-header">
+                <div>
+                    <h2>Option Group Information</h2>
+                    <p>Enter the name of the new option group.</p>
+                </div>
             </div>
 
-            <div class="vx-form-actions">
-                <button type="submit" class="vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i>
-                    Create Group
-                </button>
+            <form asp-action="Create" method="post">
 
-                <a asp-action="Index"
-                   asp-route-productId="@Model.ProductId"
-                   class="vx-btn-outline">
-                    Cancel
-                </a>
+                @Html.AntiForgeryToken()
+
+                <input asp-for="ProductId" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="vx-validation-summary"></div>
+
+                <div class="vx-form-group">
+                    <label asp-for="Name" class="vx-form-label">
+                        Group Name <span class="vx-required">*</span>
+                    </label>
+
+                    <input asp-for="Name"
+                           class="vx-form-control"
+                           placeholder="e.g. Color, Size, Material"
+                           maxlength="100"
+                           autocomplete="off" />
+
+                    <span asp-validation-for="Name"
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        Use a clear name that describes the product attribute.
+                    </small>
+                </div>
+
+                <div class="vx-form-footer">
+                    <a asp-action="Index"
+                       asp-route-productId="@productId"
+                       class="vx-btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-plus-lg"></i>
+                        Create Option Group
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <aside class="vx-content-card vx-form-aside">
+
+            <div class="vx-aside-icon">
+                <i class="bi bi-lightbulb"></i>
             </div>
-        </form>
+
+            <h3>Examples</h3>
+
+            <p class="vx-aside-description">
+                Option groups describe the attributes that differentiate variants.
+            </p>
+
+            <div class="vx-option-example">
+                <strong>Color</strong>
+                <div>
+                    <span>Black</span>
+                    <span>White</span>
+                    <span>Blue</span>
+                </div>
+            </div>
+
+            <div class="vx-option-example">
+                <strong>Size</strong>
+                <div>
+                    <span>Small</span>
+                    <span>Medium</span>
+                    <span>Large</span>
+                </div>
+            </div>
+
+            <div class="vx-option-example">
+                <strong>Material</strong>
+                <div>
+                    <span>Cotton</span>
+                    <span>Leather</span>
+                </div>
+            </div>
+
+            <p class="vx-aside-note">
+                After creating a group, add its available values from the Manage Values page.
+            </p>
+
+        </aside>
+
     </div>
 </div>
 

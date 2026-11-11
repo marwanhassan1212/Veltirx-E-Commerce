@@ -2,101 +2,118 @@
 
 @{
     ViewData["Title"] = "Edit Option Value";
+
     int groupId = (int)ViewBag.GroupId;
     int valueId = (int)ViewBag.ValueId;
 }
 
-@section Styles {
-    <style>
-        .vx-form-page {
-            max-width: 850px;
-            margin: auto;
-        }
+<div class="vx-page">
 
-        .vx-form-card {
-            padding: 25px;
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Edit Option Value</h1>
+            <p class="vx-page-subtitle">
+                Update the selected option value.
+            </p>
+        </div>
 
-        .vx-form-title {
-            margin-bottom: 7px;
-            font-size: 23px;
-            font-weight: 750;
-        }
-
-        .vx-form-subtitle {
-            margin-bottom: 25px;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
-
-        .vx-field {
-            margin-bottom: 20px;
-        }
-
-            .vx-field label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .vx-field input {
-                width: 100%;
-                padding: 12px 13px;
-                border: 1px solid var(--vx-border);
-                border-radius: 9px;
-                outline: none;
-                font-size: 12px;
-            }
-
-                .vx-field input:focus {
-                    border-color: var(--vx-primary);
-                    box-shadow: 0 0 0 3px rgba(118,87,246,.1);
-                }
-
-        .vx-form-actions {
-            display: flex;
-            gap: 10px;
-            padding-top: 15px;
-            border-top: 1px solid var(--vx-border);
-        }
-    </style>
-}
-
-<div class="vx-form-page">
-    <div class="vx-form-card">
-        <h1 class="vx-form-title">Edit Option Value</h1>
-        <p class="vx-form-subtitle">Update this option value and its display order.</p>
-
-        <form asp-action="Edit" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="All" class="text-danger small mb-3"></div>
-
-            <input type="hidden" name="id" value="@valueId" />
-            <input type="hidden" name="groupId" value="@groupId" />
-
-            <div class="vx-field">
-                <label asp-for="Value">Value</label>
-                <input asp-for="Value" />
-                <span asp-validation-for="Value" class="text-danger small"></span>
-            </div>
-
-
-            <div class="vx-form-actions">
-                <button type="submit" class="vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Save Changes
-                </button>
-
-                <a asp-action="Index" asp-route-groupId="@groupId"
-                   class="vx-btn-outline">Cancel</a>
-            </div>
-        </form>
+        <a asp-controller="VariantOptionValues"
+           asp-action="Index"
+           asp-route-groupId="@groupId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Values
+        </a>
     </div>
+
+    <div class="vx-form-layout">
+
+        <div class="vx-content-card vx-form-main">
+
+            <div class="vx-section-header">
+                <div>
+                    <h3>Edit Value Information</h3>
+                    <p>Modify the value details below.</p>
+                </div>
+
+                <span class="vx-count-badge">
+                    Value #@valueId
+                </span>
+            </div>
+
+            <form asp-controller="VariantOptionValues"
+                  asp-action="Edit"
+                  asp-route-id="@valueId"
+                  asp-route-groupId="@groupId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="vx-validation-summary"></div>
+
+                <div class="vx-form-group">
+                    <label asp-for="Value" class="vx-form-label">
+                        Option Value <span class="vx-required">*</span>
+                    </label>
+
+                    <input asp-for="Value"
+                           class="vx-form-control"
+                           placeholder="Enter option value"
+                           maxlength="100"
+                           autofocus />
+
+                    <span asp-validation-for="Value"
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        The new value must be unique within its option group.
+                    </small>
+                </div>
+
+                <div class="vx-form-footer">
+                    <a asp-controller="VariantOptionValues"
+                       asp-action="Index"
+                       asp-route-groupId="@groupId"
+                       class="vx-btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <aside class="vx-form-aside">
+            <div class="vx-aside-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+
+            <h3>Editing Information</h3>
+
+            <p class="vx-aside-description">
+                You are editing an existing option value.
+            </p>
+
+            <ul class="vx-guidelines-list">
+                <li>Keep the value relevant to its option group.</li>
+                <li>Duplicate values are not allowed.</li>
+                <li>Display order is preserved automatically.</li>
+                <li>Changes may affect the variants using this value.</li>
+            </ul>
+
+            <div class="vx-aside-note">
+                <i class="bi bi-info-circle"></i>
+                Make sure the updated value still accurately describes the variant option.
+            </div>
+        </aside>
+
+    </div>
+
 </div>
 
 @section Scripts {

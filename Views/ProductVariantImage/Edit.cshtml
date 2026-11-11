@@ -2,112 +2,277 @@
 
 @{
     ViewData["Title"] = "Edit Variant Image";
+
+    var variantId = (int)ViewBag.VariantId;
+    var imageId = (int)ViewBag.ImageId;
+    var imageUrl = (string)ViewBag.ImageUrl;
 }
 
-<div class="container-fluid py-4">
+<div class="vx-page">
 
-    <div class="mb-4">
-        <h2 class="fw-bold">Edit Variant Image</h2>
-        <p class="text-muted">
-            Update image information or replace the current image.
-        </p>
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Edit Variant Image</h1>
+            <p class="vx-page-subtitle">
+                Update image information or replace the current image.
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           asp-route-variantId="@variantId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Images
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <div class="vx-form-layout">
 
-            <div class="mb-4">
-                <label class="form-label fw-semibold">
-                    Current Image
-                </label>
+        <div class="vx-content-card">
 
+            <div class="vx-section-header">
                 <div>
-                    <img src="@ViewBag.ImageUrl"
-                         alt="Current variant image"
-                         class="img-thumbnail"
-                         style="max-width:300px; max-height:250px; object-fit:contain;" />
+                    <h2>Image Information</h2>
+                    <p>Update the selected variant image.</p>
                 </div>
+
+                <span class="vx-count-badge">#@imageId</span>
             </div>
 
             <form asp-action="Edit"
-                  asp-route-id="@ViewBag.ImageId"
+                  asp-route-id="@imageId"
                   method="post"
                   enctype="multipart/form-data">
 
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly"
-                     class="text-danger mb-3"></div>
+                     class="vx-validation-summary"></div>
 
-                <div class="mb-3">
-                    <label asp-for="Image"
-                           class="form-label fw-semibold">
-                        Replace Image
-                    </label>
+                <div class="vx-form-group">
+                    <label class="vx-form-label">Current Image</label>
 
-                    <input asp-for="Image"
-                           type="file"
-                           class="form-control"
-                           accept=".jpg,.jpeg,.png,.webp" />
-
-                    <span asp-validation-for="Image"
-                          class="text-danger"></span>
-
-                    <div class="form-text">
-                        Leave empty to keep the current image.
+                    <div class="vx-current-image">
+                        <img src="@imageUrl"
+                             alt="Current variant image"
+                             id="currentImage" />
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="AltText"
-                           class="form-label fw-semibold">
-                        Alternative Text
+                <div class="vx-form-group">
+                    <label asp-for="Image" class="vx-form-label">
+                        Replace Image
+                    </label>
+
+                    <div class="vx-upload-area" id="uploadArea">
+
+                        <input asp-for="Image"
+                               type="file"
+                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                               id="imageInput"
+                               class="vx-upload-input" />
+
+                        <div id="uploadPlaceholder" class="vx-upload-placeholder">
+                            <div class="vx-upload-icon">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+
+                            <h3>Choose a replacement image</h3>
+
+                            <p>Leave empty to keep the current image.</p>
+
+                            <span class="vx-upload-browse">
+                                Browse Files
+                            </span>
+                        </div>
+
+                        <div id="imagePreviewContainer"
+                             class="vx-upload-preview"
+                             style="display:none;">
+
+                            <img id="imagePreview"
+                                 src=""
+                                 alt="Replacement image preview" />
+
+                            <button type="button"
+                                    id="removeImage"
+                                    class="vx-remove-preview"
+                                    title="Remove selected image">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+
+                            <span id="selectedFileName"
+                                  class="vx-selected-file-name"></span>
+                        </div>
+
+                    </div>
+
+                    <span asp-validation-for="Image"
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        JPG, JPEG, PNG or WEBP. Maximum 5 MB.
+                    </small>
+                </div>
+
+                <div class="vx-form-group">
+                    <label asp-for="AltText" class="vx-form-label">
+                        Alt Text
                     </label>
 
                     <input asp-for="AltText"
-                           class="form-control" />
+                           class="vx-form-control"
+                           placeholder="Describe the image..."
+                           maxlength="300" />
 
                     <span asp-validation-for="AltText"
-                          class="text-danger"></span>
+                          class="vx-field-error"></span>
                 </div>
 
-                <div class="mb-4">
-                    <label asp-for="DisplayOrder"
-                           class="form-label fw-semibold">
+                <div class="vx-form-group">
+                    <label asp-for="DisplayOrder" class="vx-form-label">
                         Display Order
                     </label>
 
                     <input asp-for="DisplayOrder"
                            type="number"
                            min="0"
-                           class="form-control" />
+                           class="vx-form-control"
+                           placeholder="0" />
 
                     <span asp-validation-for="DisplayOrder"
-                          class="text-danger"></span>
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        Lower numbers appear first.
+                    </small>
                 </div>
 
-                <div class="d-flex gap-2">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Save Changes
-                    </button>
-
+                <div class="vx-form-footer">
                     <a asp-action="Index"
-                       asp-route-variantId="@ViewBag.VariantId"
-                       class="btn btn-outline-secondary">
+                       asp-route-variantId="@variantId"
+                       class="vx-btn-secondary">
                         Cancel
                     </a>
 
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
+                    </button>
                 </div>
 
             </form>
-
         </div>
-    </div>
 
+        <aside class="vx-content-card vx-form-aside">
+            <div class="vx-aside-icon">
+                <i class="bi bi-lightbulb"></i>
+            </div>
+
+            <h3>Before You Save</h3>
+
+            <ul class="vx-guidelines-list">
+                <li>
+                    <i class="bi bi-check2"></i>
+                    You can update Alt Text without replacing the image.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    You can change the display order at any time.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Leave the replacement field empty to keep the current image.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Replacing the image does not change its primary status.
+                </li>
+            </ul>
+        </aside>
+
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const uploadPlaceholder = document.getElementById("uploadPlaceholder");
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        const imagePreview = document.getElementById("imagePreview");
+        const fileName = document.getElementById("selectedFileName");
+        const removeButton = document.getElementById("removeImage");
+        const uploadArea = document.getElementById("uploadArea");
+
+        function showPreview(file) {
+            if (!file) return;
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("Please select a JPG, PNG or WEBP image.");
+                imageInput.value = "";
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image size must not exceed 5 MB.");
+                imageInput.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                imagePreview.src = event.target.result;
+                fileName.textContent = file.name;
+
+                uploadPlaceholder.style.display = "none";
+                previewContainer.style.display = "flex";
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        imageInput.addEventListener("change", function () {
+            showPreview(this.files[0]);
+        });
+
+        removeButton.addEventListener("click", function () {
+            imageInput.value = "";
+            imagePreview.src = "";
+
+            previewContainer.style.display = "none";
+            uploadPlaceholder.style.display = "flex";
+        });
+
+        ["dragenter", "dragover"].forEach(eventName => {
+            uploadArea.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadArea.classList.add("is-dragging");
+            });
+        });
+
+        ["dragleave", "drop"].forEach(eventName => {
+            uploadArea.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadArea.classList.remove("is-dragging");
+            });
+        });
+
+        uploadArea.addEventListener("drop", function (event) {
+            const files = event.dataTransfer.files;
+
+            if (files.length > 0) {
+                imageInput.files = files;
+                showPreview(files[0]);
+            }
+        });
+    </script>
 }

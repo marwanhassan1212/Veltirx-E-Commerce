@@ -2,110 +2,115 @@
 
 @{
     ViewData["Title"] = "Edit Option Group";
-    int productId = (int)ViewBag.ProductId;
-    int optionId = (int)ViewBag.OptionId;
+    var productId = (int)ViewBag.ProductId;
+    var optionId = (int)ViewBag.OptionId;
 }
 
-@section Styles {
-    <style>
-        .vx-form-page {
-            max-width: 850px;
-            margin: auto;
-        }
+<div class="vx-page">
 
-        .vx-form-card {
-            padding: 25px;
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Edit Option Group</h1>
+            <p class="vx-page-subtitle">
+                Update the name of this product option group.
+            </p>
+        </div>
 
-        .vx-form-title {
-            margin-bottom: 7px;
-            font-size: 23px;
-            font-weight: 750;
-        }
+        <a asp-action="Index"
+           asp-route-productId="@productId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Options
+        </a>
+    </div>
 
-        .vx-form-subtitle {
-            margin-bottom: 25px;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
+    <div class="vx-form-layout">
 
-        .vx-field {
-            margin-bottom: 20px;
-        }
+        <div class="vx-content-card">
 
-            .vx-field label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 11px;
-                font-weight: 700;
-            }
+            <div class="vx-section-header">
+                <div>
+                    <h2>Option Group Information</h2>
+                    <p>Update the group name below.</p>
+                </div>
 
-            .vx-field input {
-                width: 100%;
-                padding: 12px 13px;
-                border: 1px solid var(--vx-border);
-                border-radius: 9px;
-                outline: none;
-                font-size: 12px;
-            }
-
-                .vx-field input:focus {
-                    border-color: var(--vx-primary);
-                    box-shadow: 0 0 0 3px rgba(118,87,246,.1);
-                }
-
-        .vx-form-actions {
-            display: flex;
-            gap: 10px;
-            padding-top: 15px;
-            border-top: 1px solid var(--vx-border);
-        }
-    </style>
-}
-
-<div class="vx-form-page">
-    <div class="vx-form-card">
-        <h1 class="vx-form-title">Edit Option Group</h1>
-
-        <p class="vx-form-subtitle">
-            Update the name of this product option group.
-        </p>
-
-        <form asp-action="Edit" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="All"
-                 class="text-danger small mb-3"></div>
-
-            <input type="hidden" name="id" value="@optionId" />
-            <input type="hidden" name="productId" value="@productId" />
-
-            <div class="vx-field">
-                <label asp-for="Name">Group Name</label>
-
-                <input asp-for="Name" />
-
-                <span asp-validation-for="Name"
-                      class="text-danger small"></span>
+                <span class="vx-count-badge">#@optionId</span>
             </div>
 
-            <div class="vx-form-actions">
-                <button type="submit" class="vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i>
-                    Save Changes
-                </button>
+            <form asp-action="Edit"
+                  asp-route-id="@optionId"
+                  asp-route-productId="@productId"
+                  method="post">
 
-                <a asp-action="Index"
-                   asp-route-productId="@productId"
-                   class="vx-btn-outline">
-                    Cancel
-                </a>
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="vx-validation-summary"></div>
+
+                <div class="vx-form-group">
+                    <label asp-for="Name" class="vx-form-label">
+                        Group Name <span class="vx-required">*</span>
+                    </label>
+
+                    <input asp-for="Name"
+                           class="vx-form-control"
+                           placeholder="e.g. Color, Size, Material"
+                           maxlength="100"
+                           autocomplete="off" />
+
+                    <span asp-validation-for="Name"
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        The new name must be unique within this product.
+                    </small>
+                </div>
+
+                <div class="vx-form-footer">
+                    <a asp-action="Index"
+                       asp-route-productId="@productId"
+                       class="vx-btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <aside class="vx-content-card vx-form-aside">
+
+            <div class="vx-aside-icon">
+                <i class="bi bi-info-circle"></i>
             </div>
-        </form>
+
+            <h3>Important Information</h3>
+
+            <ul class="vx-guidelines-list">
+                <li>
+                    <i class="bi bi-check2"></i>
+                    The new name must be unique for this product.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Existing option values will remain unchanged.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    The display order is preserved automatically.
+                </li>
+                <li>
+                    <i class="bi bi-check2"></i>
+                    Existing variant selections remain linked to this group.
+                </li>
+            </ul>
+
+        </aside>
+
     </div>
 </div>
 

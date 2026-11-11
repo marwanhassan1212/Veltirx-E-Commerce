@@ -4,96 +4,122 @@
     ViewData["Title"] = "Create Option Value";
 }
 
-@section Styles {
-    <style>
-        .vx-form-page {
-            max-width: 850px;
-            margin: auto;
-        }
+<div class="vx-page">
 
-        .vx-form-card {
-            padding: 25px;
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
+    <div class="vx-page-header">
+        <div>
+            <h1 class="vx-page-title">Add Option Value</h1>
+            <p class="vx-page-subtitle">
+                Add a new value to this product option group.
+            </p>
+        </div>
 
-        .vx-form-title {
-            margin-bottom: 7px;
-            font-size: 23px;
-            font-weight: 750;
-        }
-
-        .vx-form-subtitle {
-            margin-bottom: 25px;
-            color: var(--vx-text-secondary);
-            font-size: 12px;
-        }
-
-        .vx-field {
-            margin-bottom: 20px;
-        }
-
-            .vx-field label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 11px;
-                font-weight: 700;
-            }
-
-            .vx-field input {
-                width: 100%;
-                padding: 12px 13px;
-                border: 1px solid var(--vx-border);
-                border-radius: 9px;
-                outline: none;
-                font-size: 12px;
-            }
-
-                .vx-field input:focus {
-                    border-color: var(--vx-primary);
-                    box-shadow: 0 0 0 3px rgba(118,87,246,.1);
-                }
-
-        .vx-form-actions {
-            display: flex;
-            gap: 10px;
-            padding-top: 15px;
-            border-top: 1px solid var(--vx-border);
-        }
-    </style>
-}
-
-<div class="vx-form-page">
-    <div class="vx-form-card">
-        <h1 class="vx-form-title">Create Option Value</h1>
-        <p class="vx-form-subtitle">Add a new selectable value to this option group.</p>
-
-        <form asp-action="Create" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="All" class="text-danger small mb-3"></div>
-            <input asp-for="VariantOptionId" type="hidden" />
-
-            <div class="vx-field">
-                <label asp-for="Value">Value</label>
-                <input asp-for="Value" placeholder="Example: 128GB, Black, 5G" />
-                <span asp-validation-for="Value" class="text-danger small"></span>
-            </div>
-
-
-            <div class="vx-form-actions">
-                <button type="submit" class="vx-btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Create Value
-                </button>
-
-                <a asp-action="Index"
-                   asp-route-groupId="@Model.VariantOptionId"
-                   class="vx-btn-outline">Cancel</a>
-            </div>
-        </form>
+        <a asp-controller="VariantOptionValues"
+           asp-action="Index"
+           asp-route-groupId="@Model.VariantOptionId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Values
+        </a>
     </div>
+
+    <div class="vx-form-layout">
+
+        <div class="vx-content-card vx-form-main">
+
+            <div class="vx-section-header">
+                <div>
+                    <h3>Value Information</h3>
+                    <p>Enter the value you want to make available.</p>
+                </div>
+            </div>
+
+            <form asp-controller="VariantOptionValues"
+                  asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="VariantOptionId" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="vx-validation-summary"></div>
+
+                <div class="vx-form-group">
+                    <label asp-for="Value" class="vx-form-label">
+                        Option Value <span class="vx-required">*</span>
+                    </label>
+
+                    <input asp-for="Value"
+                           class="vx-form-control"
+                           placeholder="e.g. Red, Blue, XL, Cotton"
+                           maxlength="100"
+                           autofocus />
+
+                    <span asp-validation-for="Value"
+                          class="vx-field-error"></span>
+
+                    <small class="vx-form-hint">
+                        Enter a single value. Duplicate values in the same option group are not allowed.
+                    </small>
+                </div>
+
+                <div class="vx-form-group">
+                    <label class="vx-form-label">Option Group ID</label>
+
+                    <input type="text"
+                           class="vx-form-control"
+                           value="@Model.VariantOptionId"
+                           disabled />
+
+                    <small class="vx-form-hint">
+                        This value will be assigned to the selected option group.
+                    </small>
+                </div>
+
+                <div class="vx-form-footer">
+                    <a asp-controller="VariantOptionValues"
+                       asp-action="Index"
+                       asp-route-groupId="@Model.VariantOptionId"
+                       class="vx-btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="vx-btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        Create Value
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <aside class="vx-form-aside">
+            <div class="vx-aside-icon">
+                <i class="bi bi-lightbulb"></i>
+            </div>
+
+            <h3>Value Guidelines</h3>
+
+            <p class="vx-aside-description">
+                Keep option values clear and consistent to make variant management easier.
+            </p>
+
+            <ul class="vx-guidelines-list">
+                <li>Use short, descriptive values.</li>
+                <li>Avoid duplicate values within the same group.</li>
+                <li>Use consistent naming conventions.</li>
+                <li>Display order is assigned automatically.</li>
+            </ul>
+
+            <div class="vx-aside-note">
+                <i class="bi bi-info-circle"></i>
+                New values are added at the end of the existing list.
+            </div>
+        </aside>
+
+    </div>
+
 </div>
 
 @section Scripts {

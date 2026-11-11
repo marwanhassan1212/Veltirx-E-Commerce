@@ -2,913 +2,484 @@
 
 @{
     ViewData["Title"] = "Products";
-
-    var products = Model?.Items ?? Array.Empty<Veltrix.DTOs.ProductDTO.ProductDto>();
-
-    int totalProducts = products.Count;
-    int publishedProducts = products.Count(x => x.IsPublished);
-    int unpublishedProducts = totalProducts - publishedProducts;
-    int categoriesCount = products.Select(x => x.CategoryId).Distinct().Count();
 }
 
-@section Styles {
-    <style>
-        .product-page {
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-            max-width: 1500px;
-            margin: 0 auto;
-        }
+<div class="container-fluid products-page">
 
-        .product-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-            .product-heading h1 {
-                margin: 0;
-                font-size: 25px;
-                font-weight: 750;
-                letter-spacing: -.7px;
-            }
-
-            .product-heading p {
-                margin: 7px 0 0;
-                color: var(--vx-text-secondary);
-                font-size: 12px;
-            }
-
-        .product-stats {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 15px;
-        }
-
-        .product-stat {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            min-width: 0;
-            padding: 18px;
-            border: 1px solid var(--vx-border);
-            border-radius: 14px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
-
-        .product-stat-icon {
-            display: grid;
-            width: 43px;
-            height: 43px;
-            flex-shrink: 0;
-            place-items: center;
-            border-radius: 12px;
-            font-size: 18px;
-        }
-
-            .product-stat-icon.purple {
-                background: #F0EDFF;
-                color: #7657F6;
-            }
-
-            .product-stat-icon.green {
-                background: #E6F7F0;
-                color: #16A779;
-            }
-
-            .product-stat-icon.red {
-                background: #FDECEF;
-                color: #E05260;
-            }
-
-            .product-stat-icon.blue {
-                background: #EAF3FF;
-                color: #3985E8;
-            }
-
-        .product-stat-info span {
-            display: block;
-            color: var(--vx-text-secondary);
-            font-size: 10px;
-        }
-
-        .product-stat-info strong {
-            display: block;
-            margin-top: 5px;
-            color: var(--vx-text);
-            font-size: 22px;
-            font-weight: 750;
-        }
-
-        .product-panel {
-            overflow: hidden;
-            border: 1px solid var(--vx-border);
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--vx-shadow-sm);
-        }
-
-        .product-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
-            padding: 20px;
-            border-bottom: 1px solid var(--vx-border);
-        }
-
-            .product-panel-header h2 {
-                margin: 0;
-                font-size: 14px;
-                font-weight: 700;
-            }
-
-            .product-panel-header p {
-                margin: 5px 0 0;
-                color: var(--vx-text-muted);
-                font-size: 10px;
-            }
-
-        .product-toolbar {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 9px;
-        }
-
-        .product-search {
-            position: relative;
-            width: 240px;
-        }
-
-            .product-search i {
-                position: absolute;
-                top: 50%;
-                left: 12px;
-                transform: translateY(-50%);
-                color: var(--vx-text-muted);
-            }
-
-            .product-search input {
-                width: 100%;
-                height: 38px;
-                padding: 0 12px 0 35px;
-                border: 1px solid var(--vx-border);
-                border-radius: 9px;
-                outline: none;
-                font-size: 11px;
-            }
-
-                .product-search input:focus {
-                    border-color: var(--vx-primary);
-                    box-shadow: 0 0 0 3px rgba(118, 87, 246, .1);
-                }
-
-        .product-filter {
-            height: 38px;
-            padding: 0 11px;
-            border: 1px solid var(--vx-border);
-            border-radius: 9px;
-            background: #fff;
-            color: var(--vx-text-secondary);
-            font-size: 11px;
-            outline: none;
-        }
-
-        .product-table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .product-table {
-            width: 100%;
-            min-width: 1000px;
-            border-collapse: collapse;
-        }
-
-            .product-table thead th {
-                padding: 14px 18px;
-                background: #FAFAFC;
-                border-bottom: 1px solid var(--vx-border);
-                color: var(--vx-text-muted);
-                font-size: 9px;
-                font-weight: 700;
-                letter-spacing: .6px;
-                text-align: left;
-                white-space: nowrap;
-            }
-
-            .product-table tbody td {
-                padding: 14px 18px;
-                border-bottom: 1px solid #F1F1F5;
-                color: var(--vx-text);
-                font-size: 11px;
-                vertical-align: middle;
-            }
-
-            .product-table tbody tr:last-child td {
-                border-bottom: 0;
-            }
-
-            .product-table tbody tr:hover {
-                background: #FCFBFF;
-            }
-
-        .product-identity {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            min-width: 220px;
-        }
-
-        .product-image {
-            display: grid;
-            width: 48px;
-            height: 48px;
-            flex-shrink: 0;
-            place-items: center;
-            overflow: hidden;
-            border: 1px solid #ECEAF5;
-            border-radius: 10px;
-            background: #F5F3FF;
-            color: var(--vx-primary);
-            font-size: 18px;
-        }
-
-            .product-image img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-        .product-identity strong {
-            display: block;
-            max-width: 220px;
-            overflow: hidden;
-            font-size: 11px;
-            font-weight: 700;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .product-identity span {
-            display: block;
-            max-width: 220px;
-            margin-top: 4px;
-            overflow: hidden;
-            color: var(--vx-text-muted);
-            font-size: 9px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .product-sku {
-            color: var(--vx-text-secondary);
-            font-family: monospace;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-
-        .product-category {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--vx-text-secondary);
-            font-size: 10px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .product-price {
-            color: var(--vx-text);
-            font-size: 11px;
-            font-weight: 750;
-            white-space: nowrap;
-        }
-
-        .product-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 9px;
-            border-radius: 6px;
-            font-size: 9px;
-            font-weight: 650;
-            white-space: nowrap;
-        }
-
-            .product-status.published {
-                background: #E6F7F0;
-                color: #16A779;
-            }
-
-            .product-status.unpublished {
-                background: #FDECEF;
-                color: #E05260;
-            }
-
-            .product-status i {
-                font-size: 7px;
-            }
-
-        .product-actions {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .product-action {
-            display: grid;
-            width: 32px;
-            height: 32px;
-            flex-shrink: 0;
-            place-items: center;
-            border: 1px solid var(--vx-border);
-            border-radius: 8px;
-            background: #fff;
-            color: var(--vx-text-secondary);
-            text-decoration: none;
-            transition: .2s ease;
-        }
-
-            .product-action:hover {
-                border-color: #D8D0FF;
-                background: #F3F0FF;
-                color: var(--vx-primary);
-            }
-
-            .product-action.publish:hover {
-                border-color: #BDEBD9;
-                background: #E6F7F0;
-                color: #16A779;
-            }
-
-            .product-action.unpublish:hover {
-                border-color: #F7C8D0;
-                background: #FDECEF;
-                color: #E05260;
-            }
-
-        .product-empty {
-            padding: 55px 20px;
-            text-align: center;
-        }
-
-        .product-empty-icon {
-            display: grid;
-            width: 65px;
-            height: 65px;
-            margin: 0 auto 16px;
-            place-items: center;
-            border-radius: 18px;
-            background: #F0EDFF;
-            color: var(--vx-primary);
-            font-size: 26px;
-        }
-
-        .product-empty h3 {
-            margin-bottom: 7px;
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .product-empty p {
-            max-width: 330px;
-            margin: 0 auto 18px;
-            color: var(--vx-text-secondary);
-            font-size: 11px;
-            line-height: 1.7;
-        }
-
-        .product-panel-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            padding: 15px 20px;
-            border-top: 1px solid var(--vx-border);
-            color: var(--vx-text-muted);
-            font-size: 10px;
-        }
-
-        .product-footer-meta {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .product-no-results {
-            display: none;
-        }
-
-        .product-alert {
-            padding: 12px 15px;
-            border-radius: 9px;
-            font-size: 11px;
-        }
-
-        @@media (max-width: 1100px) {
-            .product-stats {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @@media (max-width: 575.98px) {
-            .product-heading {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            .product-heading-actions {
-                width: 100%;
-            }
-
-                .product-heading-actions a {
-                    width: 100%;
-                }
-
-            .product-stats {
-                gap: 9px;
-            }
-
-            .product-stat {
-                gap: 9px;
-                padding: 12px;
-            }
-
-            .product-stat-icon {
-                width: 34px;
-                height: 34px;
-                font-size: 15px;
-            }
-
-            .product-stat-info strong {
-                font-size: 18px;
-            }
-
-            .product-panel-header {
-                align-items: stretch;
-                flex-direction: column;
-                padding: 16px;
-            }
-
-            .product-toolbar {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            .product-search {
-                width: 100%;
-            }
-
-            .product-filter {
-                width: 100%;
-            }
-
-            .product-panel-footer {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .product-footer-meta {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 8px;
-            }
-        }
-
-        @@media (max-width: 350px) {
-            .product-stat {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-        }
-    </style>
-}
-
-<div class="product-page">
-
-    <!-- Page Heading -->
-    <section class="product-heading">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 page-header">
         <div>
-            <h1>Products</h1>
-            <p>Manage your product catalog and publication status.</p>
+            <h2 class="fw-bold mb-1">Products</h2>
+            <p class="text-muted mb-0">
+                Manage your store products from one place.
+            </p>
         </div>
 
-        <div class="product-heading-actions">
-            <a asp-controller="Product"
-               asp-action="Create"
-               class="vx-btn-primary">
-                <i class="bi bi-plus-lg me-1"></i>
-                Add Product
-            </a>
-        </div>
-    </section>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>
+            Add Product
+        </a>
+    </div>
 
-    <!-- TempData Messages -->
+    <!-- Alerts -->
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success product-alert mb-0">
-            <i class="bi bi-check-circle me-2"></i>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger product-alert mb-0">
-            <i class="bi bi-exclamation-circle me-2"></i>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <!-- Statistics -->
-    <section class="product-stats">
+    <!-- Filters -->
+    <div class="card border-0 product-filters">
+        <div class="card-body">
 
-        <div class="product-stat">
-            <div class="product-stat-icon purple">
-                <i class="bi bi-box-seam"></i>
-            </div>
-            <div class="product-stat-info">
-                <span>Total Products</span>
-                <strong>@totalProducts</strong>
-            </div>
-        </div>
+            <div class="row g-3 align-items-end">
 
-        <div class="product-stat">
-            <div class="product-stat-icon green">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div class="product-stat-info">
-                <span>Published</span>
-                <strong>@publishedProducts</strong>
-            </div>
-        </div>
+                <!-- Search -->
+                <div class="col-lg-5">
+                    <label class="form-label">Search products</label>
 
-        <div class="product-stat">
-            <div class="product-stat-icon red">
-                <i class="bi bi-eye-slash"></i>
-            </div>
-            <div class="product-stat-info">
-                <span>Unpublished</span>
-                <strong>@unpublishedProducts</strong>
-            </div>
-        </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="bi bi-search"></i>
+                        </span>
 
-        <div class="product-stat">
-            <div class="product-stat-icon blue">
-                <i class="bi bi-grid"></i>
-            </div>
-            <div class="product-stat-info">
-                <span>Categories Used</span>
-                <strong>@categoriesCount</strong>
-            </div>
-        </div>
-
-    </section>
-
-    <!-- Products Table -->
-    <section class="product-panel">
-
-        <div class="product-panel-header">
-            <div>
-                <h2>All Products</h2>
-                <p>View and manage your product records.</p>
-            </div>
-
-            <!-- Client-side Search and Filter -->
-            <div class="product-toolbar">
-
-                <div class="product-search">
-                    <i class="bi bi-search"></i>
-
-                    <input type="text"
-                           id="productSearch"
-                           placeholder="Search products..."
-                           aria-label="Search products" />
+                        <input type="search"
+                               id="productSearchInput"
+                               class="form-control"
+                               placeholder="Search by name, SKU, slug or category..."
+                               autocomplete="off" />
+                    </div>
                 </div>
 
-                <select id="productStatusFilter"
-                        class="product-filter"
-                        aria-label="Filter by publication status">
+                <!-- Publication Status -->
+                <div class="col-lg-3">
+                    <label class="form-label">Publication status</label>
 
-                    <option value="all">All Statuses</option>
-                    <option value="published">Published</option>
-                    <option value="unpublished">Unpublished</option>
+                    <select id="productStatusFilter" class="form-select">
+                        <option value="all">All products</option>
+                        <option value="published">Published</option>
+                        <option value="unpublished">Unpublished</option>
+                    </select>
+                </div>
 
-                </select>
+                <!-- Page Size -->
+                <div class="col-lg-2">
+                    <label class="form-label">Items per page</label>
+
+                    <select id="pageSizeFilter"
+                            name="pageSize"
+                            class="form-select"
+                            onchange="changePageSize(this.value)">
+
+                        <option value="10" selected="@(Model.PageSize == 10)">10</option>
+                        <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                        <option value="50" selected="@(Model.PageSize == 50)">50</option>
+
+                    </select>
+                </div>
+
+                <!-- Clear Filters -->
+                <div class="col-lg-2">
+                    <button type="button"
+                            id="clearCategoryFilters"
+                            class="vx-btn-secondary">
+
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Clear Filters
+
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Card -->
+    <div class="card border-0 products-card">
+
+        <!-- Card Header -->
+        <div class="card-header bg-white border-0">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0">Product List</h5>
+
+                <span class="text-muted small">
+                    @Model.TotalCount products in total
+                </span>
 
             </div>
         </div>
 
-        @if (products.Any())
-        {
-            <div class="product-table-wrapper">
+        <!-- Card Body -->
+        <div class="card-body p-0">
 
-                <table class="product-table">
-                    <thead>
-                        <tr>
-                            <th>PRODUCT</th>
-                            <th>SKU</th>
-                            <th>CATEGORY</th>
-                            <th>PRICE</th>
-                            <th>STATUS</th>
-                            <th style="text-align: right;">ACTIONS</th>
-                        </tr>
-                    </thead>
+            @if (Model.Items.Any())
+            {
+                <div class="table-responsive">
 
-                    <tbody id="productTableBody">
+                    <table class="table align-middle mb-0">
 
-                        @foreach (var product in products)
-                        {
-                            <tr class="product-row"
-                                data-name="@product.Name"
-                                data-slug="@product.Slug"
-                                data-sku="@product.SKU"
-                                data-category="@product.CategoryName"
-                                data-status="@(product.IsPublished ? "published" : "unpublished")">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Product</th>
+                                <th>SKU</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
 
-                                <td>
-                                    <div class="product-identity">
-                                        <div>
-                                            <strong title="@product.Name">
-                                                @product.Name
-                                            </strong>
+                        <tbody id="productTableBody">
 
-                                            <span title="@product.Slug">
-                                                @product.Slug
-                                            </span>
+                            @foreach (var product in Model.Items)
+                            {
+                                <tr data-search="@($"{product.Name} {product.SKU} {product.Slug} {product.CategoryName}")"
+                                    data-status="@(product.IsPublished ? "published" : "unpublished")">
+
+                                    <!-- Product Information -->
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-3">
+
+                                            @if (product.ImageUrls.Any())
+                                            {
+                                                <img src="@product.ImageUrls.First()"
+                                                     alt="@product.Name"
+                                                     class="product-thumbnail" />
+                                            }
+                                            else
+                                            {
+                                                <div class="product-placeholder">
+                                                    <i class="bi bi-image"></i>
+                                                </div>
+                                            }
+
+                                            <div>
+                                                <a asp-action="Details"
+                                                   asp-route-id="@product.Id"
+                                                   class="product-name">
+                                                    @product.Name
+                                                </a>
+
+                                                <div class="product-slug">
+                                                    @product.Slug
+                                                </div>
+                                            </div>
+
                                         </div>
+                                    </td>
 
-                                    </div>
-                                </td>
+                                    <!-- SKU -->
+                                    <td>
+                                        @product.SKU
+                                    </td>
 
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(product.SKU))
-                                    {
-                                        <span class="product-sku">@product.SKU</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Not configured</span>
-                                    }
-                                </td>
-
-                                <td>
-                                    <span class="product-category">
-                                        <i class="bi bi-grid"></i>
+                                    <!-- Category -->
+                                    <td>
                                         @product.CategoryName
-                                    </span>
-                                </td>
+                                    </td>
 
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(product.SKU))
-                                    {
-                                        <span class="product-price">
-                                            @product.Price.ToString("N2")
-                                            <small>EGP</small>
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Not configured</span>
-                                    }
-                                </td>
+                                    <!-- Price -->
+                                    <td class="fw-semibold">
+                                        @product.Price.ToString("N2")
+                                    </td>
 
-                                <td>
-                                    @if (product.IsPublished)
-                                    {
-                                        <span class="product-status published">
-                                            <i class="bi bi-circle-fill"></i>
-                                            Published
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="product-status unpublished">
-                                            <i class="bi bi-circle-fill"></i>
-                                            Unpublished
-                                        </span>
-                                    }
-                                </td>
-
-                                <td>
-                                    <div class="product-actions">
-
-                                        <a asp-controller="Product"
-                                           asp-action="Details"
-                                           asp-route-id="@product.Id"
-                                           class="product-action"
-                                           title="View Details"
-                                           aria-label="View product details">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-
-                                        <a asp-controller="Product"
-                                           asp-action="Edit"
-                                           asp-route-id="@product.Id"
-                                           class="product-action"
-                                           title="Edit Product"
-                                           aria-label="Edit product">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-
+                                    <!-- Status -->
+                                    <td>
                                         @if (product.IsPublished)
                                         {
-                                            <form asp-controller="Product"
-                                                  asp-action="Unpublish"
-                                                  asp-route-id="@product.Id"
-                                                  method="post"
-                                                  class="d-inline">
-
-                                                @Html.AntiForgeryToken()
-
-                                                <button type="submit"
-                                                        class="product-action unpublish"
-                                                        title="Unpublish Product"
-                                                        aria-label="Unpublish product">
-                                                    <i class="bi bi-send-check"></i>
-                                                </button>
-
-                                            </form>
+                                            <span class="status-badge status-published">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Published
+                                            </span>
                                         }
                                         else
                                         {
-                                            <form asp-controller="Product"
-                                                  asp-action="Publish"
-                                                  asp-route-id="@product.Id"
-                                                  method="post"
-                                                  class="d-inline">
-
-                                                @Html.AntiForgeryToken()
-
-                                                <button type="submit"
-                                                        class="product-action publish"
-                                                        title="Publish Product"
-                                                        aria-label="Publish product">
-                                                    <i class="bi-eye-slash"></i>
-                                                </button>
-
-                                            </form>
+                                            <span class="status-badge status-unpublished">
+                                                <i class="bi bi-dash-circle"></i>
+                                                Unpublished
+                                            </span>
                                         }
+                                    </td>
 
-                                    </div>
+                                    <!-- Created Date -->
+                                    <td>
+                                        <span class="text-muted small">
+                                            @product.CreatedAt.ToString("dd MMM yyyy")
+                                        </span>
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td class="text-end pe-4">
+                                        <div class="product-actions">
+
+                                            <!-- Details -->
+                                            <a asp-action="Details"
+                                               asp-route-id="@product.Id"
+                                               class="btn"
+                                               title="View details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <!-- Edit -->
+                                            <a asp-action="Edit"
+                                               asp-route-id="@product.Id"
+                                               class="btn"
+                                               title="Edit product">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <!-- Publish / Unpublish -->
+                                            @if (product.IsPublished)
+                                            {
+                                                <form asp-action="Unpublish"
+                                                      asp-route-id="@product.Id"
+                                                      method="post"
+                                                      onsubmit="return confirm('Are you sure you want to unpublish this product?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn"
+                                                            title="Unpublish product">
+                                                        <i class="bi bi-cloud-upload"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="Publish"
+                                                      asp-route-id="@product.Id"
+                                                      method="post"
+                                                      onsubmit="return confirm('Are you sure you want to publish this product?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn"
+                                                            title="Publish product">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            }
+
+                            <!-- No Search Results -->
+                            <tr id="noSearchResults" style="display: none;">
+                                <td colspan="7" class="text-center py-5">
+
+                                    <i class="bi bi-search fs-3 text-muted"></i>
+
+                                    <h6 class="mt-3 mb-1">
+                                        No matching products
+                                    </h6>
+
+                                    <p class="text-muted small mb-0">
+                                        Try changing your search term or publication status.
+                                    </p>
+
                                 </td>
-
                             </tr>
-                        }
 
-                    </tbody>
-                </table>
+                        </tbody>
 
-                <!-- No Search Results -->
-                <div id="productNoResults"
-                     class="product-empty product-no-results">
+                    </table>
 
-                    <div class="product-empty-icon">
-                        <i class="bi bi-search"></i>
-                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="empty-state">
 
-                    <h3>No matching products</h3>
+                    <i class="bi bi-box-seam"></i>
+
+                    <h5>No products found</h5>
 
                     <p>
-                        No products match your search or selected status.
-                        Try changing your search criteria.
+                        Create your first product to get started.
                     </p>
 
-                    <button type="button"
-                            id="clearProductFilters"
-                            class="vx-btn-outline">
-                        Clear Filters
-                    </button>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Add Product
+                    </a>
 
                 </div>
+            }
 
-            </div>
+        </div>
 
-            <div class="product-panel-footer">
-
-                <div>
-                    Showing <strong id="productVisibleCount">@totalProducts</strong>
-                    of <strong>@totalProducts</strong> products
-                </div>
-
-                <div class="product-footer-meta">
-                    <span>
-                        <i class="bi bi-shield-check me-1"></i>
-                        Product management
-                    </span>
-                </div>
-
-            </div>
-        }
-        else
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
         {
-            <div class="product-empty">
+            <div class="card-footer bg-white border-0 py-3">
 
-                <div class="product-empty-icon">
-                    <i class="bi bi-box-seam"></i>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                    <span class="text-muted small">
+                        Page @Model.PageNumber of @Model.TotalPages
+                    </span>
+
+                    <nav aria-label="Products pagination">
+
+                        <ul class="pagination pagination-sm mb-0">
+
+                            <!-- Previous -->
+                            <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   asp-route-pageSize="@Model.PageSize">
+                                    Previous
+                                </a>
+
+                            </li>
+
+                            <!-- Page Numbers -->
+                            @for (int pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                            {
+                                <li class="page-item @(pageNumber == Model.PageNumber ? "active" : "")">
+
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-pageNumber="@pageNumber"
+                                       asp-route-pageSize="@Model.PageSize">
+                                        @pageNumber
+                                    </a>
+
+                                </li>
+                            }
+
+                            <!-- Next -->
+                            <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   asp-route-pageSize="@Model.PageSize">
+                                    Next
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
+
                 </div>
-
-                <h3>No products yet</h3>
-
-                <p>
-                    You haven't created any products.
-                    Start building your catalog by adding your first product.
-                </p>
-
-                <a asp-controller="Product"
-                   asp-action="Create"
-                   class="vx-btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i>
-                    Create First Product
-                </a>
 
             </div>
         }
 
-    </section>
+    </div>
 
 </div>
 
 @section Scripts {
+
     <script>
+
         document.addEventListener("DOMContentLoaded", function () {
 
-            const searchInput = document.getElementById("productSearch");
+            const searchInput = document.getElementById("productSearchInput");
             const statusFilter = document.getElementById("productStatusFilter");
-            const rows = document.querySelectorAll(".product-row");
+            const clearFiltersButton = document.getElementById("clearFiltersButton");
 
-            const noResults = document.getElementById("productNoResults");
-            const clearButton = document.getElementById("clearProductFilters");
-            const visibleCount = document.getElementById("productVisibleCount");
+            const tableBody = document.getElementById("productTableBody");
+            const noResultsRow = document.getElementById("noSearchResults");
 
-            if (!searchInput || !statusFilter) {
-                return;
-            }
+            if (!tableBody) return;
+
+            const productRows = Array.from(
+                tableBody.querySelectorAll("tr[data-search]")
+            );
 
             function filterProducts() {
 
                 const searchValue = searchInput.value.trim().toLowerCase();
                 const selectedStatus = statusFilter.value;
 
-                let count = 0;
+                let visibleCount = 0;
 
-                rows.forEach(row => {
+                productRows.forEach(row => {
 
-                    const name = (row.dataset.name || "").toLowerCase();
-                    const slug = (row.dataset.slug || "").toLowerCase();
-                    const sku = (row.dataset.sku || "").toLowerCase();
-                    const category = (row.dataset.category || "").toLowerCase();
-                    const status = row.dataset.status;
+                    const searchableText = row.dataset.search.toLowerCase();
+                    const productStatus = row.dataset.status;
 
                     const matchesSearch =
-                        name.includes(searchValue) ||
-                        slug.includes(searchValue) ||
-                        sku.includes(searchValue) ||
-                        category.includes(searchValue);
+                        searchableText.includes(searchValue);
 
                     const matchesStatus =
                         selectedStatus === "all" ||
-                        selectedStatus === status;
+                        productStatus === selectedStatus;
 
                     const isVisible = matchesSearch && matchesStatus;
 
                     row.style.display = isVisible ? "" : "none";
 
                     if (isVisible) {
-                        count++;
+                        visibleCount++;
                     }
+
                 });
 
-                if (visibleCount) {
-                    visibleCount.textContent = count;
-                }
-
-                if (noResults) {
-                    noResults.style.display = count === 0 ? "block" : "none";
+                if (noResultsRow) {
+                    noResultsRow.style.display =
+                        visibleCount === 0 ? "" : "none";
                 }
             }
 
+            // Live Search
             searchInput.addEventListener("input", filterProducts);
+
+            // Live Publication Status Filter
             statusFilter.addEventListener("change", filterProducts);
 
-            if (clearButton) {
-                clearButton.addEventListener("click", function () {
-                    searchInput.value = "";
-                    statusFilter.value = "all";
-                    filterProducts();
-                });
-            }
+            // Clear Filters
+            clearFiltersButton.addEventListener("click", function () {
 
-            filterProducts();
+                searchInput.value = "";
+                statusFilter.value = "all";
+
+                filterProducts();
+
+            });
+
         });
+
+        // Server-side Page Size
+        function changePageSize(pageSize) {
+
+            const url = new URL(window.location.href);
+
+            url.searchParams.set("pageSize", pageSize);
+            url.searchParams.set("pageNumber", "1");
+
+            // Remove old server-side filters
+            url.searchParams.delete("search");
+            url.searchParams.delete("status");
+
+            window.location.href = url.toString();
+        }
+
     </script>
+
 }
