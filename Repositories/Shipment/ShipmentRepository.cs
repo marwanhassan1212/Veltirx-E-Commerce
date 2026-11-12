@@ -25,6 +25,7 @@ namespace Veltrix.Repositories.Shipment
         public async Task<Models.Shipment?> GetByIdAsync(int id)
         {
             return await _db.Shipments
+                .AsNoTracking()
                .Include(x => x.TrackingEvents)
                .FirstOrDefaultAsync(x => x.Id == id);
         }

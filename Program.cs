@@ -33,9 +33,12 @@ using Veltrix.Repositories.User;
 using Veltrix.Repositories.UserAddress;
 using Veltrix.Repositories.VariantOptions;
 using Veltrix.Repositories.VariantOptionValue;
+using Veltrix.Services.Cart;
 using Veltrix.Services.Category;
 using Veltrix.Services.FileStorage;
 using Veltrix.Services.Images;
+using Veltrix.Services.Order;
+using Veltrix.Services.OrderItem;
 using Veltrix.Services.Product;
 using Veltrix.Services.ProductImage;
 using Veltrix.Services.ProductVariant;
@@ -107,6 +110,10 @@ namespace Veltrix
             builder.Services.AddScoped<IProductImageService, ProductImageService>();
             builder.Services.AddScoped<IProductVariantImageRepository, ProductVariantImageRepository>();
             builder.Services.AddScoped<IProductVariantImageService, ProductVariantImageService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+            builder.Services.AddScoped<IOrderQueryService, OrderQueryService>();
 
 
             var app = builder.Build();

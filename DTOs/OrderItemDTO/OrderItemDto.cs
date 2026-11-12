@@ -9,5 +9,10 @@
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
         public decimal LineTotal { get; set; }
+        public int ProductVariantId { get; set; }
+        public string? VariantName { get; set; }
+        public string? VariantOptionsSnapshot { get; set; }
+        public int CancelledQuantity { get; set; }
+        public int FulfilledQuantity { get; set; }
     }
 }

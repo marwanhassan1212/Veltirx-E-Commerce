@@ -90,9 +90,14 @@ namespace Veltrix.Repositories.Order
 
         public async Task<IReadOnlyList<Models.Order>> GetByUserIdAsync(string userId)
         {
-            return await _db.Orders.Where(x => x.UserId == userId)
-                .AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync();
-                
+            return await _db.Orders
+             .AsNoTracking()
+             .Include(o => o.OrderItems)
+                 .ThenInclude(i => i.ProductVariant)
+             .Where(o => o.UserId == userId)
+             .OrderByDescending(o => o.CreatedAt)
+             .ToListAsync();
+
         }
 
         public void Update(Models.Order order)

@@ -29,6 +29,9 @@ namespace Veltrix.Repositories.Cart
                 .ThenInclude(x => x.ProductVariant)
                     .ThenInclude(x => x.Product)
                         .ThenInclude(x => x.ProductImages)
+            .Include(x => x.CartItems)
+            .ThenInclude(x => x.ProductVariant)
+                .ThenInclude(x => x.Inventory)
         .AsSplitQuery()
         .FirstOrDefaultAsync(x => x.UserId == userId);
         }

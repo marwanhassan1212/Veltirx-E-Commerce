@@ -23,20 +23,29 @@ namespace Veltrix.Repositories.OrderItem
 
         public async Task<Models.OrderItem?> GetByIdAsync(int id)
         {
-            return await _db.OrderItems.FirstOrDefaultAsync(x => x.Id == id);
+            return await _db.OrderItems
+                .Include(x => x.ProductVariant)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<IReadOnlyList<Models.OrderItem>> GetByOrderIdAsync(int orderId)
         {
-            return await _db.OrderItems.Where(x => x.OrderId == orderId)
-                .AsNoTracking().OrderBy(x => x.Id)
+            return await _db.OrderItems
+                .AsNoTracking()
+                .Include(x => x.ProductVariant)
+                .Where(x => x.OrderId == orderId)
+                .OrderBy(x => x.Id)
                 .ToListAsync();
         }
 
         public async Task<IReadOnlyList<Models.OrderItem>> GetByProductIdAsync(int productId)
         {
-            return await _db.OrderItems.Where(x => x.ProductVariant.ProductId == productId)
-                .AsNoTracking().OrderByDescending(x => x.Order.CreatedAt).ToListAsync();
+            return await _db.OrderItems
+            .AsNoTracking()
+            .Include(x => x.ProductVariant)
+            .Where(x => x.ProductVariant.ProductId == productId)
+            .OrderByDescending(x => x.Order.CreatedAt)
+            .ToListAsync();
         }
 
         public void Update(Models.OrderItem orderItem)
