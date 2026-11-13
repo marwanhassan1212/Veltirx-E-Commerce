@@ -22,6 +22,7 @@ namespace Veltrix.Repositories.OrderReturn
         {
             return await _db.OrderReturns
                 .AsNoTracking()
+                .Include(x => x.Items)
                 .OrderByDescending(x => x.RequestedAt)
                 .ToListAsync();
         }
@@ -61,5 +62,71 @@ namespace Veltrix.Repositories.OrderReturn
         {
             _db.OrderReturns.Update(orderReturn);
         }
+
+
+        public async Task<(IReadOnlyList<Models.OrderReturn> Items, int TotalCount)>
+            GetPagedAsync(OrderReturnFilterParameters filters)
+        {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            var pageNumber = Math.Max(1, filters.PageNumber);
+            var pageSize = Math.Clamp(filters.PageSize, 1, 100);
+
+            var query = _db.OrderReturns
+                .AsNoTracking()
+                .Include(x => x.Items)
+                .AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(filters.ReturnNumber))
+            {
+                var returnNumber = filters.ReturnNumber.Trim();
+
+                query = query.Where(x =>
+                    x.ReturnNumber.Contains(returnNumber));
+            }
+
+            // Filtering
+            if (filters.OrderId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.OrderId == filters.OrderId.Value);
+            }
+
+            if (filters.Status.HasValue)
+            {
+                query = query.Where(x =>
+                    x.Status == filters.Status.Value);
+            }
+
+            if (filters.FromDate.HasValue)
+            {
+                query = query.Where(x =>
+                    x.RequestedAt >= filters.FromDate.Value.Date);
+            }
+
+            if (filters.ToDate.HasValue)
+            {
+                var toDate = filters.ToDate.Value.Date.AddDays(1);
+
+                query = query.Where(x =>
+                    x.RequestedAt < toDate);
+            }
+
+            // Total Count
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var items = await query
+                .OrderByDescending(x => x.RequestedAt)
+                .ThenByDescending(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
     }
 }

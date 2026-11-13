@@ -8,5 +8,8 @@
         Task<IReadOnlyList<Models.OrderFulfillment>> GetAllAsync();
         Task AddAsync(Models.OrderFulfillment fulfillment);
         void Update(Models.OrderFulfillment fulfillment);
+        Task<(IReadOnlyList<Models.OrderFulfillment> Items, int TotalCount)> GetPagedAsync(OrderFulfillmentFilterParameters filters);
+
+
     }
 }

@@ -47,5 +47,63 @@ namespace Veltrix.Repositories.CodReconciliation
         {
             _db.CodReconciliations.Update(reconciliation);
         }
+
+        public async Task<(IReadOnlyList<Models.CodReconciliation> Items, int TotalCount)> GetPagedAsync(CodReconciliationFilterParameters filters)
+        {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            var pageNumber = Math.Max(1, filters.PageNumber);
+            var pageSize = Math.Clamp(filters.PageSize, 1, 100);
+
+            var query = _db.CodReconciliations
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filters.ReconciliationNumber))
+            {
+                var number = filters.ReconciliationNumber.Trim();
+
+                query = query.Where(x =>
+                    x.ReconciliationNumber.Contains(number));
+            }
+
+            if (filters.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == filters.Status.Value);
+
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.ReconciledByUserId))
+            {
+                query = query.Where(x => x.ReconciledByUserId == filters.ReconciledByUserId);
+            }
+
+            if (filters.FromDate.HasValue)
+            {
+                query = query.Where(x => x.CreatedAt >= filters.FromDate.Value.Date);
+
+            }
+
+            if (filters.ToDate.HasValue)
+            {
+                var toDate = filters.ToDate.Value.Date.AddDays(1);
+
+                query = query.Where(x =>
+                    x.CreatedAt < toDate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
     }
 }

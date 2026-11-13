@@ -56,5 +56,56 @@ namespace Veltrix.Repositories.OrderFulfillment
         {
             _db.OrderFulfillments.Update(fulfillment);
         }
+
+        public async Task<(IReadOnlyList<Models.OrderFulfillment> Items, int TotalCount)> GetPagedAsync(OrderFulfillmentFilterParameters filters)
+        {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            var pageNumber = Math.Max(1, filters.PageNumber);
+            var pageSize = Math.Clamp(filters.PageSize, 1, 100);
+            var query = _db.OrderFulfillments.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filters.FulfillmentNumber))
+            {
+                var number = filters.FulfillmentNumber.Trim();
+                query = query.Where(x => x.FulfillmentNumber.Contains(number));
+
+            }
+
+            if (filters.OrderId.HasValue)
+            {
+                query = query.Where(x => x.OrderId == filters.OrderId.Value);
+            }
+
+            if (filters.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == filters.Status.Value);
+            }
+
+            if (filters.FromDate.HasValue)
+            {
+                query = query.Where(x => x.CreatedAt >= filters.FromDate.Value.Date);
+
+            }
+
+            if (filters.ToDate.HasValue)
+            {
+                var toDate = filters.ToDate.Value.Date.AddDays(1);
+                query = query.Where(x => x.CreatedAt < toDate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
     }
 }

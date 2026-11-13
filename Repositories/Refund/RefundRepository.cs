@@ -25,7 +25,7 @@ namespace Veltrix.Repositories.Refund
         public async Task<Models.Refund?> GetByIdAsync(int id)
         {
             return await _db.Refunds.Include(x => x.Return)
-                .Include(x => x.ProcessedByUserId)
+                .Include(x => x.ProcessedByUser)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -51,5 +51,74 @@ namespace Veltrix.Repositories.Refund
         {
             _db.Refunds.Update(refund);
         }
+
+
+        public async Task<(IReadOnlyList<Models.Refund> Items, int TotalCount)>
+            GetPagedAsync(RefundFilterParameters filters)
+        {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            var pageNumber = Math.Max(1, filters.PageNumber);
+            var pageSize = Math.Clamp(filters.PageSize, 1, 100);
+
+            var query = _db.Refunds
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(filters.RefundNumber))
+            {
+                var refundNumber = filters.RefundNumber.Trim();
+
+                query = query.Where(x =>
+                    x.RefundNumber.Contains(refundNumber));
+            }
+
+            // Filtering
+            if (filters.ReturnId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.ReturnId == filters.ReturnId.Value);
+            }
+
+            if (filters.Status.HasValue)
+            {
+                query = query.Where(x =>
+                    x.Status == filters.Status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.ProcessedByUserId))
+            {
+                query = query.Where(x =>
+                    x.ProcessedByUserId == filters.ProcessedByUserId);
+            }
+
+            if (filters.FromDate.HasValue)
+            {
+                query = query.Where(x =>
+                    x.CreatedAt >= filters.FromDate.Value.Date);
+            }
+
+            if (filters.ToDate.HasValue)
+            {
+                var toDate = filters.ToDate.Value.Date.AddDays(1);
+
+                query = query.Where(x =>
+                    x.CreatedAt < toDate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
     }
 }

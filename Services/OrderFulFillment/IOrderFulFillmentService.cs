@@ -1,5 +1,6 @@
 ﻿
 using Veltrix.DTOs.OrderFulfillmentDTO;
+using Veltrix.Repositories.OrderFulfillment;
 
 namespace Veltrix.Services.OrderFulfillment
 {
@@ -9,5 +10,9 @@ namespace Veltrix.Services.OrderFulfillment
         Task<OrderFulfillmentDto?> GetByFulfillmentNumberAsync(string fulfillmentNumber);
         Task<IReadOnlyList<OrderFulfillmentDto>> GetByOrderIdAsync(int orderId);
         Task<IReadOnlyList<OrderFulfillmentDto>> GetAllAsync();
+
+        Task<(IReadOnlyList<OrderFulfillmentDto> Items, int TotalCount)> GetPagedAsync(OrderFulfillmentFilterParameters filters);
+
+
     }
 }

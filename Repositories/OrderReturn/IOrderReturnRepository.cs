@@ -10,5 +10,9 @@ namespace Veltrix.Repositories.OrderReturn
         Task<IReadOnlyList<Models.OrderReturn>> GetAllAsync();
         Task AddAsync(Models.OrderReturn orderReturn);
         void Update(Models.OrderReturn orderReturn);
+
+        Task<(IReadOnlyList<Models.OrderReturn> Items, int TotalCount)> GetPagedAsync(OrderReturnFilterParameters filters);
+
+
     }
 }

@@ -26,7 +26,20 @@ namespace Veltrix.Repositories.Coupon
         {
             return await _db.Coupons.FirstOrDefaultAsync(x => x.Code == code);
         }
+        public async Task<bool> TryIncrementUsageCountAsync(int couponId)
+        {
+            if (couponId <= 0)
+                return false;
 
+            var affectedRows = await _db.Coupons
+                .Where(x => x.Id == couponId &&
+                            (x.UsageLimit == null || x.UsageCount < x.UsageLimit))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.UsageCount, x => x.UsageCount + 1)
+                    .SetProperty(x => x.UpdatedAt, DateTime.UtcNow));
+
+            return affectedRows == 1;
+        }
         public async Task<Models.Coupon?> GetByIdAsync(int Id)
         {
             return await _db.Coupons.FirstOrDefaultAsync(x => x.Id == Id);

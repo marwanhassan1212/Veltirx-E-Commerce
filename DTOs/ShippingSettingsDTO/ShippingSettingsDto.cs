@@ -6,5 +6,6 @@
         public decimal ShippingFee { get; set; }
         public bool IsActive { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public string? UpdatedByUserId { get; set; }
     }
 }

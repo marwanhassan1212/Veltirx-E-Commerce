@@ -1,5 +1,6 @@
 ﻿
 using Veltrix.DTOs.OrderFulfillmentDTO;
+using Veltrix.Repositories.OrderFulfillment;
 using Veltrix.UnitOfWork;
 using FulfillmentModel = Veltrix.Models.OrderFulfillment;
 
@@ -76,5 +77,25 @@ namespace Veltrix.Services.OrderFulfillment
                     .ToList()
             };
         }
+
+        public async Task<(IReadOnlyList<OrderFulfillmentDto> Items, int TotalCount)> GetPagedAsync(OrderFulfillmentFilterParameters filters)
+        {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            if (filters.FromDate.HasValue && filters.ToDate.HasValue &&
+                filters.FromDate.Value.Date > filters.ToDate.Value.Date)
+            {
+                throw new ArgumentException("FromDate cannot be later than ToDate.");
+            }
+
+            filters.PageNumber = Math.Max(1, filters.PageNumber);
+            filters.PageSize = Math.Clamp(filters.PageSize, 1, 100);
+            var result = await _unitOfWork.OrderFulfillments.GetPagedAsync(filters);
+            var items = result.Items.Select(MapToDto).ToList();
+
+            return (items, result.TotalCount);
+        }
+
     }
 }

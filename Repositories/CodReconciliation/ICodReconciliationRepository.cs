@@ -7,5 +7,9 @@
         Task<IReadOnlyList<Models.CodReconciliation>> GetAllAsync();
         Task AddAsync(Models.CodReconciliation reconciliation);
         void Update(Models.CodReconciliation reconciliation);
+
+        Task<(IReadOnlyList<Models.CodReconciliation> Items, int TotalCount)> GetPagedAsync(CodReconciliationFilterParameters filters);
+
+
     }
 }

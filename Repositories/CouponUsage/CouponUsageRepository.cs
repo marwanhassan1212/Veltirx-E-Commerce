@@ -24,6 +24,11 @@ namespace Veltrix.Repositories.CouponUsage
                 .ToListAsync();
         }
 
+        public async Task<bool> HasUserUsedCouponAsync(int couponId, string userId)
+        {
+            return await _db.CouponUsages
+                .AnyAsync(x => x.CouponId == couponId && x.UsedByUserId == userId);
+        }
         public async Task<Models.CouponUsage?> GetByOrderIdAsync(int orderId)
         {
             return await _db.CouponUsages.FirstOrDefaultAsync(x => x.OrderId == orderId);

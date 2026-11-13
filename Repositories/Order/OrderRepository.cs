@@ -17,9 +17,16 @@ namespace Veltrix.Repositories.Order
             await _db.Orders.AddAsync(order);
         }
 
-        public async Task<(IReadOnlyList<Models.Order> Items, int TotalCount)>
-           GetPagedAsync(OrderFilterParameters filters)
+        public async Task<(IReadOnlyList<Models.Order> Items, int TotalCount)> GetPagedAsync(OrderFilterParameters filters)
+
         {
+            if (filters == null)
+                throw new ArgumentNullException(nameof(filters));
+
+            var pageNumber = Math.Max(1, filters.PageNumber);
+            var pageSize = Math.Clamp(filters.PageSize, 1, 100);
+
+
             var query = _db.Orders.AsNoTracking();
 
             // Filtering
@@ -64,8 +71,8 @@ namespace Veltrix.Repositories.Order
             var items = await query
                 .OrderByDescending(x => x.CreatedAt)
                 .ThenByDescending(x => x.Id)
-                .Skip((filters.PageNumber - 1) * filters.PageSize)
-                .Take(filters.PageSize)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             return (items, totalCount);

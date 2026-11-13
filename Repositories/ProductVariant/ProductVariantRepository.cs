@@ -30,14 +30,12 @@ namespace Veltrix.Repositories.ProductVariant
         public async Task<Models.ProductVariant?> GetByIdAsync(int id)
         {
             return await _db.ProductVariants
-                .Include(x => x.Product)
-                .Include(x => x.VariantOptions)
-                    .ThenInclude(x => x.VariantOptionValue)
-                        .ThenInclude(x => x.VariantOption)
-                .Include(x => x.OrderItems)
-                .Include(x => x.CartItems)
-                .Include(x => x.Inventory)
-                .FirstOrDefaultAsync(x => x.Id == id);
+              .Include(x => x.Product)
+              .Include(x => x.VariantOptions)
+                  .ThenInclude(x => x.VariantOptionValue)
+                      .ThenInclude(x => x.VariantOption)
+              .Include(x => x.Inventory)
+              .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<IReadOnlyList<Models.ProductVariant>> GetByProductIdAsync(int productId)
