@@ -1,0 +1,165 @@
+﻿@using Veltrix.DTOs.InventoryTransactionDTO
+@model IReadOnlyList<InventoryTransactionDto>
+
+@{
+    ViewData["Title"] = "Order Inventory Transactions";
+    var orderId = (int)ViewBag.OrderId;
+
+    var totalAdded = Model
+        .Where(x => x.QuantityChange > 0)
+        .Sum(x => x.QuantityChange);
+
+    var totalRemoved = Model
+        .Where(x => x.QuantityChange < 0)
+        .Sum(x => Math.Abs((long)x.QuantityChange));
+}
+
+<div class="inventory-page">
+
+    <div class="inventory-breadcrumb">
+        <a asp-action="Index">Inventory</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>Order Transactions</span>
+    </div>
+
+    <div class="inventory-page-header">
+        <div>
+            <span class="inventory-eyebrow">ORDER INVENTORY HISTORY</span>
+            <h1>Order #@orderId</h1>
+            <p>Review all inventory movements associated with this order.</p>
+        </div>
+
+        <a asp-controller="Order"
+           asp-action="Details"
+           asp-route-id="@orderId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Order
+        </a>
+    </div>
+
+    <div class="inventory-transaction-summary">
+
+        <div class="inventory-summary-item">
+            <span>Total Transactions</span>
+            <strong>@Model.Count</strong>
+        </div>
+
+        <div class="inventory-summary-item">
+            <span>Stock Added</span>
+            <strong class="inventory-positive-value">
+                +@totalAdded.ToString("N0")
+            </strong>
+        </div>
+
+        <div class="inventory-summary-item">
+            <span>Stock Removed</span>
+            <strong class="inventory-negative-value">
+                -@totalRemoved.ToString("N0")
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="inventory-content-card">
+
+        <div class="inventory-card-header">
+            <div>
+                <h2>Inventory Movement History</h2>
+                <p>All recorded stock changes for order #@orderId.</p>
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="inventory-table-wrapper">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Quantity Change</th>
+                            <th>Before</th>
+                            <th>After</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var isIncrease = item.QuantityChange > 0;
+
+                            <tr>
+                                <td>
+                                    <strong>#@item.Id</strong>
+                                </td>
+
+                                <td>
+                                    <div class="inventory-product-cell">
+                                        <div class="inventory-product-icon">
+                                            <i class="bi bi-box-seam"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@item.ProductName</strong>
+                                            <small>Product #@item.ProductId</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="inventory-transaction-type">
+                                        @item.TransactionType
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="@(isIncrease ? "inventory-positive-value" : "inventory-negative-value")">
+                                        @(isIncrease ? "+" : "")@item.QuantityChange.ToString("N0")
+                                    </strong>
+                                </td>
+
+                                <td>@item.QuantityBefore.ToString("N0")</td>
+
+                                <td>
+                                    <strong>@item.QuantityAfter.ToString("N0")</strong>
+                                </td>
+
+                                <td>
+                                    <span class="inventory-date">
+                                        @item.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <small class="inventory-time">
+                                        @item.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
+                            </tr>
+
+                            <tr class="inventory-reason-row">
+                                <td colspan="7">
+                                    <span>Reason:</span>
+                                    @(string.IsNullOrWhiteSpace(item.Reason)
+                                                                ? "No reason provided"
+                                                                : item.Reason)
+                        </td>
+                    </tr>
+                                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="inventory-empty-state">
+                <div class="inventory-empty-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h3>No inventory transactions found</h3>
+                <p>No inventory movements have been recorded for this order.</p>
+            </div>
+        }
+
+    </div>
+
+</div>

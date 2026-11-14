@@ -11,9 +11,7 @@ namespace Veltrix.Controllers
         private readonly IOrderService _orderService;
         private readonly IOrderQueryService _orderQueryService;
 
-        public OrderController(
-            IOrderService orderService,
-            IOrderQueryService orderQueryService)
+        public OrderController(IOrderService orderService, IOrderQueryService orderQueryService)
         {
             _orderService = orderService;
             _orderQueryService = orderQueryService;

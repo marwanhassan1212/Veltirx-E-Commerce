@@ -1,0 +1,170 @@
+﻿@using Veltrix.DTOs.RefundDTO
+
+@model IReadOnlyList<RefundDto>
+
+@{
+    ViewData["Title"] = "Refunds By Return";
+
+    var returnId = Convert.ToInt32(ViewBag.ReturnId ?? 0);
+}
+
+<div class="admin-refund-page">
+
+    <div class="refund-page-header">
+        <div>
+            <span class="refund-eyebrow">ORDER MANAGEMENT</span>
+            <h1>Return Refunds</h1>
+            <p>Review all refund records associated with return #@returnId.</p>
+        </div>
+
+        <a asp-controller="Refund"
+           asp-action="Index"
+           class="refund-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Back to Refunds
+        </a>
+    </div>
+
+    <section class="refund-stats-grid">
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </div>
+            <div>
+                <span>Related Return</span>
+                <strong>#@returnId</strong>
+            </div>
+        </div>
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+                <span>Total Refund Records</span>
+                <strong>@Model.Count</strong>
+            </div>
+        </div>
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-currency-exchange"></i>
+            </div>
+            <div>
+                <span>Total Recorded Amount</span>
+                <strong>@Model.Sum(x => x.Amount).ToString("N2") EGP</strong>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="refund-panel refund-table-panel">
+
+        <div class="refund-panel-header">
+            <div>
+                <h2>Related Refunds</h2>
+                <p>Refund records linked to return #@returnId.</p>
+            </div>
+
+            <span class="refund-record-count">
+                @Model.Count Records
+            </span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="refund-table-wrapper">
+                <table class="refund-table">
+                    <thead>
+                        <tr>
+                            <th>Refund Number</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Processed At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var refund in Model)
+                        {
+                            var statusClass = refund.Status.ToString()
+                            .ToLowerInvariant()
+                            .Replace(" ", "-");
+
+                            <tr>
+                                <td>
+                                    <strong class="refund-number">
+                                        @refund.RefundNumber
+                                    </strong>
+                                    <small class="refund-id">
+                                        ID: #@refund.Id
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <strong class="refund-amount">
+                                        @refund.Amount.ToString("N2") EGP
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="refund-status-badge @statusClass">
+                                        @refund.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="refund-date">
+                                        @refund.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <small class="refund-time">
+                                        @refund.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @if (refund.ProcessedAt.HasValue)
+                                    {
+                                        <span class="refund-date">
+                                            @refund.ProcessedAt.Value.ToString("dd MMM yyyy")
+                                        </span>
+                                        <small class="refund-time">
+                                            @refund.ProcessedAt.Value.ToString("hh:mm tt")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="refund-muted">Not processed</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-controller="Refund"
+                                       asp-action="Details"
+                                       asp-route-id="@refund.Id"
+                                       class="refund-details-btn">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="refund-empty-state">
+                <i class="bi bi-receipt"></i>
+                <h3>No Refunds Found</h3>
+                <p>No refund records are associated with this return yet.</p>
+            </div>
+        }
+
+    </section>
+
+</div>

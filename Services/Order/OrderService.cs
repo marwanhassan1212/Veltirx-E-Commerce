@@ -1,12 +1,13 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 using Veltrix.DTOs.OrderDTO;
 using Veltrix.DTOs.OrderItemDTO;
 using Veltrix.Enums;
 using Veltrix.Models;
 using Veltrix.UnitOfWork;
-
-using OrderModel = Veltrix.Models.Order;
 using OrderItemModel = Veltrix.Models.OrderItem;
+using OrderModel = Veltrix.Models.Order;
 
 namespace Veltrix.Services.Order
 {
@@ -19,227 +20,154 @@ namespace Veltrix.Services.Order
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<OrderDto> CreateOrderAsync(
-            string userId,
-            CreateOrderDto dto)
+
+        // 1. CREATE ORDER
+    
+        public async Task<OrderDto> CreateOrderAsync(string userId, CreateOrderDto dto)
         {
             if (string.IsNullOrWhiteSpace(userId))
                 throw new ArgumentException("Invalid user ID.");
 
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
+            ArgumentNullException.ThrowIfNull(dto);
             ValidateShippingDetails(dto);
-
-            await using var transaction =
-                await _unitOfWork.BeginTransactionAsync();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                // 1. Get customer's cart.
+                // Get customer's cart.
                 var cart = await _unitOfWork.Carts.GetByUserIdAsync(userId);
 
                 if (cart == null || !cart.CartItems.Any())
                     throw new InvalidOperationException("Your cart is empty.");
 
-                var variantsById =
-                    new Dictionary<int, Models.ProductVariant>();
-
-                // 2. Prepare order items and calculate subtotal.
+                var variantsById = new Dictionary<int, Models.ProductVariant>();
                 var orderItems = new List<OrderItemModel>();
                 decimal subtotal = 0;
 
+                // Prepare order items and calculate subtotal.
                 foreach (var cartItem in cart.CartItems)
                 {
-                    if (cartItem.Quantity < 1 || cartItem.Quantity > 100)
-                        throw new InvalidOperationException(
-                            "Invalid product quantity.");
+                    if (cartItem.Quantity < 1 ||
+                        cartItem.Quantity > 100)
+                    {
+                        throw new InvalidOperationException("Invalid product quantity.");
+                    }
 
-                    var variant = await _unitOfWork.productVariant
-                        .GetByIdAsync(cartItem.ProductVariantId);
-
+                    var variant = await _unitOfWork.productVariant.GetByIdAsync(cartItem.ProductVariantId);
                     if (variant == null)
-                        throw new InvalidOperationException(
-                            "A product in your cart no longer exists.");
+                    {
+                        throw new InvalidOperationException("A product in your cart no longer exists.");
+                    }
 
                     if (!variant.IsActive || !variant.Product.IsPublished)
-                        throw new InvalidOperationException(
-                            $"{variant.Product.Name} is no longer available.");
+                    {
+                        throw new InvalidOperationException($"{variant.Product.Name} is no longer available.");
+                    }
 
                     if (variant.Inventory == null)
-                        throw new InvalidOperationException(
-                            $"Inventory not found for {variant.Product.Name}.");
+                    {
+                        throw new InvalidOperationException($"Inventory not found for {variant.Product.Name}.");
+                    }
 
                     if (variant.Inventory.StockQuantity < cartItem.Quantity)
-                        throw new InvalidOperationException(
-                            $"Insufficient stock for {variant.Product.Name}.");
+                    {
+                        throw new InvalidOperationException($"Insufficient stock for {variant.Product.Name}.");
+                    }
 
                     variantsById[variant.Id] = variant;
 
                     decimal lineTotal = variant.Price * cartItem.Quantity;
                     subtotal += lineTotal;
-
                     orderItems.Add(new OrderItemModel
                     {
                         ProductName = variant.Product.Name,
                         SKU = variant.SKU,
-
-                        VariantName = variant.IsDefault
-                            ? "Default Variant"
-                            : "Product Variant",
-
+                        VariantName = variant.IsDefault ? "Default Variant" : "Product Variant",
                         VariantOptionsSnapshot = null,
-
                         UnitPrice = variant.Price,
                         Quantity = cartItem.Quantity,
                         LineTotal = lineTotal,
-
                         CancelledQuantity = 0,
                         FulfilledQuantity = 0,
-
                         ProductVariantId = variant.Id
                     });
                 }
 
-                // 3. Validate and calculate coupon discount.
-                Coupon? coupon = null;
+                // Validate and calculate coupon discount.
+                Models.Coupon? coupon = null;
                 decimal discountAmount = 0;
-
                 if (!string.IsNullOrWhiteSpace(dto.CouponCode))
                 {
-                    coupon = await _unitOfWork.Coupons
-                        .GetByCodeAsync(dto.CouponCode.Trim());
-
+                    coupon = await _unitOfWork.Coupons.GetByCodeAsync(dto.CouponCode.Trim());
                     if (coupon == null)
-                        throw new InvalidOperationException(
-                            "Invalid coupon code.");
+                    {
+                        throw new InvalidOperationException("Invalid coupon code.");
+                    }
 
-                    var now = DateTime.UtcNow;
+                    ValidateCoupon(coupon, subtotal);
 
-                    if (!coupon.IsActive)
-                        throw new InvalidOperationException(
-                            "This coupon is inactive.");
-
-                    if (now < coupon.StartsAt || now > coupon.ExpiresAt)
-                        throw new InvalidOperationException(
-                            "This coupon is not currently available.");
-
-                    var hasUsedCoupon = await _unitOfWork.CouponUsages
-                        .HasUserUsedCouponAsync(coupon.Id, userId);
-
+                    bool hasUsedCoupon = await _unitOfWork.CouponUsages.HasUserUsedCouponAsync(coupon.Id, userId);
                     if (hasUsedCoupon)
+                    {
                         throw new InvalidOperationException(
                             "You have already used this coupon.");
-
-                    if (coupon.UsageLimit.HasValue &&
-                        coupon.UsageCount >= coupon.UsageLimit.Value)
-                    {
-                        throw new InvalidOperationException(
-                            "This coupon has reached its usage limit.");
                     }
-
-                    if (coupon.MinimumOrderAmount.HasValue &&
-                        subtotal < coupon.MinimumOrderAmount.Value)
-                    {
-                        throw new InvalidOperationException(
-                            "The order does not meet the coupon minimum amount.");
-                    }
-
-                    if (coupon.DiscountValue <= 0)
-                        throw new InvalidOperationException(
-                            "Invalid coupon discount configuration.");
-
-                    if (coupon.DiscountType == DiscountType.Percentage)
-                    {
-                        discountAmount =
-                            subtotal * coupon.DiscountValue / 100m;
-                    }
-                    else if (coupon.DiscountType == DiscountType.FixedAmount)
-                    {
-                        discountAmount = coupon.DiscountValue;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException(
-                            "Unsupported coupon discount type.");
-                    }
-
-                    if (coupon.MaximumDiscountAmount.HasValue)
-                    {
-                        discountAmount = Math.Min(
-                            discountAmount,
-                            coupon.MaximumDiscountAmount.Value);
-                    }
-
-                    discountAmount = Math.Min(discountAmount, subtotal);
+                    discountAmount = CalculateDiscount(coupon, subtotal);
                 }
 
-                // 4. Get active shipping settings.
-                var shippingSettings = await _unitOfWork.ShippingSettings
-                    .GetActiveAsync();
-
+                // Get active shipping settings.
+                var shippingSettings = await _unitOfWork.ShippingSettings.GetActiveAsync();
                 if (shippingSettings == null)
-                    throw new InvalidOperationException(
-                        "Shipping settings are not configured.");
+                {
+                    throw new InvalidOperationException("Shipping settings are not configured.");
+                }
 
                 decimal shippingFee = shippingSettings.ShippingFee;
-
                 if (shippingFee < 0)
-                    throw new InvalidOperationException(
-                        "Invalid shipping fee configuration.");
+                {
+                    throw new InvalidOperationException("Invalid shipping fee configuration.");            
+                }
 
-                decimal totalAmount =
-                    subtotal - discountAmount + shippingFee;
+                decimal totalAmount = subtotal - discountAmount + shippingFee;
 
-                // 5. Create the order.
+
+                if (totalAmount < 0)
+                {
+                    throw new InvalidOperationException("Invalid order total.");
+                }
+
+                // Create order.
                 var nowUtc = DateTime.UtcNow;
-
                 var order = new OrderModel
                 {
                     OrderNumber = GenerateOrderNumber(),
-
                     OrderStatus = OrderStatus.Pending,
                     PaymentMethod = PaymentMethod.CashOnDelivery,
                     PaymentStatus = PaymentStatus.Pending,
-
                     Subtotal = subtotal,
                     DiscountAmount = discountAmount,
                     ShippingFee = shippingFee,
                     TotalAmount = totalAmount,
-
-                    ShippingRecipientName =
-                        dto.ShippingRecipientName.Trim(),
-
-                    ShippingPhoneNumber =
-                        dto.ShippingPhoneNumber.Trim(),
-
-                    ShippingAddressLine1 =
-                        dto.ShippingAddressLine1.Trim(),
-
-                    ShippingAddressLine2 =
-                        dto.ShippingAddressLine2?.Trim(),
-
+                    ShippingRecipientName = dto.ShippingRecipientName.Trim(),
+                    ShippingPhoneNumber = dto.ShippingPhoneNumber.Trim(),
+                    ShippingAddressLine1 = dto.ShippingAddressLine1.Trim(),
+                    ShippingAddressLine2 = dto.ShippingAddressLine2?.Trim(),
                     ShippingCity = dto.ShippingCity.Trim(),
                     ShippingGovernorate = dto.ShippingGovernorate.Trim(),
-
-                    ShippingPostalCode =
-                        dto.ShippingPostalCode?.Trim(),
-
-                    ShippingInstructions =
-                        dto.ShippingInstructions?.Trim(),
-
+                    ShippingPostalCode = dto.ShippingPostalCode?.Trim(),
+                    ShippingInstructions = dto.ShippingInstructions?.Trim(),
                     UserId = userId,
                     CouponId = coupon?.Id,
                     CreatedAt = nowUtc
                 };
 
-                // 6. Attach order items.
+                // Attach order items.
                 foreach (var orderItem in orderItems)
+                {
                     order.OrderItems.Add(orderItem);
+                }
 
                 await _unitOfWork.Orders.AddAsync(order);
-
-                // 7. Atomically deduct inventory.
                 foreach (var cartItem in cart.CartItems)
                 {
                     var variant =
@@ -248,50 +176,42 @@ namespace Veltrix.Services.Order
                     var inventory = variant.Inventory;
 
                     if (inventory == null)
-                        throw new InvalidOperationException(
-                            "Inventory could not be loaded.");
+                    {
+                        throw new InvalidOperationException("Inventory could not be loaded.");
+
+                    }
 
                     int? quantityAfter =
-                        await _unitOfWork.Inventory.TryDecreaseStockAsync(
-                            inventory.Id,
-                            cartItem.Quantity);
-
+                        await _unitOfWork.Inventory.TryDecreaseStockAsync(inventory.Id, cartItem.Quantity);
                     if (!quantityAfter.HasValue)
-                        throw new InvalidOperationException(
-                            $"Insufficient stock for {variant.Product.Name}.");
+                    {
+                        throw new InvalidOperationException($"Insufficient stock for {variant.Product.Name}.");
 
-                    int quantityBefore =
-                        quantityAfter.Value + cartItem.Quantity;
-
+                    }
+                    int quantityBefore = quantityAfter.Value + cartItem.Quantity;
                     var inventoryTransaction = new InventoryTransaction
+
                     {
                         TransactionType = InventoryTransactionType.OrderPlaced,
-
                         QuantityChange = -cartItem.Quantity,
                         QuantityBefore = quantityBefore,
                         QuantityAfter = quantityAfter.Value,
-
                         Reason = "Inventory deducted for order placement",
-
                         CreatedAt = nowUtc,
-
                         InventoryId = inventory.Id,
                         Order = order
                     };
-
-                    await _unitOfWork.InventoryTransactions
-                        .AddAsync(inventoryTransaction);
+                    await _unitOfWork.InventoryTransactions.AddAsync(inventoryTransaction);
                 }
 
-                // 8. Atomically increment coupon usage.
+                // Atomically increment coupon usage.
                 if (coupon != null)
                 {
-                    var incremented = await _unitOfWork.Coupons
-                        .TryIncrementUsageCountAsync(coupon.Id);
-
+                    bool incremented = await _unitOfWork.Coupons.TryIncrementUsageCountAsync(coupon.Id);
                     if (!incremented)
-                        throw new InvalidOperationException(
-                            "This coupon has reached its usage limit.");
+                    {
+                        throw new InvalidOperationException("This coupon has reached its usage limit.");
+                    }
 
                     var couponUsage = new CouponUsage
                     {
@@ -301,11 +221,10 @@ namespace Veltrix.Services.Order
                         UsedAt = nowUtc,
                         Order = order
                     };
-
                     await _unitOfWork.CouponUsages.AddAsync(couponUsage);
                 }
 
-                // 9. Record initial order status.
+                // Record initial order status.
                 var statusHistory = new Models.OrderStatusHistory
                 {
                     PreviousStatus = null,
@@ -314,18 +233,20 @@ namespace Veltrix.Services.Order
                     ChangedAt = nowUtc,
                     Order = order
                 };
-
                 await _unitOfWork.OrdersStatusHistory
                     .AddAsync(statusHistory);
 
-                // 10. Clear customer's cart.
+                // Clear customer's cart.
                 foreach (var cartItem in cart.CartItems.ToList())
+                {
                     _unitOfWork.CartItems.Delete(cartItem);
+                }
 
                 cart.UpdatedAt = nowUtc;
+
                 _unitOfWork.Carts.Update(cart);
 
-                // 11. Save all changes.
+                // Save all changes.
                 await _unitOfWork.SaveChangesAsync();
 
                 var result = MapToDto(order, variantsById);
@@ -341,7 +262,8 @@ namespace Veltrix.Services.Order
             }
         }
 
-        // 12. Cancel customer's order.
+     
+        // 2. CANCEL CUSTOMER ORDER
         public async Task<OrderDto?> CancelOrderAsync(
             string userId,
             int orderId,
@@ -353,10 +275,9 @@ namespace Veltrix.Services.Order
             if (orderId <= 0)
                 throw new ArgumentException("Invalid order ID.");
 
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+            ArgumentNullException.ThrowIfNull(dto);
 
-            var cancelReason = dto.CancelReason?.Trim();
+            string? cancelReason = dto.CancelReason?.Trim();
 
             if (string.IsNullOrWhiteSpace(cancelReason) ||
                 cancelReason.Length < 3 ||
@@ -371,7 +292,8 @@ namespace Veltrix.Services.Order
 
             try
             {
-                var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
+                var order =
+                    await _unitOfWork.Orders.GetByIdAsync(orderId);
 
                 if (order == null || order.UserId != userId)
                 {
@@ -380,8 +302,10 @@ namespace Veltrix.Services.Order
                 }
 
                 if (order.ShippedAt.HasValue)
+                {
                     throw new InvalidOperationException(
                         "This order has already been shipped and cannot be cancelled.");
+                }
 
                 var allowedStatuses = new[]
                 {
@@ -393,12 +317,17 @@ namespace Veltrix.Services.Order
                 };
 
                 if (!allowedStatuses.Contains(order.OrderStatus))
+                {
                     throw new InvalidOperationException(
                         "This order cannot be cancelled in its current status.");
+                }
 
-                if (order.OrderItems == null || !order.OrderItems.Any())
+                if (order.OrderItems == null ||
+                    !order.OrderItems.Any())
+                {
                     throw new InvalidOperationException(
                         "Order items were not found.");
+                }
 
                 // Validate all items before restoring stock.
                 foreach (var item in order.OrderItems)
@@ -414,28 +343,33 @@ namespace Veltrix.Services.Order
                     }
 
                     if (item.FulfilledQuantity > 0)
+                    {
                         throw new InvalidOperationException(
                             "This order cannot be cancelled because items have already been fulfilled.");
+                    }
                 }
 
                 var nowUtc = DateTime.UtcNow;
+
                 var previousStatus = order.OrderStatus;
 
                 // Restore inventory.
                 foreach (var item in order.OrderItems)
                 {
-                    var quantityToRestore =
+                    int quantityToRestore =
                         item.Quantity - item.CancelledQuantity;
 
-                    if (quantityToRestore == 0)
+                    if (quantityToRestore <= 0)
                         continue;
 
-                    var inventory = await _unitOfWork.Inventory
-                        .GetByProductIdAsync(item.ProductVariantId);
+                    var inventory = await _unitOfWork.Inventory.GetByProductVariantIdAsync(item.ProductVariantId);
+
 
                     if (inventory == null)
+                    {
                         throw new InvalidOperationException(
                             $"Inventory not found for variant {item.ProductVariantId}.");
+                    }
 
                     var stockResult =
                         await _unitOfWork.Inventory.TryIncreaseStockAsync(
@@ -443,26 +377,35 @@ namespace Veltrix.Services.Order
                             quantityToRestore);
 
                     if (!stockResult.HasValue)
+                    {
                         throw new InvalidOperationException(
                             "Unable to restore inventory. Please try again.");
+                    }
 
-                    var inventoryTransaction = new InventoryTransaction
-                    {
-                        TransactionType =
-                            InventoryTransactionType.OrderCancelled,
+                    var inventoryTransaction =
+                        new InventoryTransaction
+                        {
+                            TransactionType =
+                                InventoryTransactionType.OrderCancelled,
 
-                        QuantityChange = quantityToRestore,
-                        QuantityBefore = stockResult.Value.QuantityBefore,
-                        QuantityAfter = stockResult.Value.QuantityAfter,
+                            QuantityChange = quantityToRestore,
 
-                        Reason =
-                            $"Order {order.OrderNumber} cancelled: {cancelReason}",
+                            QuantityBefore =
+                                stockResult.Value.QuantityBefore,
 
-                        CreatedAt = nowUtc,
-                        InventoryId = inventory.Id,
-                        OrderId = order.Id,
-                        PerformedByUserId = userId
-                    };
+                            QuantityAfter =
+                                stockResult.Value.QuantityAfter,
+
+                            Reason =
+                                $"Order {order.OrderNumber} cancelled: {cancelReason}",
+
+                            CreatedAt = nowUtc,
+
+                            InventoryId = inventory.Id,
+                            OrderId = order.Id,
+
+                            PerformedByUserId = userId
+                        };
 
                     await _unitOfWork.InventoryTransactions
                         .AddAsync(inventoryTransaction);
@@ -487,16 +430,13 @@ namespace Veltrix.Services.Order
                     ChangedByUserId = userId
                 };
 
-                await _unitOfWork.OrdersStatusHistory.AddAsync(history);
+                await _unitOfWork.OrdersStatusHistory
+                    .AddAsync(history);
 
                 await _unitOfWork.SaveChangesAsync();
 
-                // Map result.
-                var variantsById = order.OrderItems
-                    .GroupBy(item => item.ProductVariantId)
-                    .ToDictionary(
-                        group => group.Key,
-                        group => group.First().ProductVariant);
+                var variantsById =
+                    BuildVariantsDictionary(order.OrderItems);
 
                 var result = MapToDto(order, variantsById);
 
@@ -511,7 +451,7 @@ namespace Veltrix.Services.Order
             }
         }
 
-        // 13. Update order status (Admin).
+        // 3. UPDATE ORDER STATUS (ADMIN)
         public async Task<OrderDto?> UpdateOrderStatusAsync(
             int orderId,
             UpdateOrderStatusDto dto,
@@ -520,18 +460,21 @@ namespace Veltrix.Services.Order
             if (orderId <= 0)
                 throw new ArgumentException("Invalid order ID.");
 
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+            ArgumentNullException.ThrowIfNull(dto);
 
             if (!Enum.IsDefined(typeof(OrderStatus), dto.OrderStatus))
-                throw new ArgumentException("Invalid order status.");
+            {
+                throw new ArgumentException(
+                    "Invalid order status.");
+            }
 
             await using var transaction =
                 await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
+                var order =
+                    await _unitOfWork.Orders.GetByIdAsync(orderId);
 
                 if (order == null)
                 {
@@ -539,49 +482,56 @@ namespace Veltrix.Services.Order
                     return null;
                 }
 
-                var variantsById = order.OrderItems
-                    .GroupBy(item => item.ProductVariantId)
-                    .ToDictionary(
-                        group => group.Key,
-                        group => group.First().ProductVariant);
+                var variantsById =
+                    BuildVariantsDictionary(order.OrderItems);
 
                 var previousStatus = order.OrderStatus;
                 var newStatus = dto.OrderStatus;
 
                 if (previousStatus == newStatus)
                 {
-                    var unchangedResult = MapToDto(order, variantsById);
+                    var unchangedResult =
+                        MapToDto(order, variantsById);
 
                     await transaction.CommitAsync();
 
                     return unchangedResult;
                 }
 
-                if (!IsValidStatusTransition(previousStatus, newStatus))
+                if (!IsValidStatusTransition(
+                    previousStatus,
+                    newStatus))
+                {
                     throw new InvalidOperationException(
                         $"Cannot change order status from {previousStatus} to {newStatus}.");
+                }
 
-                var now = DateTime.UtcNow;
+                var nowUtc = DateTime.UtcNow;
 
                 order.OrderStatus = newStatus;
-                order.UpdatedAt = now;
+                order.UpdatedAt = nowUtc;
 
                 if (newStatus == OrderStatus.Confirmed)
-                    order.ConfirmedAt ??= now;
+                {
+                    order.ConfirmedAt ??= nowUtc;
+                }
 
                 if (newStatus == OrderStatus.Completed)
-                    order.CompletedAt = now;
+                {
+                    order.CompletedAt = nowUtc;
+                }
 
                 var history = new Models.OrderStatusHistory
                 {
                     OrderId = order.Id,
                     PreviousStatus = previousStatus,
                     NewStatus = newStatus,
-                    ChangedAt = now,
+                    ChangedAt = nowUtc,
                     ChangedByUserId = changedByUserId
                 };
 
-                await _unitOfWork.OrdersStatusHistory.AddAsync(history);
+                await _unitOfWork.OrdersStatusHistory
+                    .AddAsync(history);
 
                 await _unitOfWork.SaveChangesAsync();
 
@@ -598,7 +548,132 @@ namespace Veltrix.Services.Order
             }
         }
 
-        // Validate allowed status transitions.
+ 
+        // 4. COUPON VALIDATION     
+        private static void ValidateCoupon(
+            Models.Coupon coupon,
+            decimal subtotal)
+        {
+            var nowUtc = DateTime.UtcNow;
+
+            if (!coupon.IsActive)
+            {
+                throw new InvalidOperationException(
+                    "This coupon is inactive.");
+            }
+
+            if (nowUtc < coupon.StartsAt ||
+                nowUtc >= coupon.ExpiresAt)
+            {
+                throw new InvalidOperationException(
+                    "This coupon is not currently available.");
+            }
+
+            if (coupon.StartsAt >= coupon.ExpiresAt)
+            {
+                throw new InvalidOperationException(
+                    "Invalid coupon validity period.");
+            }
+
+            if (coupon.UsageLimit.HasValue &&
+                coupon.UsageLimit.Value <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid coupon usage limit.");
+            }
+
+            if (coupon.UsageCount < 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid coupon usage count.");
+            }
+
+            if (coupon.UsageLimit.HasValue &&
+                coupon.UsageCount >= coupon.UsageLimit.Value)
+            {
+                throw new InvalidOperationException(
+                    "This coupon has reached its usage limit.");
+            }
+
+            if (coupon.MinimumOrderAmount.HasValue &&
+                coupon.MinimumOrderAmount.Value < 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid coupon minimum order amount.");
+            }
+
+            if (coupon.MinimumOrderAmount.HasValue &&
+                subtotal < coupon.MinimumOrderAmount.Value)
+            {
+                throw new InvalidOperationException(
+                    "The order does not meet the coupon minimum amount.");
+            }
+
+            if (coupon.DiscountValue <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid coupon discount configuration.");
+            }
+
+            if (coupon.MaximumDiscountAmount.HasValue &&
+                coupon.MaximumDiscountAmount.Value <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Invalid maximum discount configuration.");
+            }
+
+            if (coupon.DiscountType == DiscountType.Percentage &&
+                coupon.DiscountValue > 100)
+            {
+                throw new InvalidOperationException(
+                    "Percentage discount cannot exceed 100%.");
+            }
+
+            if (coupon.DiscountType != DiscountType.Percentage &&
+                coupon.DiscountType != DiscountType.FixedAmount)
+            {
+                throw new InvalidOperationException(
+                    "Unsupported coupon discount type.");
+            }
+        }
+
+        // 5. CALCULATE COUPON DISCOUNT
+        private static decimal CalculateDiscount(
+            Models.Coupon coupon,
+            decimal subtotal)
+        {
+            decimal discountAmount;
+
+            if (coupon.DiscountType == DiscountType.Percentage)
+            {
+                discountAmount =
+                    subtotal * coupon.DiscountValue / 100m;
+            }
+            else
+            {
+                discountAmount = coupon.DiscountValue;
+            }
+
+            if (coupon.MaximumDiscountAmount.HasValue)
+            {
+                discountAmount = Math.Min(
+                    discountAmount,
+                    coupon.MaximumDiscountAmount.Value);
+            }
+
+            // Discount cannot exceed subtotal.
+            discountAmount = Math.Min(
+                discountAmount,
+                subtotal);
+
+            return Math.Round(
+                discountAmount,
+                2,
+                MidpointRounding.AwayFromZero);
+        }
+
+        // 6. VALID STATUS TRANSITIONS
+
         private static bool IsValidStatusTransition(
             OrderStatus currentStatus,
             OrderStatus newStatus)
@@ -624,8 +699,35 @@ namespace Veltrix.Services.Order
             };
         }
 
-        // Validate required shipping fields.
-        private static void ValidateShippingDetails(CreateOrderDto dto)
+        // 7. BUILD PRODUCT VARIANTS DICTIONARY
+
+        private static Dictionary<int, Models.ProductVariant>
+            BuildVariantsDictionary(
+                IEnumerable<OrderItemModel> orderItems)
+        {
+            var result =
+                new Dictionary<int, Models.ProductVariant>();
+
+            foreach (var item in orderItems)
+            {
+                if (item.ProductVariant == null)
+                {
+                    throw new InvalidOperationException(
+                        "Product variant information was not loaded for this order.");
+                }
+
+                result.TryAdd(
+                    item.ProductVariantId,
+                    item.ProductVariant);
+            }
+
+            return result;
+        }
+
+        // 8. VALIDATE SHIPPING DETAILS
+    
+        private static void ValidateShippingDetails(
+            CreateOrderDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.ShippingRecipientName) ||
                 dto.ShippingRecipientName.Trim().Length < 2 ||
@@ -677,14 +779,16 @@ namespace Veltrix.Services.Order
             }
         }
 
-        // Generate order number.
+        // 9. GENERATE ORDER NUMBER
+    
         private static string GenerateOrderNumber()
         {
             return $"VX-{DateTime.UtcNow:yyyyMMdd}-" +
                    $"{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
         }
 
-        // Map Order entity to OrderDto.
+      
+        // 10. MAP ORDER ENTITY TO DTO
         private static OrderDto MapToDto(
             OrderModel order,
             Dictionary<int, Models.ProductVariant> variantsById)
@@ -705,12 +809,21 @@ namespace Veltrix.Services.Order
 
                 CouponId = order.CouponId,
 
-                ShippingRecipientName = order.ShippingRecipientName,
-                ShippingPhoneNumber = order.ShippingPhoneNumber,
-                ShippingAddressLine1 = order.ShippingAddressLine1,
-                ShippingAddressLine2 = order.ShippingAddressLine2,
+                ShippingRecipientName =
+                    order.ShippingRecipientName,
+
+                ShippingPhoneNumber =
+                    order.ShippingPhoneNumber,
+
+                ShippingAddressLine1 =
+                    order.ShippingAddressLine1,
+
+                ShippingAddressLine2 =
+                    order.ShippingAddressLine2,
+
                 ShippingCity = order.ShippingCity,
                 ShippingGovernorate = order.ShippingGovernorate,
+
                 ShippingPostalCode = order.ShippingPostalCode,
                 ShippingInstructions = order.ShippingInstructions,
 
@@ -725,11 +838,18 @@ namespace Veltrix.Services.Order
 
                 Items = order.OrderItems.Select(item =>
                 {
-                    var variant = variantsById[item.ProductVariantId];
+                    if (!variantsById.TryGetValue(
+                        item.ProductVariantId,
+                        out var variant))
+                    {
+                        throw new InvalidOperationException(
+                            $"Product variant {item.ProductVariantId} was not loaded.");
+                    }
 
                     return new OrderItemDto
                     {
                         Id = item.Id,
+
                         ProductId = variant.ProductId,
                         ProductName = item.ProductName,
                         SKU = item.SKU,
@@ -739,12 +859,17 @@ namespace Veltrix.Services.Order
                         LineTotal = item.LineTotal,
 
                         ProductVariantId = item.ProductVariantId,
+
                         VariantName = item.VariantName,
+
                         VariantOptionsSnapshot =
                             item.VariantOptionsSnapshot,
 
-                        CancelledQuantity = item.CancelledQuantity,
-                        FulfilledQuantity = item.FulfilledQuantity
+                        CancelledQuantity =
+                            item.CancelledQuantity,
+
+                        FulfilledQuantity =
+                            item.FulfilledQuantity
                     };
                 }).ToList()
             };

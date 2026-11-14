@@ -1,0 +1,803 @@
+﻿@using Veltrix.DTOs.InventoryDTO
+@using Veltrix.DTOs.Common
+
+@model PagedResultDto<InventoryDto>
+
+@{
+    ViewData["Title"] = "Inventory";
+
+    var inventories = Model.Items ?? Array.Empty<InventoryDto>();
+
+    var totalProducts = inventories
+        .Select(x => x.ProductId)
+        .Distinct()
+        .Count();
+
+    var totalVariants = inventories.Count;
+
+    var totalStock = inventories.Sum(x => x.StockQuantity);
+
+    var outOfStockCount = inventories.Count(x => x.StockQuantity == 0);
+
+    var lowStockCount = inventories.Count(x => x.StockQuantity > 0 && x.StockQuantity <= 5);
+}
+
+<div class="inventory-page">
+
+    <!-- Page Header -->
+    <div class="inventory-page-header">
+        <div>
+            <span class="inventory-eyebrow">INVENTORY MANAGEMENT</span>
+            <h2>Inventory</h2>
+            <p>Monitor and manage your product variants and available stock.</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="inventory-stats-grid">
+
+        <div class="inventory-stat-card">
+            <div class="inventory-stat-icon inventory-stat-icon-primary">
+                <i class="bi bi-box-seam"></i>
+            </div>
+
+            <div>
+                <span class="inventory-stat-label">Products</span>
+                <h3 id="totalProductsCount">@totalProducts</h3>
+            </div>
+        </div>
+
+        <div class="inventory-stat-card">
+            <div class="inventory-stat-icon inventory-stat-icon-blue">
+                <i class="bi bi-tags"></i>
+            </div>
+
+            <div>
+                <span class="inventory-stat-label">Variants</span>
+                <h3 id="totalVariantsCount">@totalVariants</h3>
+            </div>
+        </div>
+
+        <div class="inventory-stat-card">
+            <div class="inventory-stat-icon inventory-stat-icon-green">
+                <i class="bi bi-boxes"></i>
+            </div>
+
+            <div>
+                <span class="inventory-stat-label">Total Stock</span>
+                <h3 id="totalStockCount">@totalStock.ToString("N0")</h3>
+            </div>
+        </div>
+
+        <div class="inventory-stat-card">
+            <div class="inventory-stat-icon inventory-stat-icon-red">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+
+            <div>
+                <span class="inventory-stat-label">Out of Stock</span>
+                <h3 id="outOfStockCount">@outOfStockCount</h3>
+            </div>
+        </div>
+
+        <div class="inventory-stat-card">
+            <div class="inventory-stat-icon inventory-stat-icon-orange">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+
+            <div>
+                <span class="inventory-stat-label">Low Stock</span>
+                <h3 id="lowStockCount">@lowStockCount</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Inventory Content -->
+    <div class="inventory-content-card">
+
+        <div class="inventory-card-header">
+            <div>
+                <h5>Inventory Overview</h5>
+                <span class="inventory-record-count">
+                    <span id="inventoryRecordCount">@totalVariants</span>
+                    variants
+                </span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="inventory-filter-section">
+
+            <div class="inventory-filter-grid">
+
+                <div class="inventory-filter-field inventory-search-field">
+                    <label for="inventorySearch">Search</label>
+
+                    <div class="inventory-input-wrapper">
+                        <i class="bi bi-search"></i>
+
+                        <input type="text"
+                               id="inventorySearch"
+                               class="inventory-control"
+                               placeholder="Search product, variant or SKU..." />
+                    </div>
+                </div>
+
+                <div class="inventory-filter-field">
+                    <label for="stockStatusFilter">Stock Status</label>
+
+                    <select id="stockStatusFilter" class="inventory-control">
+                        <option value="">All Statuses</option>
+                        <option value="available">Available</option>
+                        <option value="low">Low Stock</option>
+                        <option value="out">Out of Stock</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-field">
+                    <label for="minQuantity">Min. Quantity</label>
+
+                    <input type="number"
+                           id="minQuantity"
+                           class="inventory-control"
+                           min="0"
+                           placeholder="Minimum" />
+                </div>
+
+                <div class="inventory-filter-field">
+                    <label for="maxQuantity">Max. Quantity</label>
+
+                    <input type="number"
+                           id="maxQuantity"
+                           class="inventory-control"
+                           min="0"
+                           placeholder="Maximum" />
+                </div>
+
+                <div class="inventory-filter-field">
+                    <label for="inventorySort">Sort By</label>
+
+                    <select id="inventorySort" class="inventory-control">
+                        <option value="name">Product Name</option>
+                        <option value="stock">Total Stock</option>
+                        <option value="updated">Last Updated</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-field">
+                    <label for="inventorySortDirection">Order</label>
+
+                    <select id="inventorySortDirection" class="inventory-control">
+                        <option value="asc">Ascending</option>
+                        <option value="desc" selected>Descending</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="inventory-filter-footer">
+                <span id="inventoryFilterSummary">
+                    Showing all inventory records
+                </span>
+
+                <button type="button"
+                        id="clearInventoryFilters"
+                        class="inventory-clear-btn">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Clear Filters
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Table -->
+        <div class="inventory-table-wrapper">
+
+            <table class="inventory-table">
+
+                <thead>
+                    <tr>
+                        <th class="inventory-product-column">Product</th>
+                        <th>Variant</th>
+                        <th>Available Stock</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th class="inventory-actions-column">Actions</th>
+                    </tr>
+                </thead>
+
+                @foreach (var productGroup in inventories.GroupBy(x => x.ProductId))
+                {
+                    var variants = productGroup.ToList();
+
+                    var productTotalStock = variants.Sum(x => x.StockQuantity);
+
+                    var productLatestUpdate = variants.Max(x => x.UpdatedAt);
+
+                    <tbody class="inventory-product-group"
+                           data-product-id="@productGroup.Key"
+                           data-product-name="@variants[0].ProductName"
+                           data-total-stock="@productTotalStock"
+                           data-latest-update="@productLatestUpdate.Ticks">
+
+                        @for (int i = 0; i < variants.Count; i++)
+                        {
+                            var item = variants[i];
+
+                            var stockClass = item.StockQuantity == 0
+                            ? "inventory-status-out"
+                            : item.StockQuantity <= 5
+                            ? "inventory-status-low"
+                            : "inventory-status-available";
+
+                            var stockLabel = item.StockQuantity == 0
+                            ? "Out of Stock"
+                            : item.StockQuantity <= 5
+                            ? "Low Stock"
+                            : "Available";
+
+                            var filterStatus = item.StockQuantity == 0
+                            ? "out"
+                            : item.StockQuantity <= 5
+                            ? "low"
+                            : "available";
+
+                            <tr class="inventory-variant-row"
+                                data-variant="@item.VariantName"
+                                data-sku="@item.SKU"
+                                data-quantity="@item.StockQuantity"
+                                data-status="@filterStatus"
+                                data-updated="@item.UpdatedAt.Ticks">
+
+                                @if (i == 0)
+                                {
+                                    <td rowspan="@variants.Count"
+                                        class="inventory-product-cell"
+                                        data-product-cell>
+
+                                        <div class="inventory-product-info">
+                                            <div class="inventory-product-icon">
+                                                <i class="bi bi-box-seam"></i>
+                                            </div>
+
+                                            <div>
+                                                <div class="inventory-product-name">
+                                                    @item.ProductName
+                                                </div>
+
+                                                <span class="inventory-product-variant-count">
+                                                    @variants.Count @(variants.Count == 1 ? "Variant" : "Variants")
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                }
+
+                            <td>
+                                <div class="inventory-variant-info">
+                                    <span class="inventory-variant-name">
+                                        @(string.IsNullOrWhiteSpace(item.VariantName)
+                                                                            ? "Default Variant"
+                                                                            : item.VariantName)
+                                </span>
+
+                                        <span class="inventory-sku">
+                                            SKU: @item.SKU
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="inventory-stock-value">
+                                        <strong class="inventory-quantity">
+                                            @item.StockQuantity.ToString("N0")
+                                        </strong>
+
+                                        <span class="inventory-unit-label">
+                                            units
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="inventory-status @stockClass">
+                                        <span class="inventory-status-dot"></span>
+                                        @stockLabel
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="inventory-date-wrapper">
+                                        <span class="inventory-date">
+                                            @item.UpdatedAt.ToString("dd MMM yyyy")
+                                        </span>
+
+                                        <span class="inventory-time">
+                                            @item.UpdatedAt.ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="inventory-row-actions">
+
+                                        <a asp-action="Details"
+                                           asp-route-id="@item.Id"
+                                           class="inventory-action-link"
+                                           title="View inventory details"
+                                           aria-label="View inventory details">
+
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <a asp-action="Transactions"
+                                           asp-route-id="@item.Id"
+                                           class="inventory-action-link"
+                                           title="View inventory transactions"
+                                           aria-label="View inventory transactions">
+
+                                            <i class="bi bi-clock-history"></i>
+                                        </a>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                                        }
+
+                    </tbody>
+                }
+
+            </table>
+
+            <!-- Empty State -->
+            <div id="inventoryEmptyState"
+                 class="inventory-empty-state"
+                 style="display:none;">
+
+                <div class="inventory-empty-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+
+                <h5>No inventory records found</h5>
+
+                <p>
+                    Try changing your search term or adjusting the filters.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="inventory-pagination-wrapper">
+
+            <div class="inventory-pagination-info">
+                Showing
+                <strong id="paginationStart">0</strong>
+                to
+                <strong id="paginationEnd">0</strong>
+                of
+                <strong id="paginationTotal">0</strong>
+                products
+            </div>
+
+            <div class="inventory-pagination">
+
+                <button type="button"
+                        id="previousPage"
+                        class="inventory-page-btn"
+                        aria-label="Previous page">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <div id="inventoryPageNumbers"
+                     class="inventory-page-numbers">
+                </div>
+
+                <button type="button"
+                        id="nextPage"
+                        class="inventory-page-btn"
+                        aria-label="Next page">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+            </div>
+
+            <div class="inventory-page-size">
+                <label for="inventoryPageSize">Rows</label>
+
+                <select id="inventoryPageSize" class="inventory-page-size-select">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const table = document.querySelector(".inventory-table");
+
+            const searchInput = document.getElementById("inventorySearch");
+            const statusFilter = document.getElementById("stockStatusFilter");
+            const minQuantityInput = document.getElementById("minQuantity");
+            const maxQuantityInput = document.getElementById("maxQuantity");
+            const sortSelect = document.getElementById("inventorySort");
+            const sortDirectionSelect = document.getElementById("inventorySortDirection");
+            const pageSizeSelect = document.getElementById("inventoryPageSize");
+
+            const clearButton = document.getElementById("clearInventoryFilters");
+            const emptyClearButton = document.getElementById("emptyStateClearFilters");
+
+            const previousButton = document.getElementById("previousPage");
+            const nextButton = document.getElementById("nextPage");
+            const pageNumbersContainer = document.getElementById("inventoryPageNumbers");
+
+            const emptyState = document.getElementById("inventoryEmptyState");
+
+            const recordCount = document.getElementById("inventoryRecordCount");
+            const filterSummary = document.getElementById("inventoryFilterSummary");
+
+            const paginationStart = document.getElementById("paginationStart");
+            const paginationEnd = document.getElementById("paginationEnd");
+            const paginationTotal = document.getElementById("paginationTotal");
+
+            const totalProductsCount = document.getElementById("totalProductsCount");
+            const totalVariantsCount = document.getElementById("totalVariantsCount");
+            const totalStockCount = document.getElementById("totalStockCount");
+            const outOfStockCount = document.getElementById("outOfStockCount");
+            const lowStockCount = document.getElementById("lowStockCount");
+
+            const allGroups = Array.from(
+                table.querySelectorAll(".inventory-product-group")
+            );
+
+            let currentPage = 1;
+
+            // Keep the original product cell so it can move to
+            // the first visible variant when filters are applied.
+            allGroups.forEach(group => {
+                group._productCell = group.querySelector("[data-product-cell]");
+            });
+
+            function getGroupRows(group) {
+                return Array.from(
+                    group.querySelectorAll(".inventory-variant-row")
+                );
+            }
+
+            function getFilteredRows(group) {
+
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                const selectedStatus = statusFilter.value;
+
+                const minValue = minQuantityInput.value.trim();
+                const maxValue = maxQuantityInput.value.trim();
+
+                const minQuantity = minValue === ""
+                    ? null
+                    : Number(minValue);
+
+                const maxQuantity = maxValue === ""
+                    ? null
+                    : Number(maxValue);
+
+                const productName = (group.dataset.productName || "").toLowerCase();
+
+                return getGroupRows(group).filter(row => {
+
+                    const variant = (row.dataset.variant || "").toLowerCase();
+                    const sku = (row.dataset.sku || "").toLowerCase();
+
+                    const quantity = Number(row.dataset.quantity);
+
+                    const matchesSearch =
+                        !searchTerm ||
+                        productName.includes(searchTerm) ||
+                        variant.includes(searchTerm) ||
+                        sku.includes(searchTerm);
+
+                    const matchesStatus =
+                        !selectedStatus ||
+                        row.dataset.status === selectedStatus;
+
+                    const matchesMin =
+                        minQuantity === null ||
+                        quantity >= minQuantity;
+
+                    const matchesMax =
+                        maxQuantity === null ||
+                        quantity <= maxQuantity;
+
+                    return matchesSearch &&
+                           matchesStatus &&
+                           matchesMin &&
+                           matchesMax;
+                });
+            }
+
+            function applyGroupFilters(group) {
+
+                const rows = getGroupRows(group);
+                const matchingRows = getFilteredRows(group);
+
+                rows.forEach(row => {
+                    row.style.display = matchingRows.includes(row)
+                        ? ""
+                        : "none";
+                });
+
+                if (matchingRows.length === 0) {
+                    group.style.display = "none";
+                    return false;
+                }
+
+                group.style.display = "";
+
+                const productCell = group._productCell;
+
+                // Put the product cell on the first visible variant.
+                matchingRows[0].prepend(productCell);
+
+                productCell.rowSpan = matchingRows.length;
+
+                const countElement = productCell.querySelector(
+                    ".inventory-product-variant-count"
+                );
+
+                if (countElement) {
+                    countElement.textContent =
+                        `${matchingRows.length} ${matchingRows.length === 1 ? "Variant" : "Variants"}`;
+                }
+
+                return true;
+            }
+
+            function sortGroups(groups) {
+
+                const sortBy = sortSelect.value;
+                const direction = sortDirectionSelect.value === "asc" ? 1 : -1;
+
+                return [...groups].sort((a, b) => {
+
+                    let firstValue;
+                    let secondValue;
+
+                    if (sortBy === "name") {
+                        firstValue = (a.dataset.productName || "").toLowerCase();
+                        secondValue = (b.dataset.productName || "").toLowerCase();
+
+                        return firstValue.localeCompare(secondValue) * direction;
+                    }
+
+                    if (sortBy === "stock") {
+                        firstValue = Number(a.dataset.totalStock);
+                        secondValue = Number(b.dataset.totalStock);
+                    }
+                    else {
+                        firstValue = Number(a.dataset.latestUpdate);
+                        secondValue = Number(b.dataset.latestUpdate);
+                    }
+
+                    return (firstValue - secondValue) * direction;
+                });
+            }
+
+            function renderPagination(totalPages) {
+
+                pageNumbersContainer.innerHTML = "";
+
+                const maxVisiblePages = 5;
+
+                let startPage = Math.max(
+                    1,
+                    currentPage - Math.floor(maxVisiblePages / 2)
+                );
+
+                let endPage = Math.min(
+                    totalPages,
+                    startPage + maxVisiblePages - 1
+                );
+
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                for (let page = startPage; page <= endPage; page++) {
+
+                    const button = document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "inventory-page-number";
+                    button.textContent = page;
+
+                    if (page === currentPage) {
+                        button.classList.add("active");
+                        button.setAttribute("aria-current", "page");
+                    }
+
+                    button.addEventListener("click", function () {
+                        currentPage = page;
+                        render();
+                    });
+
+                    pageNumbersContainer.appendChild(button);
+                }
+
+                previousButton.disabled = currentPage <= 1;
+                nextButton.disabled = currentPage >= totalPages || totalPages === 0;
+            }
+
+            function updateStatistics(groups) {
+
+                let variants = 0;
+                let totalStock = 0;
+                let outOfStock = 0;
+                let lowStock = 0;
+
+                groups.forEach(group => {
+
+                    getFilteredRows(group).forEach(row => {
+
+                        const quantity = Number(row.dataset.quantity);
+
+                        variants++;
+                        totalStock += quantity;
+
+                        if (quantity === 0) {
+                            outOfStock++;
+                        }
+                        else if (quantity <= 5) {
+                            lowStock++;
+                        }
+                    });
+                });
+
+                totalProductsCount.textContent = groups.length;
+                totalVariantsCount.textContent = variants;
+                totalStockCount.textContent = totalStock.toLocaleString();
+                outOfStockCount.textContent = outOfStock;
+                lowStockCount.textContent = lowStock;
+                recordCount.textContent = variants;
+            }
+
+            function render() {
+
+                const matchingGroups = [];
+
+                allGroups.forEach(group => {
+
+                    if (applyGroupFilters(group)) {
+                        matchingGroups.push(group);
+                    }
+                });
+
+                const sortedGroups = sortGroups(matchingGroups);
+
+                const pageSize = Number(pageSizeSelect.value);
+
+                const totalGroups = sortedGroups.length;
+                const totalPages = Math.ceil(totalGroups / pageSize);
+
+                if (currentPage > totalPages) {
+                    currentPage = Math.max(1, totalPages);
+                }
+
+                const startIndex = (currentPage - 1) * pageSize;
+
+                const pageGroups = sortedGroups.slice(
+                    startIndex,
+                    startIndex + pageSize
+                );
+
+                // Hide all groups before displaying the current page.
+                allGroups.forEach(group => {
+                    group.style.display = "none";
+                });
+
+                // Append groups in their sorted order.
+                pageGroups.forEach(group => {
+                    group.style.display = "";
+                    table.appendChild(group);
+                });
+
+                emptyState.style.display = totalGroups === 0 ? "flex" : "none";
+
+                updateStatistics(matchingGroups);
+
+                paginationStart.textContent =
+                    totalGroups === 0 ? 0 : startIndex + 1;
+
+                paginationEnd.textContent =
+                    Math.min(startIndex + pageSize, totalGroups);
+
+                paginationTotal.textContent = totalGroups;
+
+                filterSummary.textContent =
+                    totalGroups === allGroups.length
+                        ? "Showing all inventory products"
+                        : `Showing ${totalGroups} matching products`;
+
+                renderPagination(totalPages);
+            }
+
+            function resetFilters() {
+
+                searchInput.value = "";
+                statusFilter.value = "";
+                minQuantityInput.value = "";
+                maxQuantityInput.value = "";
+                sortSelect.value = "name";
+                sortDirectionSelect.value = "asc";
+
+                currentPage = 1;
+
+                render();
+            }
+
+            searchInput.addEventListener("input", function () {
+                currentPage = 1;
+                render();
+            });
+
+            statusFilter.addEventListener("change", function () {
+                currentPage = 1;
+                render();
+            });
+
+            minQuantityInput.addEventListener("input", function () {
+                currentPage = 1;
+                render();
+            });
+
+            maxQuantityInput.addEventListener("input", function () {
+                currentPage = 1;
+                render();
+            });
+
+            sortSelect.addEventListener("change", function () {
+                currentPage = 1;
+                render();
+            });
+
+            sortDirectionSelect.addEventListener("change", function () {
+                currentPage = 1;
+                render();
+            });
+
+            pageSizeSelect.addEventListener("change", function () {
+                currentPage = 1;
+                render();
+            });
+
+            clearButton.addEventListener("click", resetFilters);
+            emptyClearButton.addEventListener("click", resetFilters);
+
+            previousButton.addEventListener("click", function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    render();
+                }
+            });
+
+            nextButton.addEventListener("click", function () {
+                currentPage++;
+                render();
+            });
+
+            render();
+        });
+    </script>
+}

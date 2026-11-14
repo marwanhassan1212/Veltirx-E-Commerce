@@ -10,12 +10,17 @@ namespace Veltrix.Controllers
         private readonly IShipmentService _shipmentService;
         private readonly IShipmentTrackingEventService _trackingEventService;
 
-        public ShipmentController(
-            IShipmentService shipmentService,
-            IShipmentTrackingEventService trackingEventService)
+        public ShipmentController(IShipmentService shipmentService, IShipmentTrackingEventService trackingEventService)
         {
             _shipmentService = shipmentService;
             _trackingEventService = trackingEventService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var shipments = await _shipmentService.GetAllAsync();
+
+            return View(shipments);
         }
 
         // Get shipments belonging to a specific order

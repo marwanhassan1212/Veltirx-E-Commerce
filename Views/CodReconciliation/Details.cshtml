@@ -1,0 +1,288 @@
+﻿@using Veltrix.DTOs.CodReconciliationDTO
+@using Veltrix.Enums
+
+@model CodReconciliationDto
+
+@{
+    ViewData["Title"] = "Reconciliation Details";
+
+    var items = ViewBag.ReconciliationItems as IEnumerable<CodReconciliationItemDto>
+                ?? Model.Items;
+
+    string GetStatusLabel(CodReconciliationStatus status) => status switch
+    {
+        CodReconciliationStatus.Pending => "Pending",
+        CodReconciliationStatus.PartiallyReconciled => "Partially Reconciled",
+        CodReconciliationStatus.Reconciled => "Reconciled",
+        CodReconciliationStatus.Disputed => "Disputed",
+        CodReconciliationStatus.Cancelled => "Cancelled",
+        _ => status.ToString()
+    };
+
+    string GetStatusClass(CodReconciliationStatus status) => status switch
+    {
+        CodReconciliationStatus.Pending => "pending",
+        CodReconciliationStatus.PartiallyReconciled => "partial",
+        CodReconciliationStatus.Reconciled => "reconciled",
+        CodReconciliationStatus.Disputed => "disputed",
+        CodReconciliationStatus.Cancelled => "cancelled",
+        _ => "pending"
+    };
+}
+
+<div class="admin-cod-details-page">
+
+    <!-- Page Header -->
+    <div class="cod-details-header">
+        <div class="cod-details-heading">
+            <a asp-controller="CodReconciliation"
+               asp-action="Index"
+               class="cod-back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Reconciliations
+            </a>
+
+            <span class="cod-eyebrow">COD RECONCILIATION</span>
+
+            <h1>Reconciliation Details</h1>
+
+            <p>
+                Review the financial breakdown and orders included in this reconciliation.
+            </p>
+        </div>
+
+        <span class="cod-status-badge @GetStatusClass(Model.Status)">
+            @GetStatusLabel(Model.Status)
+        </span>
+    </div>
+
+    <!-- Reconciliation Identity -->
+    <section class="cod-detail-card cod-identity-card">
+
+        <div class="cod-identity-icon">
+            <i class="bi bi-receipt"></i>
+        </div>
+
+        <div class="cod-identity-content">
+            <span>Reconciliation Number</span>
+            <h2>@Model.ReconciliationNumber</h2>
+            <small>Record ID: #@Model.Id</small>
+        </div>
+
+        <div class="cod-identity-meta">
+            <div>
+                <span>Created At</span>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy")</strong>
+                <small>@Model.CreatedAt.ToString("hh:mm tt")</small>
+            </div>
+
+            <div>
+                <span>Reconciled At</span>
+
+                @if (Model.ReconciledAt.HasValue)
+                {
+                    <strong>@Model.ReconciledAt.Value.ToString("dd MMM yyyy")</strong>
+                    <small>@Model.ReconciledAt.Value.ToString("hh:mm tt")</small>
+                }
+                else
+                {
+                    <strong class="cod-muted-value">Not reconciled</strong>
+                }
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Financial Summary -->
+    <section class="cod-financial-grid">
+
+        <div class="cod-financial-card">
+            <div class="cod-financial-icon expected">
+                <i class="bi bi-wallet2"></i>
+            </div>
+
+            <span>Expected Amount</span>
+
+            <strong>
+                @Model.ExpectedAmount.ToString("N2")
+                <small>EGP</small>
+            </strong>
+
+            <p>Amount expected from COD orders.</p>
+        </div>
+
+        <div class="cod-financial-card">
+            <div class="cod-financial-icon collected">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+
+            <span>Collected Amount</span>
+
+            <strong>
+                @Model.CollectedAmount.ToString("N2")
+                <small>EGP</small>
+            </strong>
+
+            <p>Amount actually collected.</p>
+        </div>
+
+        <div class="cod-financial-card">
+            <div class="cod-financial-icon difference">
+                <i class="bi bi-calculator"></i>
+            </div>
+
+            <span>Difference Amount</span>
+
+            <strong>
+                @Model.DifferenceAmount.ToString("N2")
+                <small>EGP</small>
+            </strong>
+
+            <p>Difference between expected and collected amounts.</p>
+        </div>
+
+    </section>
+
+    <!-- Reconciliation Information -->
+    <section class="cod-detail-card">
+
+        <div class="cod-section-heading">
+            <div>
+                <h2>Reconciliation Information</h2>
+                <p>General information about this reconciliation record.</p>
+            </div>
+
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+        <div class="cod-information-grid">
+
+            <div class="cod-information-item">
+                <span>Reconciliation Number</span>
+                <strong>@Model.ReconciliationNumber</strong>
+            </div>
+
+            <div class="cod-information-item">
+                <span>Reconciliation Status</span>
+                <strong>
+                    <span class="cod-status-badge @GetStatusClass(Model.Status)">
+                        @GetStatusLabel(Model.Status)
+                    </span>
+                </strong>
+            </div>
+
+            <div class="cod-information-item">
+                <span>Created At</span>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+            </div>
+
+            <div class="cod-information-item">
+                <span>Reconciled At</span>
+                <strong>
+                    @(Model.ReconciledAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "—")
+                </strong>
+            </div>
+
+            <div class="cod-information-item">
+                <span>Reconciled By User ID</span>
+                <strong class="cod-user-id">
+                    @(string.IsNullOrWhiteSpace(Model.ReconciledByUserId)
+                                        ? "Not assigned"
+                                        : Model.ReconciledByUserId)
+                </strong>
+            </div>
+
+            <div class="cod-information-item cod-notes-item">
+                <span>Notes</span>
+
+                <strong class="cod-notes-content">
+                    @(string.IsNullOrWhiteSpace(Model.Notes)
+                                        ? "No notes provided."
+                                        : Model.Notes)
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Reconciliation Items -->
+    <section class="cod-detail-card cod-items-card">
+
+        <div class="cod-section-heading">
+            <div>
+                <h2>Reconciliation Items</h2>
+                <p>Orders included in this reconciliation.</p>
+            </div>
+
+            <span class="cod-items-count">
+                @items.Count() Orders
+            </span>
+        </div>
+
+        @if (items.Any())
+        {
+            <div class="cod-items-table-wrapper">
+
+                <table class="cod-items-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Expected Amount</th>
+                            <th>Collected Amount</th>
+                            <th>Difference Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in items)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="cod-order-reference">
+                                        #@item.OrderId
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @item.ExpectedAmount.ToString("N2") EGP
+                                </td>
+
+                                <td>
+                                    @item.CollectedAmount.ToString("N2") EGP
+                                </td>
+
+                                <td class="cod-item-difference">
+                                    @item.DifferenceAmount.ToString("N2") EGP
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="cod-detail-empty">
+                <i class="bi bi-inbox"></i>
+                <h3>No Reconciliation Items</h3>
+                <p>There are no order items associated with this reconciliation.</p>
+            </div>
+        }
+
+    </section>
+
+    <!-- Footer Actions -->
+    <div class="cod-details-footer">
+
+        <a asp-controller="CodReconciliation"
+           asp-action="Index"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to List
+        </a>
+
+    </div>
+
+</div>

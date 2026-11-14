@@ -41,6 +41,7 @@ using Veltrix.Services.Coupon;
 using Veltrix.Services.FileStorage;
 using Veltrix.Services.FulfillmentItem;
 using Veltrix.Services.Images;
+using Veltrix.Services.Inventory;
 using Veltrix.Services.Order;
 using Veltrix.Services.OrderFulfillment;
 using Veltrix.Services.OrderItem;
@@ -138,6 +139,7 @@ namespace Veltrix
             builder.Services.AddScoped<ICodReconciliationService, CodReconciliationService>();
             builder.Services.AddScoped<ICodReconciliationItemService, CodReconciliationItemService>();
             builder.Services.AddScoped<ICouponService, CouponService>();
+            builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 
             var app = builder.Build();

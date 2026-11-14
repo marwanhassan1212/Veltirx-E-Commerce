@@ -1,0 +1,261 @@
+﻿@using Veltrix.DTOs.OrderFulfillmentDTO
+@using Veltrix.Enums
+@using Veltrix.Repositories.OrderFulfillment
+@model IReadOnlyList<OrderFulfillmentDto>
+
+@{
+    ViewData["Title"] = "Order Fulfillments";
+
+    var filters = ViewBag.Filters as OrderFulfillmentFilterParameters
+                  ?? new OrderFulfillmentFilterParameters();
+
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int totalPages = ViewBag.TotalPages ?? 0;
+}
+
+<div class="admin-fulfillment-page">
+
+    <div class="fulfillment-page-header">
+        <div>
+            <h2>Order Fulfillments</h2>
+            <p>Track and manage order fulfillment operations.</p>
+        </div>
+
+        <div class="fulfillment-header-actions">
+            <a asp-controller="AdminOrders"
+               asp-action="Index"
+               class="vx-btn-secondary">
+                <i class="bi bi-box-seam"></i>
+                Orders
+            </a>
+        </div>
+    </div>
+
+    <div class="fulfillment-stat-card">
+        <div class="fulfillment-stat-icon">
+            <i class="bi bi-boxes"></i>
+        </div>
+        <div>
+            <span>Total Fulfillments</span>
+            <strong>@totalCount</strong>
+        </div>
+    </div>
+
+    <div class="fulfillment-card">
+
+        <div class="fulfillment-card-header">
+            <div>
+                <h5>Fulfillment List</h5>
+                <p>Search and filter fulfillment records.</p>
+            </div>
+        </div>
+
+        <form asp-action="Index" method="get" class="fulfillment-filter-form">
+
+            <div class="fulfillment-filter-field">
+                <label asp-for="@filters.FulfillmentNumber">Fulfillment Number</label>
+                <input type="text"
+                       name="FulfillmentNumber"
+                       value="@filters.FulfillmentNumber"
+                       placeholder="Search by number..." />
+            </div>
+
+            <div class="fulfillment-filter-field">
+                <label asp-for="@filters.OrderId">Order ID</label>
+                <input type="number"
+                       name="OrderId"
+                       value="@filters.OrderId"
+                       min="1"
+                       placeholder="Order ID" />
+            </div>
+
+            <div class="fulfillment-filter-field">
+                <label>Status</label>
+                <select name="Status">
+                    <option value="">All statuses</option>
+
+                    @foreach (FulfillmentStatus status in Enum.GetValues(typeof(FulfillmentStatus)))
+                    {
+                        <option value="@status"
+                                selected="@(filters.Status == status)">
+                            @status
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="fulfillment-filter-field">
+                <label>From Date</label>
+                <input type="date"
+                       name="FromDate"
+                       value="@filters.FromDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="fulfillment-filter-field">
+                <label>To Date</label>
+                <input type="date"
+                       name="ToDate"
+                       value="@filters.ToDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <input type="hidden" name="PageNumber" value="1" />
+            <input type="hidden" name="PageSize" value="@filters.PageSize" />
+
+            <div class="fulfillment-filter-actions">
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-search"></i>
+                    Apply
+                </button>
+
+                <a asp-action="Index" class="vx-btn-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Reset
+                </a>
+            </div>
+
+        </form>
+
+        <div class="fulfillment-table-wrapper">
+
+            <table class="fulfillment-table">
+                <thead>
+                    <tr>
+                        <th>Fulfillment</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Items</th>
+                        <th>Created At</th>
+                        <th>Completed At</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var fulfillment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fulfillment-number">
+                                        @fulfillment.FulfillmentNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a asp-controller="AdminOrders"
+                                       asp-action="Details"
+                                       asp-route-id="@fulfillment.OrderId"
+                                       class="fulfillment-order-link">
+                                        #@fulfillment.OrderId
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <span class="fulfillment-status status-@fulfillment.Status.ToString().ToLowerInvariant()">
+                                        @fulfillment.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="fulfillment-items-count">
+                                        @fulfillment.Items.Count
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="fulfillment-date">
+                                        @fulfillment.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <small>
+                                        @fulfillment.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @if (fulfillment.CompletedAt.HasValue)
+                                    {
+                                        <span class="fulfillment-date">
+                                            @fulfillment.CompletedAt.Value.ToString("dd MMM yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fulfillment-muted">—</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-action="Details"
+                                       asp-route-id="@fulfillment.Id"
+                                       class="fulfillment-view-btn">
+                                        View
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="fulfillment-empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <h6>No fulfillments found</h6>
+                                    <p>Try changing your search filters.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="fulfillment-pagination">
+
+                <span>
+                    Page @filters.PageNumber of @totalPages
+                </span>
+
+                <div class="fulfillment-pagination-actions">
+
+                    @if (filters.PageNumber > 1)
+                    {
+                        <a asp-action="Index"
+                           asp-route-PageNumber="@(filters.PageNumber - 1)"
+                           asp-route-PageSize="@filters.PageSize"
+                           asp-route-FulfillmentNumber="@filters.FulfillmentNumber"
+                           asp-route-OrderId="@filters.OrderId"
+                           asp-route-Status="@filters.Status"
+                           asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                           asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")">
+                            <i class="bi bi-chevron-left"></i>
+                            Previous
+                        </a>
+                    }
+
+                    @if (filters.PageNumber < totalPages)
+                    {
+                        <a asp-action="Index"
+                           asp-route-PageNumber="@(filters.PageNumber + 1)"
+                           asp-route-PageSize="@filters.PageSize"
+                           asp-route-FulfillmentNumber="@filters.FulfillmentNumber"
+                           asp-route-OrderId="@filters.OrderId"
+                           asp-route-Status="@filters.Status"
+                           asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                           asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")">
+                            Next
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

@@ -1,0 +1,264 @@
+﻿@model Veltrix.DTOs.OrderDTO.OrderDto
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderNumber}";
+    var canCancel = Model.ShippedAt == null && Model.CancelledAt == null;
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a asp-action="Index" class="text-decoration-none small">
+                <i class="bi bi-arrow-left"></i> Back to My Orders
+            </a>
+            <h2 class="mt-2 mb-1">Order #@Model.OrderNumber</h2>
+            <p class="text-muted mb-0">
+                Placed on @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+            </p>
+        </div>
+
+        <span class="badge bg-secondary fs-6">
+            @Model.OrderStatus
+        </span>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Order Items</h5>
+
+                    @if (Model.Items == null || !Model.Items.Any())
+                    {
+                        <p class="text-muted mb-0">No items found.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th>Unit Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">
+                                                    @item.ProductName
+                                                </div>
+                                                @if (!string.IsNullOrWhiteSpace(item.VariantName))
+                                                {
+                                                    <small class="text-muted">
+                                                        @item.VariantName
+                                                    </small>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.VariantOptionsSnapshot))
+                                                {
+                                                    <div class="small text-muted">
+                                                        @item.VariantOptionsSnapshot
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>@item.SKU</td>
+                                            <td>@item.UnitPrice.ToString("N2")</td>
+                                            <td>
+                                                @item.Quantity
+                                                @if (item.CancelledQuantity > 0)
+                                                {
+                                                    <div class="small text-danger">
+                                                        Cancelled: @item.CancelledQuantity
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td class="fw-semibold">
+                                                @item.LineTotal.ToString("N2")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Delivery Information</h5>
+
+                    <div class="mb-2">
+                        <strong>Recipient:</strong>
+                        @Model.ShippingRecipientName
+                    </div>
+
+                    <div class="mb-2">
+                        <strong>Phone:</strong>
+                        @Model.ShippingPhoneNumber
+                    </div>
+
+                    <div class="mb-2">
+                        <strong>Address:</strong>
+                        @Model.ShippingAddressLine1
+
+                        @if (!string.IsNullOrWhiteSpace(Model.ShippingAddressLine2))
+                        {
+                            <span>, @Model.ShippingAddressLine2</span>
+                        }
+                    </div>
+
+                    <div class="mb-2">
+                        <strong>City:</strong>
+                        @Model.ShippingCity
+                    </div>
+
+                    <div class="mb-2">
+                        <strong>Governorate:</strong>
+                        @Model.ShippingGovernorate
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ShippingPostalCode))
+                    {
+                        <div class="mb-2">
+                            <strong>Postal Code:</strong>
+                            @Model.ShippingPostalCode
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ShippingInstructions))
+                    {
+                        <div class="mb-0">
+                            <strong>Instructions:</strong>
+                            @Model.ShippingInstructions
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+            {
+                <div class="card border-0 shadow-sm border-start border-danger border-4">
+                    <div class="card-body p-4">
+                        <h5 class="text-danger mb-2">Cancellation Information</h5>
+                        <p class="mb-0">@Model.CancelReason</p>
+
+                        @if (Model.CancelledAt.HasValue)
+                        {
+                            <small class="text-muted">
+                                Cancelled on @Model.CancelledAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                            </small>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Order Summary</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span>@Model.Subtotal.ToString("N2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Discount</span>
+                        <span class="text-success">
+                            -@Model.DiscountAmount.ToString("N2")
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Shipping</span>
+                        <span>@Model.ShippingFee.ToString("N2")</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span>@Model.TotalAmount.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Payment</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Method</span>
+                        <span>@Model.PaymentMethod</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Status</span>
+                        <span>@Model.PaymentStatus</span>
+                    </div>
+                </div>
+            </div>
+
+            @if (canCancel)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-2">Cancel Order</h5>
+                        <p class="text-muted small">
+                            You can request cancellation before your order is shipped.
+                        </p>
+
+                        <form asp-action="Cancel"
+                              asp-route-id="@Model.Id"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to cancel this order?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <div class="mb-3">
+                                <label for="CancelReason" class="form-label">
+                                    Reason for cancellation
+                                </label>
+                                <textarea id="CancelReason"
+                                      name="CancelReason"
+                                      class="form-control"
+                                      rows="3"
+                                      minlength="3"
+                                      maxlength="1000"
+                                      required
+                                      placeholder="Please explain why you want to cancel..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                Cancel Order
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,177 @@
+﻿@using Veltrix.DTOs.RefundDTO
+
+@model RefundDto
+
+@{
+    ViewData["Title"] = "Refund Details";
+
+    var statusClass = Model.Status.ToString()
+        .ToLowerInvariant()
+        .Replace(" ", "-");
+}
+
+<div class="admin-refund-details-page">
+
+    <div class="refund-details-header">
+        <div>
+            <span class="refund-eyebrow">ORDER MANAGEMENT</span>
+            <h1>Refund Details</h1>
+            <p>Review the information and processing history of this refund.</p>
+        </div>
+
+        <a asp-controller="Refund"
+           asp-action="Index"
+           class="refund-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Back to Refunds
+        </a>
+    </div>
+
+    <section class="refund-details-main-card">
+
+        <div class="refund-details-main-top">
+            <div class="refund-details-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+
+            <div class="refund-details-title">
+                <span>REFUND NUMBER</span>
+                <h2>@Model.RefundNumber</h2>
+                <small>Refund ID: #@Model.Id</small>
+            </div>
+
+            <span class="refund-status-badge @statusClass">
+                @Model.Status
+            </span>
+        </div>
+
+        <div class="refund-details-amount">
+            <span>Refund Amount</span>
+            <strong>@Model.Amount.ToString("N2") <small>EGP</small></strong>
+        </div>
+
+        <div class="refund-details-meta">
+
+            <div>
+                <span>Created At</span>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy")</strong>
+                <small>@Model.CreatedAt.ToString("hh:mm tt")</small>
+            </div>
+
+            <div>
+                <span>Processed At</span>
+
+                @if (Model.ProcessedAt.HasValue)
+                {
+                    <strong>@Model.ProcessedAt.Value.ToString("dd MMM yyyy")</strong>
+                    <small>@Model.ProcessedAt.Value.ToString("hh:mm tt")</small>
+                }
+                else
+                {
+                    <strong class="refund-muted">Not processed</strong>
+                }
+            </div>
+
+            <div>
+                <span>Related Return</span>
+                <strong>#@Model.ReturnId</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="refund-panel">
+
+        <div class="refund-panel-header">
+            <div>
+                <h2>Refund Information</h2>
+                <p>Additional information about this refund record.</p>
+            </div>
+
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+        <div class="refund-information-grid">
+
+            <div class="refund-information-item">
+                <span>Refund Number</span>
+                <strong>@Model.RefundNumber</strong>
+            </div>
+
+            <div class="refund-information-item">
+                <span>Refund ID</span>
+                <strong>#@Model.Id</strong>
+            </div>
+
+            <div class="refund-information-item">
+                <span>Return ID</span>
+                <strong>#@Model.ReturnId</strong>
+            </div>
+
+            <div class="refund-information-item">
+                <span>Refund Status</span>
+                <strong>@Model.Status</strong>
+            </div>
+
+            <div class="refund-information-item">
+                <span>Processed By User ID</span>
+                <strong>
+                    @(string.IsNullOrWhiteSpace(Model.ProcessedByUserId)
+                                        ? "Not available"
+                                        : Model.ProcessedByUserId)
+                </strong>
+            </div>
+
+            <div class="refund-information-item">
+                <span>Created At</span>
+                <strong>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+            </div>
+
+        </div>
+
+        <div class="refund-text-information">
+
+            <div class="refund-text-item">
+                <span>Reason</span>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.Reason)
+                                        ? "No reason provided."
+                                        : Model.Reason)
+                </p>
+            </div>
+
+            <div class="refund-text-item">
+                <span>Additional Notes</span>
+                <p>
+                    @(string.IsNullOrWhiteSpace(Model.Notes)
+                                        ? "No additional notes."
+                                        : Model.Notes)
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="refund-details-footer">
+
+        <a asp-controller="Refund"
+           asp-action="ByReturn"
+           asp-route-returnId="@Model.ReturnId"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            View Related Refunds
+        </a>
+
+        <a asp-controller="OrderReturn"
+           asp-action="Details"
+           asp-route-id="@Model.ReturnId"
+           class="vx-btn-primary">
+            <i class="bi bi-box-arrow-up-right"></i>
+            View Return Details
+        </a>
+
+    </div>
+
+</div>

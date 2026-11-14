@@ -1,0 +1,124 @@
+﻿@using Veltrix.DTOs.OrderFulfillmentDTO
+@model IReadOnlyList<OrderFulfillmentDto>
+
+@{
+    ViewData["Title"] = "Order Fulfillments";
+
+    int orderId = ViewBag.OrderId ?? 0;
+}
+
+<div class="admin-fulfillment-page">
+
+    <div class="fulfillment-page-header">
+        <div>
+            <h2>Order Fulfillments</h2>
+            <p>Fulfillment history for order #@orderId.</p>
+        </div>
+
+        <div class="fulfillment-header-actions">
+            <a asp-controller="AdminOrders"
+               asp-action="Details"
+               asp-route-id="@orderId"
+               class="vx-btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back to Order
+            </a>
+        </div>
+    </div>
+
+    <div class="fulfillment-card">
+
+        <div class="fulfillment-card-header">
+            <div>
+                <h5>Fulfillment History</h5>
+                <p>All fulfillment operations associated with this order.</p>
+            </div>
+
+            <span class="fulfillment-total-badge">
+                @(Model?.Count ?? 0) Records
+            </span>
+        </div>
+
+        <div class="fulfillment-table-wrapper">
+            <table class="fulfillment-table">
+
+                <thead>
+                    <tr>
+                        <th>Fulfillment Number</th>
+                        <th>Status</th>
+                        <th>Items</th>
+                        <th>Created At</th>
+                        <th>Completed At</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var fulfillment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fulfillment-number">
+                                        @fulfillment.FulfillmentNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="fulfillment-status status-@fulfillment.Status.ToString().ToLowerInvariant()">
+                                        @fulfillment.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="fulfillment-items-count">
+                                        @fulfillment.Items.Count
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @fulfillment.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                                </td>
+
+                                <td>
+                                    @if (fulfillment.CompletedAt.HasValue)
+                                    {
+                                        @fulfillment.CompletedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                    }
+                                    else
+                                    {
+                                        <span class="fulfillment-muted">Not completed</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-action="Details"
+                                       asp-route-id="@fulfillment.Id"
+                                       class="fulfillment-view-btn">
+                                        View Details
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="fulfillment-empty-state">
+                                    <i class="bi bi-box-seam"></i>
+                                    <h6>No fulfillment records yet</h6>
+                                    <p>No fulfillment operations have been recorded for this order.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>

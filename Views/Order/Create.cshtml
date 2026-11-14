@@ -1,0 +1,173 @@
+﻿@model Veltrix.DTOs.OrderDTO.CreateOrderDto
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2 class="mb-1">Checkout</h2>
+        <p class="text-muted mb-0">
+            Enter your delivery information to place your order.
+        </p>
+    </div>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger"
+             role="alert"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4">Delivery Information</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="ShippingRecipientName" class="form-label">
+                                Recipient Name
+                            </label>
+                            <input asp-for="ShippingRecipientName"
+                                   class="form-control"
+                                   autocomplete="name"
+                                   placeholder="Full name" />
+                            <span asp-validation-for="ShippingRecipientName"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ShippingPhoneNumber" class="form-label">
+                                Phone Number
+                            </label>
+                            <input asp-for="ShippingPhoneNumber"
+                                   class="form-control"
+                                   type="tel"
+                                   autocomplete="tel"
+                                   placeholder="Your contact number" />
+                            <span asp-validation-for="ShippingPhoneNumber"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddressLine1" class="form-label">
+                                Address
+                            </label>
+                            <input asp-for="ShippingAddressLine1"
+                                   class="form-control"
+                                   autocomplete="address-line1"
+                                   placeholder="Street, building, apartment..." />
+                            <span asp-validation-for="ShippingAddressLine1"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddressLine2" class="form-label">
+                                Additional Address Details
+                                <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input asp-for="ShippingAddressLine2"
+                                   class="form-control"
+                                   autocomplete="address-line2"
+                                   placeholder="Floor, landmark..." />
+                            <span asp-validation-for="ShippingAddressLine2"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="ShippingCity" class="form-label">
+                                    City
+                                </label>
+                                <input asp-for="ShippingCity"
+                                       class="form-control"
+                                       autocomplete="address-level2" />
+                                <span asp-validation-for="ShippingCity"
+                                      class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ShippingGovernorate" class="form-label">
+                                    Governorate
+                                </label>
+                                <input asp-for="ShippingGovernorate"
+                                       class="form-control"
+                                       autocomplete="address-level1" />
+                                <span asp-validation-for="ShippingGovernorate"
+                                      class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 mb-3">
+                            <label asp-for="ShippingPostalCode" class="form-label">
+                                Postal Code
+                                <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input asp-for="ShippingPostalCode"
+                                   class="form-control"
+                                   autocomplete="postal-code" />
+                            <span asp-validation-for="ShippingPostalCode"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ShippingInstructions" class="form-label">
+                                Delivery Instructions
+                                <span class="text-muted">(Optional)</span>
+                            </label>
+                            <textarea asp-for="ShippingInstructions"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Any details that help us deliver your order..."></textarea>
+                            <span asp-validation-for="ShippingInstructions"
+                                  class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3">Coupon Code</h5>
+
+                        <div class="mb-4">
+                            <input asp-for="CouponCode"
+                                   class="form-control"
+                                   placeholder="Enter coupon code (optional)" />
+                            <span asp-validation-for="CouponCode"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <hr />
+
+                        <h6 class="mb-2">Payment Method</h6>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="badge bg-success">COD</span>
+                            <span>Cash on Delivery</span>
+                        </div>
+
+                        <p class="text-muted small mb-4">
+                            You will pay when your order is delivered.
+                        </p>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Place Order
+                        </button>
+
+                        <a asp-controller="Cart"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary w-100 mt-2">
+                            Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

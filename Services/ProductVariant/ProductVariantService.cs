@@ -85,17 +85,15 @@ namespace Veltrix.Services.ProductVariant
         public async Task<ProductVariantDto> CreateAsync(CreateProductVariantDto dto)
         {
             // Check Product
-            var product =
-                await unitOfWork.Product.GetByIdAsync(dto.ProductId);
+            var product = await unitOfWork.Product.GetByIdAsync(dto.ProductId);
+
 
             if (product == null)
-                throw new InvalidOperationException(
-                    "Product does not exist.");
+                throw new InvalidOperationException("Product does not exist.");
+
 
             // Get Existing Variants
-            var existingVariants =
-                await unitOfWork.productVariant
-                    .GetByProductIdAsync(dto.ProductId);
+            var existingVariants = await unitOfWork.productVariant.GetByProductIdAsync(dto.ProductId);
 
             // First Variant Becomes Default
             bool isFirstVariant = !existingVariants.Any();
@@ -103,30 +101,54 @@ namespace Veltrix.Services.ProductVariant
             // Check SKU
             var sku = dto.SKU.Trim();
 
-            var existingSKU =
-                await unitOfWork.productVariant
-                    .GetBySkuAsync(sku);
+            var existingSKU = await unitOfWork.productVariant.GetBySkuAsync(sku);
 
             if (existingSKU != null)
-                throw new InvalidOperationException(
-                    "SKU already exists.");
+                throw new InvalidOperationException("SKU already exists.");
 
-            // Create Variant
-            var variant = new Models.ProductVariant
+            var now = DateTime.UtcNow;
+            await using var transaction = await unitOfWork.BeginTransactionAsync();
+            try
             {
-                SKU = sku,
-                Price = dto.Price,
-                ProductId = dto.ProductId,
-                IsDefault = isFirstVariant,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
+                // Step 1: Create Product Variant
+                var variant = new Models.ProductVariant
+                {
+                    SKU = sku,
+                    Price = dto.Price,
+                    ProductId = dto.ProductId,
+                    IsDefault = isFirstVariant,
+                    IsActive = true,
+                    CreatedAt = now
+                };
 
-            await unitOfWork.productVariant.AddAsync(variant);
+                await unitOfWork.productVariant.AddAsync(variant);
 
-            await unitOfWork.SaveChangesAsync();
+                // Save to generate Variant ID
+                await unitOfWork.SaveChangesAsync();
 
-            return MapToDto(variant);
+                // Step 2: Create Inventory automatically
+                var inventory = new Models.Inventory
+                {
+                    ProductVariantId = variant.Id,
+                    StockQuantity = 0,
+                    UpdatedAt = now
+                };
+
+                await unitOfWork.Inventory.AddAsync(inventory);
+
+                // Step 3: Save Inventory
+                await unitOfWork.SaveChangesAsync();
+
+                // Step 4: Commit
+                await transaction.CommitAsync();
+
+                return MapToDto(variant);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         // Update Variant

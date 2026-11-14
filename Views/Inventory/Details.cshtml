@@ -1,0 +1,180 @@
+﻿@using Veltrix.DTOs.InventoryDTO
+@model InventoryDto
+
+@{
+    ViewData["Title"] = "Inventory Details";
+
+    var stockClass = Model.StockQuantity == 0
+        ? "inventory-status-out"
+        : Model.StockQuantity <= 5
+            ? "inventory-status-low"
+            : "inventory-status-available";
+
+    var stockLabel = Model.StockQuantity == 0
+        ? "Out of Stock"
+        : Model.StockQuantity <= 5
+            ? "Low Stock"
+            : "Available";
+}
+
+<div class="inventory-page">
+
+    <div class="inventory-breadcrumb">
+        <a asp-action="Index">Inventory</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>Inventory Details</span>
+    </div>
+
+    <div class="inventory-page-header">
+        <div>
+            <span class="inventory-eyebrow">INVENTORY MANAGEMENT</span>
+            <h1>Inventory Details</h1>
+            <p>Review stock information and manage inventory quantity.</p>
+        </div>
+
+        <a asp-action="Index" class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Inventory
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="inventory-alert inventory-alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="inventory-alert inventory-alert-error">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="inventory-details-grid">
+
+        <div class="inventory-content-card inventory-overview-card">
+
+            <div class="inventory-card-header">
+                <div>
+                    <h2>Stock Information</h2>
+                    <p>Current inventory record details.</p>
+                </div>
+
+                <span class="inventory-status @stockClass">
+                    <span></span>
+                    @stockLabel
+                </span>
+            </div>
+
+            <div class="inventory-product-overview">
+                <div class="inventory-large-product-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+
+                <div>
+                    <h3>@Model.ProductName</h3>
+                    <p>Product ID: #@Model.ProductId</p>
+                </div>
+            </div>
+
+            <div class="inventory-quantity-highlight">
+                <span>Current Stock Quantity</span>
+                <strong>@Model.StockQuantity.ToString("N0")</strong>
+                <small>Units available</small>
+            </div>
+
+            <div class="inventory-info-list">
+
+                <div class="inventory-info-row">
+                    <span>Inventory ID</span>
+                    <strong>#@Model.Id</strong>
+                </div>
+
+                <div class="inventory-info-row">
+                    <span>Product ID</span>
+                    <strong>#@Model.ProductId</strong>
+                </div>
+
+                <div class="inventory-info-row">
+                    <span>Last Updated</span>
+                    <strong>@Model.UpdatedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+                </div>
+
+            </div>
+
+            <div class="inventory-details-actions">
+                <a asp-action="Transactions"
+                   asp-route-id="@Model.Id"
+                   class="vx-btn-secondary">
+                    <i class="bi bi-clock-history"></i>
+                    View Transactions
+                </a>
+            </div>
+
+        </div>
+
+        <div class="inventory-content-card inventory-update-card">
+
+            <div class="inventory-card-header">
+                <div>
+                    <h2>Adjust Stock</h2>
+                    <p>Set the new stock quantity for this inventory record.</p>
+                </div>
+            </div>
+
+            <form asp-action="UpdateStock"
+                  asp-route-id="@Model.Id"
+                  method="post"
+                  class="inventory-update-form">
+
+                @Html.AntiForgeryToken()
+
+                <div class="inventory-form-note">
+                    <i class="bi bi-info-circle"></i>
+                    <span>
+                        Stock adjustments are recorded in the inventory transaction history.
+                    </span>
+                </div>
+
+                <div class="inventory-form-group">
+                    <label for="StockQuantity">New Stock Quantity</label>
+
+                    <input type="number"
+                           id="StockQuantity"
+                           name="StockQuantity"
+                           value="@Model.StockQuantity"
+                           min="0"
+                           step="1"
+                           required />
+
+                    <small>Enter the total quantity that should remain in stock.</small>
+                </div>
+
+                <div class="inventory-form-group">
+                    <label for="Reason">Adjustment Reason</label>
+
+                    <textarea id="Reason"
+                              name="Reason"
+                              rows="4"
+                              minlength="3"
+                              maxlength="500"
+                              required
+                              placeholder="Explain why the stock quantity is being adjusted..."></textarea>
+
+                    <small>Required. Between 3 and 500 characters.</small>
+                </div>
+
+                <button type="submit" class="vx-btn-primary inventory-submit-btn">
+                    <i class="bi bi-check2-circle"></i>
+                    Save Stock Adjustment
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,194 @@
+﻿@model Veltrix.DTOs.CouponDTO.CouponDto
+
+@{
+    ViewData["Title"] = "Edit Coupon";
+}
+
+<div class="page-content">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to Coupons
+        </a>
+
+        <h2 class="mt-2 mb-1">Edit Coupon</h2>
+        <p class="text-muted mb-0">Update coupon details and usage conditions.</p>
+    </div>
+
+    <form asp-action="Edit" method="post" id="couponForm">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3">Coupon information</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label">Coupon Code</label>
+                            <input asp-for="Code"
+                                   class="form-control text-uppercase"
+                                   autocomplete="off"
+                                   maxlength="50" />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="2"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="DiscountType" class="form-label ms-5">Discount Type</label>
+
+                                <select asp-for="DiscountType"
+                                        class="form-select"
+                                        asp-items="Html.GetEnumSelectList<Veltrix.Enums.DiscountType>()">
+                                    <option value="">Select discount type</option>
+                                </select>
+
+                                <span asp-validation-for="DiscountType" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DiscountValue" class="form-label">Discount Value</label>
+                                <input asp-for="DiscountValue"
+                                       class="form-control"
+                                       type="number"
+                                       min="0.01"
+                                       step="0.01" />
+                                <span asp-validation-for="DiscountValue" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3">Usage conditions</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="MinimumOrderAmount" class="form-label">
+                                    Minimum Order Amount
+                                </label>
+                                <input asp-for="MinimumOrderAmount"
+                                       class="form-control"
+                                       type="number"
+                                       min="0"
+                                       step="0.01" />
+                                <span asp-validation-for="MinimumOrderAmount" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6" id="maximumDiscountGroup">
+                                <label asp-for="MaximumDiscountAmount" class="form-label">
+                                    Maximum Discount
+                                </label>
+                                <input asp-for="MaximumDiscountAmount"
+                                       class="form-control"
+                                       type="number"
+                                       min="0"
+                                       step="0.01" />
+                                <span asp-validation-for="MaximumDiscountAmount" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UsageLimit" class="form-label">Total Usage Limit</label>
+                                <input asp-for="UsageLimit"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       placeholder="Unlimited" />
+                                <span asp-validation-for="UsageLimit" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3">Schedule</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="StartsAt" class="form-label">Start Date</label>
+                                <input asp-for="StartsAt"
+                                       type="datetime-local"
+                                       class="form-control" />
+                                <span asp-validation-for="StartsAt" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ExpiresAt" class="form-label">Expiry Date</label>
+                                <input asp-for="ExpiresAt"
+                                       type="datetime-local"
+                                       class="form-control" />
+                                <span asp-validation-for="ExpiresAt" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3">Status</h5>
+
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Active coupon
+                            </label>
+                        </div>
+
+                        <p class="text-muted small mt-2 mb-0">
+                            You can deactivate the coupon without deleting its usage history.
+                        </p>
+
+                        <hr />
+
+                        <button type="submit" class="vx-btn-primary w-100 mb-2">
+                            <i class="bi bi-check-lg me-1"></i> Save Changes
+                        </button>
+
+                        <a asp-action="Index" class="vx-btn-secondary d-block text-center text-decoration-none">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (() => {
+            const type = document.getElementById('discountType');
+            const maxGroup = document.getElementById('maximumDiscountGroup');
+
+            function updateDiscountFields() {
+                maxGroup.classList.toggle('d-none', type.value !== 'Percentage');
+            }
+
+            type.addEventListener('change', updateDiscountFields);
+            updateDiscountFields();
+
+            document.getElementById('couponForm').addEventListener('submit', function () {
+                const button = this.querySelector('button[type="submit"]');
+                if (this.checkValidity()) {
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+                }
+            });
+        })();
+    </script>
+}

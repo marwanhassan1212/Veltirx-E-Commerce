@@ -1,0 +1,259 @@
+﻿@using Veltrix.DTOs.ShippingSettingsDTO
+
+@model IReadOnlyList<ShippingSettingsDto>
+
+@{
+    ViewData["Title"] = "Shipping Settings";
+
+    var activeSetting = ViewBag.ActiveSetting as ShippingSettingsDto;
+}
+
+<div class="admin-shipping-page">
+
+    <!-- Header -->
+    <div class="shipping-page-header">
+        <div>
+            <span class="shipping-eyebrow">STORE CONFIGURATION</span>
+            <h1>Shipping Settings</h1>
+            <p>Manage your store's shipping fees and review previous settings.</p>
+        </div>
+    </div>
+
+    <!-- Feedback Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="shipping-alert shipping-alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="shipping-alert shipping-alert-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Active Shipping Setting -->
+    <section class="shipping-current-card">
+
+        <div class="shipping-current-top">
+            <div class="shipping-current-icon">
+                <i class="bi bi-truck"></i>
+            </div>
+
+            <div>
+                <span class="shipping-current-label">CURRENT SHIPPING FEE</span>
+                <h2>Active Shipping Configuration</h2>
+            </div>
+
+            @if (activeSetting != null)
+            {
+                <span class="shipping-active-badge">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Active
+                </span>
+            }
+        </div>
+
+        @if (activeSetting != null)
+        {
+            <div class="shipping-current-body">
+
+                <div class="shipping-fee-display">
+                    <strong>@activeSetting.ShippingFee.ToString("N2")</strong>
+                    <span>EGP</span>
+                </div>
+
+                <div class="shipping-current-meta">
+                    <div>
+                        <span>Setting ID</span>
+                        <strong>#@activeSetting.Id</strong>
+                    </div>
+
+                    <div>
+                        <span>Last Updated</span>
+                        <strong>@activeSetting.UpdatedAt.ToString("dd MMM yyyy")</strong>
+                        <small>@activeSetting.UpdatedAt.ToString("hh:mm tt")</small>
+                    </div>
+
+                    <div>
+                        <span>Updated By</span>
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(activeSetting.UpdatedByUserId)
+                                                    ? "Not available"
+                                                    : activeSetting.UpdatedByUserId)
+                    </strong>
+                </div>
+            </div>
+
+            </div>
+                }
+        else
+        {
+            <div class="shipping-no-active">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>No Active Shipping Setting</strong>
+                    <p>There is currently no active shipping configuration.</p>
+                </div>
+            </div>
+        }
+
+    </section>
+
+    <!-- Update Shipping Fee -->
+    <section class="shipping-panel">
+
+        <div class="shipping-panel-header">
+            <div>
+                <h2>Update Shipping Fee</h2>
+                <p>Set the shipping fee applied to customer orders.</p>
+            </div>
+
+            <i class="bi bi-pencil-square"></i>
+        </div>
+
+        <form asp-controller="ShippingSettings"
+              asp-action="UpdateShippingFee"
+              method="post"
+              class="shipping-update-form">
+
+            @Html.AntiForgeryToken()
+
+            <div class="shipping-update-field">
+                <label for="shippingFee">New Shipping Fee (EGP)</label>
+
+                <div class="shipping-input-wrapper">
+                    <input type="number"
+                           id="shippingFee"
+                           name="shippingFee"
+                           min="0"
+                           step="0.01"
+                           value="@(activeSetting?.ShippingFee.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) ?? "0.00")"
+                           required />
+
+                    <span>EGP</span>
+                </div>
+
+                <small>Enter a non-negative shipping fee.</small>
+            </div>
+
+            <div class="shipping-update-actions">
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    Update Shipping Fee
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- Settings History -->
+    <section class="shipping-panel shipping-history-panel">
+
+        <div class="shipping-panel-header">
+            <div>
+                <h2>Shipping Settings History</h2>
+                <p>Review all available shipping configurations.</p>
+            </div>
+
+            <span class="shipping-record-count">
+                @Model.Count Records
+            </span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="shipping-table-wrapper">
+                <table class="shipping-table">
+                    <thead>
+                        <tr>
+                            <th>Setting ID</th>
+                            <th>Shipping Fee</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Updated By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var setting in Model.OrderByDescending(x => x.UpdatedAt))
+                        {
+                            <tr>
+                                <td>
+                                    <span class="shipping-setting-id">
+                                        #@setting.Id
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="shipping-table-fee">
+                                        @setting.ShippingFee.ToString("N2") EGP
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @if (setting.IsActive)
+                                    {
+                                        <span class="shipping-status-badge active">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="shipping-status-badge inactive">
+                                            Inactive
+                                        </span>
+                                    }
+                            </td>
+
+                            <td>
+                                <span class="shipping-date">
+                                    @setting.UpdatedAt.ToString("dd MMM yyyy")
+                                </span>
+                                <small class="shipping-time">
+                                    @setting.UpdatedAt.ToString("hh:mm tt")
+                                </small>
+                            </td>
+
+                            <td>
+                                <span class="shipping-user-id">
+                                    @(string.IsNullOrWhiteSpace(setting.UpdatedByUserId)
+                                                                    ? "—"
+                                                                    : setting.UpdatedByUserId)
+                            </span>
+                        </td>
+
+                                <td>
+                                    <a asp-controller="ShippingSettings"
+                                       asp-action="Details"
+                                       asp-route-id="@setting.Id"
+                                       class="shipping-details-btn">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="shipping-empty-state">
+                <i class="bi bi-truck"></i>
+                <h3>No Shipping Settings Found</h3>
+                <p>There are no shipping settings available yet.</p>
+            </div>
+        }
+
+    </section>
+
+</div>

@@ -1,0 +1,127 @@
+﻿@using Veltrix.DTOs.OrderReturnDTO
+@model IReadOnlyList<OrderReturnDto>
+
+@{
+    ViewData["Title"] = "Order Returns";
+
+    var returns = Model ?? Array.Empty<OrderReturnDto>();
+    var orderId = returns.FirstOrDefault()?.OrderId;
+}
+
+<div class="admin-order-return-page">
+
+    <div class="return-page-header">
+        <div>
+            <h2>Order Returns</h2>
+            <p>Return requests associated with Order #@(orderId?.ToString() ?? "—").</p>
+        </div>
+
+        <a asp-controller="OrderReturn"
+           asp-action="Index"
+           class="return-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            All Returns
+        </a>
+    </div>
+
+    <div class="return-content-card">
+
+        <div class="return-content-header">
+            <div>
+                <h5>Return Requests</h5>
+                <span>@returns.Count request(s) for this order</span>
+            </div>
+        </div>
+
+        <div class="return-table-wrapper">
+            <table class="return-table">
+                <thead>
+                    <tr>
+                        <th>RETURN</th>
+                        <th>REASON</th>
+                        <th>STATUS</th>
+                        <th>REQUESTED</th>
+                        <th>COMPLETED</th>
+                        <th class="text-end">ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in returns)
+                    {
+                        var statusClass = item.Status.ToString().ToLowerInvariant();
+
+                        <tr>
+                            <td>
+                                <div class="return-number-cell">
+                                    <span class="return-row-icon">
+                                        <i class="bi bi-arrow-return-left"></i>
+                                    </span>
+                                    <div>
+                                        <strong>@item.ReturnNumber</strong>
+                                        <small>#@item.Id</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="return-reason" title="@item.Reason">
+                                    @item.Reason
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-status @statusClass">
+                                    <span></span>
+                                    @item.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-date">
+                                    @item.RequestedAt.ToString("dd MMM yyyy")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-date">
+                                    @(item.CompletedAt?.ToString("dd MMM yyyy") ?? "—")
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="return-row-actions">
+                                    <a asp-controller="OrderReturn"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="return-details-btn">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!returns.Any())
+        {
+            <div class="return-empty-state">
+                <div class="return-empty-icon">
+                    <i class="bi bi-arrow-return-left"></i>
+                </div>
+                <h5>No returns for this order</h5>
+                <p>There are currently no return requests associated with this order.</p>
+            </div>
+        }
+
+        <div class="return-table-footer">
+            <span>
+                Total <strong>@returns.Count</strong> return request(s)
+            </span>
+        </div>
+
+    </div>
+</div>

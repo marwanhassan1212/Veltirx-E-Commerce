@@ -19,7 +19,6 @@ namespace Veltrix.Controllers
 
         // Display all return requests with filtering and pagination
         public async Task<IActionResult> Index(OrderReturnFilterParameters filters)
-
         {
             filters.PageNumber = Math.Max(1, filters.PageNumber);
             filters.PageSize = Math.Clamp(filters.PageSize, 1, 100);

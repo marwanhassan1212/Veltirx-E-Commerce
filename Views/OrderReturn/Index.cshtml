@@ -1,0 +1,286 @@
+﻿@using Veltrix.DTOs.OrderReturnDTO
+@using Veltrix.Enums
+@using Veltrix.Repositories.OrderReturn
+@model IReadOnlyList<OrderReturnDto>
+
+@{
+    ViewData["Title"] = "Order Returns";
+
+    var returns = Model ?? Array.Empty<OrderReturnDto>();
+    var filters = ViewBag.Filters as OrderReturnFilterParameters
+                  ?? new OrderReturnFilterParameters();
+
+    int totalCount = ViewBag.TotalCount ?? returns.Count;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int currentPage = filters.PageNumber;
+}
+
+<div class="admin-order-return-page">
+
+    <div class="return-page-header">
+        <div>
+            <h2>Order Returns</h2>
+            <p>Review and monitor customer return requests.</p>
+        </div>
+    </div>
+
+    <div class="return-stats">
+        <div class="return-stat-card">
+            <div class="return-stat-icon total">
+                <i class="bi bi-arrow-return-left"></i>
+            </div>
+            <div>
+                <span>Total Requests</span>
+                <strong>@totalCount</strong>
+            </div>
+        </div>
+
+        <div class="return-stat-card">
+            <div class="return-stat-icon requested">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <span>Requested</span>
+                <strong>@returns.Count(x => x.Status == ReturnStatus.Requested)</strong>
+            </div>
+        </div>
+
+        <div class="return-stat-card">
+            <div class="return-stat-icon completed">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div>
+                <span>Completed on this page</span>
+                <strong>@returns.Count(x => x.Status == ReturnStatus.Completed)</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="return-content-card">
+
+        <div class="return-content-header">
+            <div>
+                <h5>All Return Requests</h5>
+                <span>@totalCount request(s) found</span>
+            </div>
+        </div>
+
+        <form asp-controller="OrderReturn"
+              asp-action="Index"
+              method="get"
+              class="return-filter-form">
+
+            <div class="return-filter-field">
+                <label asp-for="@filters.ReturnNumber">Return Number</label>
+                <input type="text"
+                       name="ReturnNumber"
+                       value="@filters.ReturnNumber"
+                       placeholder="e.g. RET-0001" />
+            </div>
+
+            <div class="return-filter-field">
+                <label asp-for="@filters.OrderId">Order ID</label>
+                <input type="number"
+                       name="OrderId"
+                       value="@filters.OrderId"
+                       min="1"
+                       placeholder="Order ID" />
+            </div>
+
+            <div class="return-filter-field">
+                <label>Status</label>
+                <select name="Status">
+                    <option value="">All statuses</option>
+                    @foreach (ReturnStatus status in Enum.GetValues(typeof(ReturnStatus)))
+                    {
+                        <option value="@status"
+                                selected="@(filters.Status == status)">
+                            @status
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="return-filter-field">
+                <label>From Date</label>
+                <input type="date"
+                       name="FromDate"
+                       value="@filters.FromDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="return-filter-field">
+                <label>To Date</label>
+                <input type="date"
+                       name="ToDate"
+                       value="@filters.ToDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <input type="hidden" name="PageNumber" value="1" />
+            <input type="hidden" name="PageSize" value="@filters.PageSize" />
+
+            <div class="return-filter-actions">
+                <button type="submit" class="return-primary-btn">
+                    <i class="bi bi-funnel"></i>
+                    Apply
+                </button>
+
+                <a asp-controller="OrderReturn"
+                   asp-action="Index"
+                   class="return-reset-btn">
+                    Reset
+                </a>
+            </div>
+        </form>
+
+        <div class="return-table-wrapper">
+            <table class="return-table">
+                <thead>
+                    <tr>
+                        <th>RETURN</th>
+                        <th>ORDER</th>
+                        <th>REASON</th>
+                        <th>STATUS</th>
+                        <th>REQUESTED</th>
+                        <th>COMPLETED</th>
+                        <th class="text-end">ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in returns)
+                    {
+                        var statusClass = item.Status.ToString().ToLowerInvariant();
+
+                        <tr>
+                            <td>
+                                <div class="return-number-cell">
+                                    <span class="return-row-icon">
+                                        <i class="bi bi-arrow-return-left"></i>
+                                    </span>
+                                    <div>
+                                        <strong>@item.ReturnNumber</strong>
+                                        <small>#@item.Id</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="return-order-id">#@item.OrderId</span>
+                            </td>
+
+                            <td>
+                                <span class="return-reason"
+                                      title="@item.Reason">
+                                    @item.Reason
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-status @statusClass">
+                                    <span></span>
+                                    @item.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-date">
+                                    @item.RequestedAt.ToString("dd MMM yyyy")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="return-date">
+                                    @(item.CompletedAt?.ToString("dd MMM yyyy") ?? "—")
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="return-row-actions">
+                                    <a asp-controller="OrderReturn"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="return-details-btn">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!returns.Any())
+        {
+            <div class="return-empty-state">
+                <div class="return-empty-icon">
+                    <i class="bi bi-arrow-return-left"></i>
+                </div>
+                <h5>No return requests found</h5>
+                <p>Try changing your filters or check again later.</p>
+            </div>
+        }
+
+        <div class="return-table-footer">
+            <span>
+                Showing <strong>@returns.Count</strong> of
+                <strong>@totalCount</strong> requests
+            </span>
+
+            @if (totalPages > 1)
+            {
+                <div class="return-pagination">
+
+                    @if (currentPage > 1)
+                    {
+                        <a asp-action="Index"
+                           asp-route-ReturnNumber="@filters.ReturnNumber"
+                           asp-route-OrderId="@filters.OrderId"
+                           asp-route-Status="@filters.Status"
+                           asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                           asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                           asp-route-PageNumber="@(currentPage - 1)"
+                           asp-route-PageSize="@filters.PageSize"
+                           class="return-page-link">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="return-page-link disabled">
+                            <i class="bi bi-chevron-left"></i>
+                        </span>
+                    }
+
+                    <span class="return-page-indicator">
+                        Page <strong>@currentPage</strong> of <strong>@totalPages</strong>
+                    </span>
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-action="Index"
+                           asp-route-ReturnNumber="@filters.ReturnNumber"
+                           asp-route-OrderId="@filters.OrderId"
+                           asp-route-Status="@filters.Status"
+                           asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                           asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                           asp-route-PageNumber="@(currentPage + 1)"
+                           asp-route-PageSize="@filters.PageSize"
+                           class="return-page-link">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="return-page-link disabled">
+                            <i class="bi bi-chevron-right"></i>
+                        </span>
+                    }
+
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

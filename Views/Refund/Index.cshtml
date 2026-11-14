@@ -1,0 +1,362 @@
+﻿@using Veltrix.DTOs.RefundDTO
+@using System.Globalization
+@using Veltrix.Repositories.Refund
+
+@model IReadOnlyList<RefundDto>
+
+@{
+    ViewData["Title"] = "Refunds";
+
+    var filters = ViewBag.Filters as RefundFilterParameters
+        ?? new RefundFilterParameters();
+
+    var totalCount = Convert.ToInt32(ViewBag.TotalCount ?? 0);
+    var totalPages = Convert.ToInt32(ViewBag.TotalPages ?? 0);
+
+    var currentPage = Math.Max(1, filters.PageNumber);
+    var statusProperty = typeof(RefundDto).GetProperty(nameof(RefundDto.Status));
+    var statusType = Nullable.GetUnderlyingType(statusProperty!.PropertyType)
+                     ?? statusProperty.PropertyType;
+    var statusValues = Enum.GetValues(statusType);
+}
+
+<div class="admin-refund-page">
+
+    <div class="refund-page-header">
+        <div>
+            <span class="refund-eyebrow">ORDER MANAGEMENT</span>
+            <h1>Refunds</h1>
+            <p>Review and track customer refund records.</p>
+        </div>
+
+        <div class="refund-header-icon">
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </div>
+    </div>
+
+    <section class="refund-stats-grid">
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+                <span>Total Refund Records</span>
+                <strong>@totalCount</strong>
+            </div>
+        </div>
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <div>
+                <span>Records on This Page</span>
+                <strong>@Model.Count</strong>
+            </div>
+        </div>
+
+        <div class="refund-stat-card">
+            <div class="refund-stat-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div>
+                <span>Current Page</span>
+                <strong>@currentPage / @Math.Max(1, totalPages)</strong>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="refund-panel">
+
+        <div class="refund-panel-header">
+            <div>
+                <h2>Filter Refunds</h2>
+                <p>Find refund records using the available filters.</p>
+            </div>
+
+            <i class="bi bi-funnel"></i>
+        </div>
+
+        <form asp-controller="Refund"
+              asp-action="Index"
+              method="get"
+              class="refund-filter-form">
+
+            <input type="hidden" name="PageNumber" value="1" />
+
+            <div class="refund-filter-field">
+                <label for="RefundNumber">Refund Number</label>
+                <input type="text"
+                       id="RefundNumber"
+                       name="RefundNumber"
+                       value="@filters.RefundNumber"
+                       placeholder="Enter refund number" />
+            </div>
+
+            <div class="refund-filter-field">
+                <label for="ReturnId">Return ID</label>
+                <input type="number"
+                       id="ReturnId"
+                       name="ReturnId"
+                       min="1"
+                       value="@filters.ReturnId"
+                       placeholder="Enter return ID" />
+            </div>
+
+            <div class="refund-filter-field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status">
+                    <option value="">All Statuses</option>
+
+                    @foreach (var status in statusValues)
+                    {
+                        var statusValue = status.ToString();
+
+                        if (filters.Status?.ToString() == statusValue)
+                        {
+                            <option value="@statusValue" selected>
+                                @statusValue
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@statusValue">
+                                @statusValue
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="refund-filter-field">
+                <label for="ProcessedByUserId">Processed By User ID</label>
+                <input type="text"
+                       id="ProcessedByUserId"
+                       name="ProcessedByUserId"
+                       value="@filters.ProcessedByUserId"
+                       placeholder="User ID" />
+            </div>
+
+            <div class="refund-filter-field">
+                <label for="FromDate">From Date</label>
+                <input type="date"
+                       id="FromDate"
+                       name="FromDate"
+                       value="@filters.FromDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="refund-filter-field">
+                <label for="ToDate">To Date</label>
+                <input type="date"
+                       id="ToDate"
+                       name="ToDate"
+                       value="@filters.ToDate?.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="refund-filter-actions">
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-search"></i>
+                    Apply Filters
+                </button>
+
+                <a asp-controller="Refund"
+                   asp-action="Index"
+                   class="vx-btn-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Reset
+                </a>
+            </div>
+
+        </form>
+
+    </section>
+
+    <section class="refund-panel refund-table-panel">
+
+        <div class="refund-panel-header">
+            <div>
+                <h2>Refund Records</h2>
+                <p>All refund records matching your selected filters.</p>
+            </div>
+
+            <span class="refund-record-count">
+                @totalCount Records
+            </span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="refund-table-wrapper">
+                <table class="refund-table">
+                    <thead>
+                        <tr>
+                            <th>Refund Number</th>
+                            <th>Return ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Processed At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var refund in Model)
+                        {
+                            var statusClass = refund.Status.ToString()
+                            .ToLowerInvariant()
+                            .Replace(" ", "-");
+
+                            <tr>
+                                <td>
+                                    <strong class="refund-number">
+                                        @refund.RefundNumber
+                                    </strong>
+                                    <small class="refund-id">
+                                        ID: #@refund.Id
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <a asp-controller="OrderReturn"
+                                       asp-action="Details"
+                                       asp-route-id="@refund.ReturnId"
+                                       class="refund-return-link">
+                                        #@refund.ReturnId
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <strong class="refund-amount">
+                                        @refund.Amount.ToString("N2") EGP
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="refund-status-badge @statusClass">
+                                        @refund.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="refund-date">
+                                        @refund.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <small class="refund-time">
+                                        @refund.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @if (refund.ProcessedAt.HasValue)
+                                    {
+                                        <span class="refund-date">
+                                            @refund.ProcessedAt.Value.ToString("dd MMM yyyy")
+                                        </span>
+                                        <small class="refund-time">
+                                            @refund.ProcessedAt.Value.ToString("hh:mm tt")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="refund-muted">Not processed</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-controller="Refund"
+                                       asp-action="Details"
+                                       asp-route-id="@refund.Id"
+                                       class="refund-details-btn">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="refund-pagination">
+
+                    <span class="refund-pagination-info">
+                        Page @currentPage of @totalPages
+                    </span>
+
+                    <div class="refund-pagination-actions">
+
+                        @if (currentPage > 1)
+                        {
+                            <a asp-action="Index"
+                               asp-route-PageNumber="@(currentPage - 1)"
+                               asp-route-PageSize="@filters.PageSize"
+                               asp-route-RefundNumber="@filters.RefundNumber"
+                               asp-route-ReturnId="@filters.ReturnId"
+                               asp-route-Status="@filters.Status"
+                               asp-route-ProcessedByUserId="@filters.ProcessedByUserId"
+                               asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                               class="refund-page-btn">
+                                <i class="bi bi-chevron-left"></i>
+                                Previous
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="refund-page-btn disabled">
+                                <i class="bi bi-chevron-left"></i>
+                                Previous
+                            </span>
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <a asp-action="Index"
+                               asp-route-PageNumber="@(currentPage + 1)"
+                               asp-route-PageSize="@filters.PageSize"
+                               asp-route-RefundNumber="@filters.RefundNumber"
+                               asp-route-ReturnId="@filters.ReturnId"
+                               asp-route-Status="@filters.Status"
+                               asp-route-ProcessedByUserId="@filters.ProcessedByUserId"
+                               asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                               class="refund-page-btn">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="refund-page-btn disabled">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        }
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="refund-empty-state">
+                <i class="bi bi-receipt"></i>
+                <h3>No Refund Records Found</h3>
+                <p>There are no refunds matching your current filters.</p>
+
+                <a asp-controller="Refund"
+                   asp-action="Index"
+                   class="vx-btn-secondary">
+                    Clear Filters
+                </a>
+            </div>
+        }
+
+    </section>
+
+</div>

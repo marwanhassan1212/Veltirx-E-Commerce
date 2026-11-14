@@ -1,0 +1,217 @@
+﻿@using Veltrix.DTOs.ShipmentDTO
+@model IReadOnlyList<ShipmentDto>
+
+@{
+    ViewData["Title"] = "Shipments";
+    var shipments = Model ?? Array.Empty<ShipmentDto>();
+}
+
+<div class="admin-shipment-index-page">
+
+    <div class="shipment-page-header">
+        <div>
+            <h2>Shipments</h2>
+            <p>Manage and monitor all your shipments.</p>
+        </div>
+    </div>
+
+    <div class="shipment-stats">
+        <div class="shipment-stat-card">
+            <div class="shipment-stat-icon total">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div>
+                <span>Total Shipments</span>
+                <strong>@shipments.Count</strong>
+            </div>
+        </div>
+
+        <div class="shipment-stat-card">
+            <div class="shipment-stat-icon shipped">
+                <i class="bi bi-truck"></i>
+            </div>
+            <div>
+                <span>Shipped</span>
+                <strong>@shipments.Count(x => x.status == Veltrix.Enums.ShipmentStatus.Shipped)</strong>
+            </div>
+        </div>
+
+        <div class="shipment-stat-card">
+            <div class="shipment-stat-icon delivered">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div>
+                <span>Delivered</span>
+                <strong>@shipments.Count(x => x.status == Veltrix.Enums.ShipmentStatus.Delivered)</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="shipment-table-card">
+
+        <div class="shipment-table-header">
+            <div>
+                <h5>All Shipments</h5>
+                <span>@shipments.Count shipment(s) found</span>
+            </div>
+
+            <div class="shipment-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       id="shipmentSearch"
+                       placeholder="Search tracking or order ID..." />
+            </div>
+        </div>
+
+        <div class="shipment-table-wrapper">
+            <table class="shipment-table">
+                <thead>
+                    <tr>
+                        <th>SHIPMENT</th>
+                        <th>ORDER</th>
+                        <th>CARRIER</th>
+                        <th>STATUS</th>
+                        <th>CREATED</th>
+                        <th>SHIPPED</th>
+                        <th>DELIVERED</th>
+                        <th class="text-end">ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody id="shipmentTableBody">
+
+                    @foreach (var shipment in shipments)
+                    {
+                        <tr>
+                            <td>
+                                <div class="shipment-tracking-cell">
+                                    <span class="shipment-row-icon">
+                                        <i class="bi bi-box-seam"></i>
+                                    </span>
+                                    <div>
+                                        <strong>@shipment.TrackingNumber</strong>
+                                        <small>#@shipment.Id</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <a asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@shipment.OrderId"
+                                   class="shipment-order-link">
+                                    #@shipment.OrderId
+                                </a>
+                            </td>
+
+                            <td>
+                                <span class="shipment-carrier">
+                                    @(string.IsNullOrWhiteSpace(shipment.CarrierName)
+                                                                    ? "Not specified"
+                                                                    : shipment.CarrierName)
+                            </span>
+                        </td>
+
+                            <td>
+                            @{
+                                    var statusName = shipment.status.ToString();
+                                    var statusClass = statusName.ToLowerInvariant();
+                                }
+
+                                <span class="shipment-status @statusClass">
+                                    <span></span>
+                                    @statusName
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="shipment-date">
+                                    @shipment.CreatedAt.ToString("dd MMM yyyy")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="shipment-date">
+                                    @(shipment.ShippedAt?.ToString("dd MMM yyyy") ?? "—")
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="shipment-date">
+                                    @(shipment.DeliveredAt?.ToString("dd MMM yyyy") ?? "—")
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="shipment-actions">
+                                    <a asp-controller="Shipment"
+                                       asp-action="Details"
+                                       asp-route-id="@shipment.Id"
+                                       class="shipment-view-btn"
+                                       title="View shipment details">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+
+        <div id="shipmentNoResults" class="shipment-no-results" style="display:none;">
+            <i class="bi bi-search"></i>
+            <strong>No matching shipments</strong>
+            <span>Try another tracking number or order ID.</span>
+        </div>
+
+        @if (!shipments.Any())
+        {
+            <div class="shipment-empty-state">
+                <div class="shipment-empty-icon">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <h5>No shipments yet</h5>
+                <p>Shipments will appear here once they are created.</p>
+            </div>
+        }
+
+        <div class="shipment-table-footer">
+            Showing <strong>@shipments.Count</strong> shipments
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("shipmentSearch");
+            const tableBody = document.getElementById("shipmentTableBody");
+            const noResults = document.getElementById("shipmentNoResults");
+
+            if (!searchInput || !tableBody) return;
+
+            searchInput.addEventListener("input", function () {
+                const searchValue = this.value.trim().toLowerCase();
+                const rows = tableBody.querySelectorAll("tr");
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const matches = row.textContent.toLowerCase().includes(searchValue);
+
+                    row.style.display = matches ? "" : "none";
+
+                    if (matches) visibleCount++;
+                });
+
+                if (noResults) {
+                    noResults.style.display =
+                        visibleCount === 0 && rows.length > 0 ? "flex" : "none";
+                }
+            });
+        });
+    </script>
+}

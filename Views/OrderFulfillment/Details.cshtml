@@ -1,0 +1,200 @@
+﻿@using Veltrix.DTOs.OrderFulfillmentDTO
+@model OrderFulfillmentDto
+
+@{
+    ViewData["Title"] = "Fulfillment Details";
+
+    var items = ViewBag.FulfillmentItems as IEnumerable<FulfillmentItemDto>
+                ?? Model.Items;
+
+    string statusClass = Model.Status.ToString().ToLowerInvariant();
+}
+
+<div class="admin-fulfillment-page">
+
+    <div class="fulfillment-page-header">
+        <div>
+            <h2>Fulfillment Details</h2>
+            <p>Review fulfillment information and associated order items.</p>
+        </div>
+
+        <div class="fulfillment-header-actions">
+            <a asp-action="ByOrder"
+               asp-route-orderId="@Model.OrderId"
+               class="vx-btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Order Fulfillments
+            </a>
+        </div>
+    </div>
+
+    <div class="fulfillment-details-grid">
+
+        <div class="fulfillment-card fulfillment-main-details">
+
+            <div class="fulfillment-card-header">
+                <div>
+                    <h5>Fulfillment Information</h5>
+                    <p>General information about this operation.</p>
+                </div>
+
+                <span class="fulfillment-status status-@statusClass">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="fulfillment-info-grid">
+
+                <div class="fulfillment-info-item">
+                    <span>Fulfillment Number</span>
+                    <strong>@Model.FulfillmentNumber</strong>
+                </div>
+
+                <div class="fulfillment-info-item">
+                    <span>Fulfillment ID</span>
+                    <strong>#@Model.Id</strong>
+                </div>
+
+                <div class="fulfillment-info-item">
+                    <span>Related Order</span>
+                    <strong>
+                        <a asp-controller="AdminOrders"
+                           asp-action="Details"
+                           asp-route-id="@Model.OrderId">
+                            #@Model.OrderId
+                        </a>
+                    </strong>
+                </div>
+
+                <div class="fulfillment-info-item">
+                    <span>Created At</span>
+                    <strong>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+                </div>
+
+                <div class="fulfillment-info-item">
+                    <span>Last Updated</span>
+                    <strong>
+                        @(Model.UpdatedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Not updated")
+                    </strong>
+                </div>
+
+                <div class="fulfillment-info-item">
+                    <span>Completed At</span>
+                    <strong>
+                        @(Model.CompletedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Not completed")
+                    </strong>
+                </div>
+
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Notes))
+            {
+                <div class="fulfillment-notes">
+                    <span>Notes</span>
+                    <p>@Model.Notes</p>
+                </div>
+            }
+
+        </div>
+
+        <div class="fulfillment-card fulfillment-summary-card">
+
+            <div class="fulfillment-card-header">
+                <div>
+                    <h5>Summary</h5>
+                    <p>Quick overview.</p>
+                </div>
+            </div>
+
+            <div class="fulfillment-summary-content">
+
+                <div class="fulfillment-summary-item">
+                    <span>Total Items</span>
+                    <strong>@items.Count()</strong>
+                </div>
+
+                <div class="fulfillment-summary-item">
+                    <span>Total Quantity</span>
+                    <strong>@items.Sum(x => x.Quantity)</strong>
+                </div>
+
+                <div class="fulfillment-summary-item">
+                    <span>Order ID</span>
+                    <strong>#@Model.OrderId</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="fulfillment-card">
+
+        <div class="fulfillment-card-header">
+            <div>
+                <h5>Fulfillment Items</h5>
+                <p>Items included in this fulfillment operation.</p>
+            </div>
+
+            <span class="fulfillment-total-badge">
+                @items.Count() Items
+            </span>
+        </div>
+
+        <div class="fulfillment-table-wrapper">
+
+            <table class="fulfillment-table">
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Order Item ID</th>
+                        <th>Fulfillment ID</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (items.Any())
+                    {
+                        foreach (var item in items)
+                        {
+                            <tr>
+                                <td>#@item.Id</td>
+
+                                <td>
+                                    <span class="fulfillment-number">
+                                        #@item.OrderItemId
+                                    </span>
+                                </td>
+
+                                <td>#@item.FulfillmentId</td>
+
+                                <td>
+                                    <span class="fulfillment-quantity">
+                                        @item.Quantity
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="fulfillment-empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <h6>No items found</h6>
+                                    <p>This fulfillment does not contain any items.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

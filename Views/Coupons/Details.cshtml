@@ -1,0 +1,211 @@
+﻿@model Veltrix.DTOs.CouponDTO.CouponDetailsDto
+
+@{
+    ViewData["Title"] = "Coupon Details";
+
+    var isExpired = Model.ExpiresAt <= DateTime.UtcNow;
+    var isUpcoming = Model.StartsAt > DateTime.UtcNow;
+    var isLimitReached = Model.UsageLimit.HasValue &&
+                         Model.UsageCount >= Model.UsageLimit.Value;
+
+    var status = !Model.IsActive ? "Inactive"
+        : isExpired ? "Expired"
+        : isUpcoming ? "Upcoming"
+        : isLimitReached ? "Usage limit reached"
+        : "Active";
+}
+
+<div class="page-content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <a asp-action="Index" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-left me-1"></i> Back to Coupons
+            </a>
+
+            <h2 class="mt-2 mb-1">Coupon Details</h2>
+            <p class="text-muted mb-0">Review coupon information and configuration.</p>
+        </div>
+
+        <a asp-action="Edit"
+           asp-route-id="@Model.Id"
+           class="vx-btn-primary text-decoration-none">
+            <i class="bi bi-pencil me-1"></i> Edit Coupon
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+                        <div>
+                            <div class="text-muted small mb-1">Coupon Code</div>
+                            <h3 class="mb-0">@Model.Code</h3>
+                        </div>
+
+                        @if (status == "Active")
+                        {
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                        }
+                        else if (status == "Upcoming")
+                        {
+                            <span class="badge bg-info-subtle text-info">Upcoming</span>
+                        }
+                        else if (status == "Inactive")
+                        {
+                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning-subtle text-warning">@status</span>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p class="text-muted">@Model.Description</p>
+                    }
+
+                    <hr />
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="text-muted small">Discount Type</div>
+                            <div class="fw-semibold">@Model.DiscountType</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted small">Discount Value</div>
+                            <div class="fw-semibold">
+                                @if (Model.DiscountType.ToString() == "Percentage")
+                                {
+                                    @($"{Model.DiscountValue}%")
+                                }
+                                else
+                                {
+                                    @Model.DiscountValue.ToString("N2")
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted small">Minimum Order Amount</div>
+                            <div class="fw-semibold">
+                                @(Model.MinimumOrderAmount.HasValue
+                                                                ? Model.MinimumOrderAmount.Value.ToString("N2")
+                                                                : "No minimum")
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted small">Maximum Discount</div>
+                            <div class="fw-semibold">
+                                @(Model.MaximumDiscountAmount.HasValue
+                                                                ? Model.MaximumDiscountAmount.Value.ToString("N2")
+                                                                : "No maximum")
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted small">Starts At</div>
+                            <div class="fw-semibold">@Model.StartsAt.ToString("dd MMM yyyy, hh:mm tt")</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted small">Expires At</div>
+                            <div class="fw-semibold">@Model.ExpiresAt.ToString("dd MMM yyyy, hh:mm tt")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Usage overview</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="text-muted small">Times Used</div>
+                                <div class="fs-4 fw-semibold">@Model.UsageCount</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 rounded bg-light">
+                                <div class="text-muted small">Usage Limit</div>
+                                <div class="fs-4 fw-semibold">
+                                    @(Model.UsageLimit?.ToString() ?? "Unlimited")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.UsageLimit.HasValue && Model.UsageLimit.Value > 0)
+                    {
+                        var percentage = Math.Min(
+                        100,
+                        (double)Model.UsageCount / Model.UsageLimit.Value * 100
+                        );
+
+                        <div class="d-flex justify-content-between small text-muted mt-3 mb-1">
+                            <span>Usage progress</span>
+                            <span>@percentage.ToString("0")%</span>
+                        </div>
+
+                        <div class="progress" style="height:8px;">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 style="width:@percentage%">
+                            </div>
+                        </div>
+                    }
+
+                    <p class="text-muted small mt-3 mb-0">
+                        Each customer can use the same coupon only once.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Coupon information</h5>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Coupon ID</div>
+                        <div class="fw-semibold">#@Model.Id</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Created At</div>
+                        <div class="fw-semibold">@Model.CreatedAt.ToString("dd MMM yyyy")</div>
+                    </div>
+
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div class="mb-3">
+                            <div class="text-muted small">Last Updated</div>
+                            <div class="fw-semibold">@Model.UpdatedAt.Value.ToString("dd MMM yyyy")</div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <form asp-action="ToggleStatus"
+                          asp-route-id="@Model.Id"
+                          method="post">
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn @(Model.IsActive ? "btn-outline-danger" : "btn-outline-success") w-100">
+                            <i class="bi @(Model.IsActive ? "bi-toggle-off" : "bi-toggle-on") me-1"></i>
+                            @(Model.IsActive ? "Deactivate Coupon" : "Activate Coupon")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

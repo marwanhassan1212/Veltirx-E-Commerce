@@ -56,6 +56,15 @@ namespace Veltrix.Services.Shipment
                 .ToList();
         }
 
+        public async Task<IReadOnlyList<ShipmentDto>> GetAllAsync()
+        {
+            var shipments = await _unitOfWork.Shipments.GetAllAsync();
+
+            return shipments
+                .Select(MapToDto)
+                .ToList();
+        }
+
         private static ShipmentDto MapToDto(ShipmentModel shipment)
         {
             return new ShipmentDto

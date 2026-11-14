@@ -7,5 +7,6 @@ namespace Veltrix.Services.Shipment
         Task<ShipmentDto?> GetByIdAsync(int id);
         Task<ShipmentDto?> GetByTrackingNumberAsync(string trackingNumber);
         Task<IReadOnlyList<ShipmentDto?>> GetByOrderIdAsync(int orderId);
+        Task<IReadOnlyList<ShipmentDto>> GetAllAsync();
     }
 }

@@ -1,0 +1,117 @@
+﻿@using Veltrix.DTOs.ShipmentDTO
+@model IReadOnlyList<ShipmentDto>
+
+@{
+    ViewData["Title"] = "Order Shipments";
+    var orderId = Model?.FirstOrDefault()?.OrderId ?? 0;
+}
+
+<div class="admin-shipment-page">
+
+    <div class="shipment-page-header">
+        <div>
+            <h2>Order Shipments</h2>
+            <p>View and track shipments associated with this order.</p>
+        </div>
+
+        <a asp-controller="AdminOrders"
+           asp-action="Details"
+           asp-route-id="@orderId"
+           class="shipment-btn shipment-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Order
+        </a>
+    </div>
+
+    <div class="shipment-card">
+
+        <div class="shipment-card-header">
+            <div>
+                <h5>Shipment History</h5>
+                <p>All shipments created for this order.</p>
+            </div>
+
+            <span class="shipment-count">
+                @(Model?.Count ?? 0) Shipments
+            </span>
+        </div>
+
+        <div class="shipment-table-wrapper">
+            <table class="shipment-table">
+                <thead>
+                    <tr>
+                        <th>Tracking Number</th>
+                        <th>Carrier</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Shipped At</th>
+                        <th>Estimated Delivery</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var shipment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="shipment-tracking-number">
+                                        @shipment.TrackingNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(shipment.CarrierName)
+                                                                ? "—"
+                                                                : shipment.CarrierName)
+                        </td>
+
+                                <td>
+                                    <span class="shipment-status">
+                                        @shipment.status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @shipment.CreatedAt.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @(shipment.ShippedAt?.ToString("dd MMM yyyy") ?? "—")
+                                </td>
+
+                                <td>
+                                    @(shipment.EstimatedDeliveryAt?.ToString("dd MMM yyyy") ?? "—")
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-action="Details"
+                                       asp-route-id="@shipment.Id"
+                                       class="shipment-view-link">
+                                        View Details
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">
+                                <div class="shipment-empty-state">
+                                    <i class="bi bi-truck"></i>
+                                    <h6>No shipments found</h6>
+                                    <p>No shipment has been created for this order yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

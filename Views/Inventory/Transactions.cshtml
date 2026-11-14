@@ -1,0 +1,175 @@
+﻿@using Veltrix.DTOs.InventoryTransactionDTO
+@using Veltrix.DTOs.InventoryDTO
+@model IReadOnlyList<InventoryTransactionDto>
+
+@{
+    ViewData["Title"] = "Inventory Transactions";
+
+    var inventory = ViewBag.Inventory as InventoryDto;
+
+    var totalTransactions = Model.Count;
+    var totalReceived = Model
+        .Where(x => x.QuantityChange > 0)
+        .Sum(x => x.QuantityChange);
+
+    var totalRemoved = Model
+        .Where(x => x.QuantityChange < 0)
+        .Sum(x => Math.Abs((long)x.QuantityChange));
+}
+
+<div class="inventory-page">
+
+    <div class="inventory-breadcrumb">
+        <a asp-action="Index">Inventory</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>Transactions</span>
+    </div>
+
+    <div class="inventory-page-header">
+        <div>
+            <span class="inventory-eyebrow">INVENTORY HISTORY</span>
+            <h1>Stock Transactions</h1>
+            <p>Track all stock movements and quantity adjustments.</p>
+        </div>
+
+        <a asp-action="Details"
+           asp-route-id="@inventory?.Id"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Details
+        </a>
+    </div>
+
+    <div class="inventory-transaction-summary">
+
+        <div class="inventory-summary-item">
+            <span>Total Transactions</span>
+            <strong>@totalTransactions</strong>
+        </div>
+
+        <div class="inventory-summary-item">
+            <span>Quantity Added</span>
+            <strong class="inventory-positive-value">
+                +@totalReceived.ToString("N0")
+            </strong>
+        </div>
+
+        <div class="inventory-summary-item">
+            <span>Quantity Removed</span>
+            <strong class="inventory-negative-value">
+                -@totalRemoved.ToString("N0")
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="inventory-content-card">
+
+        <div class="inventory-card-header">
+            <div>
+                <h2>Transaction History</h2>
+                <p>
+                    @(inventory?.ProductName ?? "Inventory") — Record #@(inventory?.Id)
+                </p>
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="inventory-table-wrapper">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction</th>
+                            <th>Type</th>
+                            <th>Quantity Change</th>
+                            <th>Before</th>
+                            <th>After</th>
+                            <th>Related Order</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var isIncrease = item.QuantityChange > 0;
+
+                            <tr>
+                                <td>
+                                    <div class="inventory-transaction-id">
+                                        <strong>#@item.Id</strong>
+                                        <small>Inventory #@item.InventoryId</small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="inventory-transaction-type">
+                                        @item.TransactionType
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="@(isIncrease ? "inventory-positive-value" : "inventory-negative-value")">
+                                        @(isIncrease ? "+" : "")@item.QuantityChange.ToString("N0")
+                                    </strong>
+                                </td>
+
+                                <td>@item.QuantityBefore.ToString("N0")</td>
+
+                                <td>
+                                    <strong>@item.QuantityAfter.ToString("N0")</strong>
+                                </td>
+
+                                <td>
+                                    @if (item.OrderId.HasValue)
+                                    {
+                                        <a asp-action="TransactionsByOrder"
+                                           asp-route-orderId="@item.OrderId.Value"
+                                           class="inventory-order-link">
+                                            #@item.OrderId.Value
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="inventory-muted">—</span>
+                                    }
+                            </td>
+
+                            <td>
+                                <span class="inventory-date">
+                                    @item.CreatedAt.ToString("dd MMM yyyy")
+                                </span>
+                                <small class="inventory-time">
+                                    @item.CreatedAt.ToString("hh:mm tt")
+                                </small>
+                            </td>
+                        </tr>
+
+                        <tr class="inventory-reason-row">
+                            <td colspan="7">
+                                <span>Reason:</span>
+                                @(string.IsNullOrWhiteSpace(item.Reason)
+                                                            ? "No reason provided"
+                                                            : item.Reason)
+                        </td>
+                    </tr>
+                                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="inventory-empty-state">
+                <div class="inventory-empty-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h3>No transactions found</h3>
+                <p>No stock movements have been recorded for this inventory item yet.</p>
+            </div>
+        }
+
+    </div>
+
+</div>

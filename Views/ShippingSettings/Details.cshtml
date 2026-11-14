@@ -1,0 +1,161 @@
+﻿@using Veltrix.DTOs.ShippingSettingsDTO
+
+@model ShippingSettingsDto
+
+@{
+    ViewData["Title"] = "Shipping Setting Details";
+}
+
+<div class="admin-shipping-details-page">
+
+    <!-- Header -->
+    <div class="shipping-details-header">
+
+        <div>
+            <a asp-controller="ShippingSettings"
+               asp-action="Index"
+               class="shipping-details-back">
+                <i class="bi bi-arrow-left"></i>
+                Back to Shipping Settings
+            </a>
+
+            <span class="shipping-details-eyebrow">STORE CONFIGURATION</span>
+
+            <h1>Shipping Setting Details</h1>
+
+            <p>View the details of this shipping configuration.</p>
+        </div>
+
+        @if (Model.IsActive)
+        {
+            <span class="shipping-status-badge active">
+                <i class="bi bi-check-circle-fill"></i>
+                Active
+            </span>
+        }
+        else
+        {
+            <span class="shipping-status-badge inactive">
+                Inactive
+            </span>
+        }
+
+    </div>
+
+    <!-- Main Fee Card -->
+    <section class="shipping-detail-main-card">
+
+        <div class="shipping-detail-main-icon">
+            <i class="bi bi-truck"></i>
+        </div>
+
+        <div class="shipping-detail-main-content">
+            <span>SHIPPING FEE</span>
+
+            <div class="shipping-detail-amount">
+                <strong>@Model.ShippingFee.ToString("N2")</strong>
+                <small>EGP</small>
+            </div>
+
+            <p>
+                Shipping fee configured for customer orders.
+            </p>
+        </div>
+
+        <div class="shipping-detail-id">
+            <span>SETTING ID</span>
+            <strong>#@Model.Id</strong>
+        </div>
+
+    </section>
+
+    <!-- Information -->
+    <section class="shipping-detail-card">
+
+        <div class="shipping-detail-section-header">
+            <div>
+                <h2>Configuration Information</h2>
+                <p>General details about this shipping setting.</p>
+            </div>
+
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+        <div class="shipping-detail-grid">
+
+            <div class="shipping-detail-item">
+                <span>Setting ID</span>
+                <strong>#@Model.Id</strong>
+            </div>
+
+            <div class="shipping-detail-item">
+                <span>Shipping Fee</span>
+                <strong>@Model.ShippingFee.ToString("N2") EGP</strong>
+            </div>
+
+            <div class="shipping-detail-item">
+                <span>Configuration Status</span>
+
+                <strong>
+                    @if (Model.IsActive)
+                    {
+                        <span class="shipping-status-badge active">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="shipping-status-badge inactive">
+                            Inactive
+                        </span>
+                    }
+                </strong>
+            </div>
+
+            <div class="shipping-detail-item">
+                <span>Last Updated</span>
+                <strong>@Model.UpdatedAt.ToString("dd MMM yyyy")</strong>
+                <small>@Model.UpdatedAt.ToString("hh:mm tt")</small>
+            </div>
+
+            <div class="shipping-detail-item shipping-detail-full">
+                <span>Updated By User ID</span>
+
+                <strong class="shipping-detail-user">
+                    @(string.IsNullOrWhiteSpace(Model.UpdatedByUserId)
+                                        ? "Not available"
+                                        : Model.UpdatedByUserId)
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Information Notice -->
+    <div class="shipping-detail-notice">
+        <i class="bi bi-info-circle"></i>
+
+        <div>
+            <strong>Configuration Information</strong>
+            <p>
+                This page displays the saved shipping configuration.
+                To update the shipping fee, return to the Shipping Settings page.
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="shipping-detail-footer">
+
+        <a asp-controller="ShippingSettings"
+           asp-action="Index"
+           class="vx-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Shipping Settings
+        </a>
+
+    </div>
+
+</div>

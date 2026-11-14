@@ -1,0 +1,266 @@
+﻿@using Veltrix.DTOs.OrderReturnDTO
+@model OrderReturnDto
+
+@{
+    ViewData["Title"] = "Return Details";
+
+    var returnItems = ViewBag.ReturnItems as IEnumerable<OrderReturnItemDto>
+                      ?? Model.Items
+                      ?? Array.Empty<OrderReturnItemDto>();
+
+    var statusClass = Model.Status.ToString().ToLowerInvariant();
+}
+
+<div class="admin-order-return-page">
+
+    <div class="return-page-header">
+        <div>
+            <h2>Return Details</h2>
+            <p>Review return request information and returned items.</p>
+        </div>
+
+        <a asp-controller="OrderReturn"
+           asp-action="Index"
+           class="return-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Back to Returns
+        </a>
+    </div>
+
+    <div class="return-details-layout">
+
+        <div class="return-details-main">
+
+            <div class="return-detail-card">
+
+                <div class="return-detail-card-header">
+                    <div>
+                        <span class="return-section-label">RETURN REQUEST</span>
+                        <h5>@Model.ReturnNumber</h5>
+                    </div>
+
+                    <span class="return-status @statusClass">
+                        <span></span>
+                        @Model.Status
+                    </span>
+                </div>
+
+                <div class="return-info-grid">
+                    <div class="return-info-item">
+                        <span>Return ID</span>
+                        <strong>#@Model.Id</strong>
+                    </div>
+
+                    <div class="return-info-item">
+                        <span>Order ID</span>
+                        <strong>
+                            <a asp-controller="Order"
+                               asp-action="Details"
+                               asp-route-id="@Model.OrderId">
+                                #@Model.OrderId
+                            </a>
+                        </strong>
+                    </div>
+
+                    <div class="return-info-item">
+                        <span>Requested At</span>
+                        <strong>@Model.RequestedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+                    </div>
+
+                    <div class="return-info-item">
+                        <span>Approved At</span>
+                        <strong>
+                            @(Model.ApprovedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "—")
+                        </strong>
+                    </div>
+
+                    <div class="return-info-item">
+                        <span>Received At</span>
+                        <strong>
+                            @(Model.ReceivedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "—")
+                        </strong>
+                    </div>
+
+                    <div class="return-info-item">
+                        <span>Completed At</span>
+                        <strong>
+                            @(Model.CompletedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "—")
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="return-detail-card">
+
+                <div class="return-detail-section-heading">
+                    <div>
+                        <h5>Return Reason</h5>
+                        <p>Reason provided for this return request.</p>
+                    </div>
+                </div>
+
+                <div class="return-text-panel">
+                    @Model.Reason
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.CustomerNotes))
+                {
+                    <div class="return-notes-block">
+                        <span>Customer Notes</span>
+                        <p>@Model.CustomerNotes</p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.AdminNotes))
+                {
+                    <div class="return-notes-block admin">
+                        <span>Admin Notes</span>
+                        <p>@Model.AdminNotes</p>
+                    </div>
+                }
+            </div>
+
+            <div class="return-detail-card">
+
+                <div class="return-detail-section-heading">
+                    <div>
+                        <h5>Returned Items</h5>
+                        <p>Products and quantities included in this return.</p>
+                    </div>
+
+                    <span class="return-items-count">
+                        @returnItems.Count() item(s)
+                    </span>
+                </div>
+
+                <div class="return-items-table-wrapper">
+                    <table class="return-items-table">
+                        <thead>
+                            <tr>
+                                <th>ORDER ITEM</th>
+                                <th>QUANTITY</th>
+                                <th>CONDITION NOTES</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in returnItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@item.OrderItemId</strong>
+                                        <small>Return item #@item.Id</small>
+                                    </td>
+
+                                    <td>
+                                        <span class="return-quantity">
+                                            @item.Quantity
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="return-condition">
+                                            @(string.IsNullOrWhiteSpace(item.ConditionNotes)
+                                                                                    ? "No notes provided"
+                                                                                    : item.ConditionNotes)
+                                    </span>
+                                </td>
+                            </tr>
+                                                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!returnItems.Any())
+                {
+                    <div class="return-items-empty">
+                        No returned items are available.
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        <aside class="return-details-sidebar">
+
+            <div class="return-detail-card return-summary-card">
+                <h5>Return Summary</h5>
+
+                <div class="return-summary-row">
+                    <span>Return Number</span>
+                    <strong>@Model.ReturnNumber</strong>
+                </div>
+
+                <div class="return-summary-row">
+                    <span>Order ID</span>
+                    <strong>#@Model.OrderId</strong>
+                </div>
+
+                <div class="return-summary-row">
+                    <span>Items</span>
+                    <strong>@returnItems.Count()</strong>
+                </div>
+
+                <div class="return-summary-row">
+                    <span>Total Quantity</span>
+                    <strong>@returnItems.Sum(x => x.Quantity)</strong>
+                </div>
+
+                <div class="return-summary-status">
+                    <span>Current Status</span>
+                    <span class="return-status @statusClass">
+                        <span></span>
+                        @Model.Status
+                    </span>
+                </div>
+            </div>
+
+            <div class="return-detail-card return-timeline-card">
+                <h5>Return Progress</h5>
+
+                <div class="return-timeline">
+
+                    <div class="return-timeline-item completed">
+                        <span class="return-timeline-dot"></span>
+                        <div>
+                            <strong>Requested</strong>
+                            <small>@Model.RequestedAt.ToString("dd MMM yyyy, hh:mm tt")</small>
+                        </div>
+                    </div>
+
+                    <div class="return-timeline-item @(Model.ApprovedAt.HasValue ? "completed" : "")">
+                        <span class="return-timeline-dot"></span>
+                        <div>
+                            <strong>Approved</strong>
+                            <small>
+                                @(Model.ApprovedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Waiting")
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="return-timeline-item @(Model.ReceivedAt.HasValue ? "completed" : "")">
+                        <span class="return-timeline-dot"></span>
+                        <div>
+                            <strong>Received</strong>
+                            <small>
+                                @(Model.ReceivedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Waiting")
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="return-timeline-item @(Model.CompletedAt.HasValue ? "completed" : "")">
+                        <span class="return-timeline-dot"></span>
+                        <div>
+                            <strong>Completed</strong>
+                            <small>
+                                @(Model.CompletedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Waiting")
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </aside>
+    </div>
+</div>

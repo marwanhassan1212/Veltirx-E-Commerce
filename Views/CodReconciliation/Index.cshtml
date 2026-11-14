@@ -1,0 +1,330 @@
+﻿@using Veltrix.DTOs.CodReconciliationDTO
+@using Veltrix.Enums
+@using Veltrix.Repositories.CodReconciliation
+
+@model IReadOnlyList<CodReconciliationDto>
+
+@{
+    ViewData["Title"] = "COD Reconciliations";
+
+    var filters = ViewBag.Filters as CodReconciliationFilterParameters
+                  ?? new CodReconciliationFilterParameters();
+
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int totalPages = ViewBag.TotalPages ?? 0;
+
+    string GetStatusLabel(CodReconciliationStatus status) => status switch
+    {
+        CodReconciliationStatus.Pending => "Pending",
+        CodReconciliationStatus.PartiallyReconciled => "Partially Reconciled",
+        CodReconciliationStatus.Reconciled => "Reconciled",
+        CodReconciliationStatus.Disputed => "Disputed",
+        CodReconciliationStatus.Cancelled => "Cancelled",
+        _ => status.ToString()
+    };
+
+    string GetStatusClass(CodReconciliationStatus status) => status switch
+    {
+        CodReconciliationStatus.Pending => "pending",
+        CodReconciliationStatus.PartiallyReconciled => "partial",
+        CodReconciliationStatus.Reconciled => "reconciled",
+        CodReconciliationStatus.Disputed => "disputed",
+        CodReconciliationStatus.Cancelled => "cancelled",
+        _ => "pending"
+    };
+}
+
+<div class="admin-cod-page">
+
+    <div class="cod-page-header">
+        <div>
+            <span class="cod-eyebrow">ORDER MANAGEMENT</span>
+            <h1>COD Reconciliations</h1>
+            <p>Review and track cash-on-delivery reconciliation records.</p>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="cod-summary-grid">
+
+        <div class="cod-summary-card">
+            <div class="cod-summary-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+                <span>Total Reconciliations</span>
+                <strong>@totalCount</strong>
+            </div>
+        </div>
+
+        <div class="cod-summary-card">
+            <div class="cod-summary-icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <div>
+                <span>Records on This Page</span>
+                <strong>@Model.Count</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+    <section class="cod-panel">
+
+        <div class="cod-panel-header">
+            <div>
+                <h2>Filter Reconciliations</h2>
+                <p>Find records using the available filters.</p>
+            </div>
+            <i class="bi bi-funnel"></i>
+        </div>
+
+        <form asp-controller="CodReconciliation"
+              asp-action="Index"
+              method="get"
+              class="cod-filter-form">
+
+            <input type="hidden" name="PageNumber" value="1" />
+            <input type="hidden" name="PageSize" value="@filters.PageSize" />
+
+            <div class="cod-filter-field">
+                <label for="ReconciliationNumber">Reconciliation Number</label>
+                <input type="text"
+                       id="ReconciliationNumber"
+                       name="ReconciliationNumber"
+                       value="@filters.ReconciliationNumber"
+                       placeholder="Enter reconciliation number..." />
+            </div>
+
+            <div class="cod-filter-field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status">
+                    <option value="">All Statuses</option>
+
+                    @foreach (CodReconciliationStatus status in Enum.GetValues(typeof(CodReconciliationStatus)))
+                    {
+                        <option value="@status"
+                                selected="@(filters.Status == status)">
+                            @GetStatusLabel(status)
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="cod-filter-field">
+                <label for="ReconciledByUserId">Reconciled By User ID</label>
+                <input type="text"
+                       id="ReconciledByUserId"
+                       name="ReconciledByUserId"
+                       value="@filters.ReconciledByUserId"
+                       placeholder="Enter user ID..." />
+            </div>
+
+            <div class="cod-filter-field">
+                <label for="FromDate">From Date</label>
+                <input type="date"
+                       id="FromDate"
+                       name="FromDate"
+                       value="@(filters.FromDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+
+            <div class="cod-filter-field">
+                <label for="ToDate">To Date</label>
+                <input type="date"
+                       id="ToDate"
+                       name="ToDate"
+                       value="@(filters.ToDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+
+            <div class="cod-filter-actions">
+                <button type="submit" class="vx-btn-primary">
+                    <i class="bi bi-search"></i>
+                    Apply Filters
+                </button>
+
+                <a asp-controller="CodReconciliation"
+                   asp-action="Index"
+                   class="vx-btn-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <!-- Reconciliations Table -->
+    <section class="cod-panel cod-table-panel">
+
+        <div class="cod-panel-header">
+            <div>
+                <h2>Reconciliation Records</h2>
+                <p>Showing the records matching your filters.</p>
+            </div>
+            <span class="cod-record-count">@totalCount Records</span>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="cod-table-wrapper">
+                <table class="cod-table">
+                    <thead>
+                        <tr>
+                            <th>Reconciliation</th>
+                            <th>Expected</th>
+                            <th>Collected</th>
+                            <th>Difference</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Reconciled At</th>
+                            <th class="cod-action-column">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="cod-number-cell">
+                                        <strong>@item.ReconciliationNumber</strong>
+                                        <span>ID: @item.Id</span>
+                                    </div>
+                                </td>
+
+                                <td class="cod-amount">
+                                    @item.ExpectedAmount.ToString("N2") EGP
+                                </td>
+
+                                <td class="cod-amount">
+                                    @item.CollectedAmount.ToString("N2") EGP
+                                </td>
+
+                                <td class="cod-amount cod-difference">
+                                    @item.DifferenceAmount.ToString("N2") EGP
+                                </td>
+
+                                <td>
+                                    <span class="cod-status-badge @GetStatusClass(item.Status)">
+                                        @GetStatusLabel(item.Status)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="cod-date">
+                                        @item.CreatedAt.ToString("dd MMM yyyy")
+                                    </span>
+                                    <small class="cod-time">
+                                        @item.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @if (item.ReconciledAt.HasValue)
+                                    {
+                                        <span class="cod-date">
+                                            @item.ReconciledAt.Value.ToString("dd MMM yyyy")
+                                        </span>
+                                        <small class="cod-time">
+                                            @item.ReconciledAt.Value.ToString("hh:mm tt")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="cod-not-available">—</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-controller="CodReconciliation"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="cod-details-btn"
+                                       title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="cod-pagination">
+
+                    <span class="cod-pagination-info">
+                        Page @filters.PageNumber of @totalPages
+                    </span>
+
+                    <div class="cod-pagination-actions">
+
+                        @if (filters.PageNumber > 1)
+                        {
+                            <a asp-action="Index"
+                               asp-route-PageNumber="@(filters.PageNumber - 1)"
+                               asp-route-PageSize="@filters.PageSize"
+                               asp-route-ReconciliationNumber="@filters.ReconciliationNumber"
+                               asp-route-Status="@filters.Status"
+                               asp-route-ReconciledByUserId="@filters.ReconciledByUserId"
+                               asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                               class="cod-page-btn">
+                                <i class="bi bi-chevron-left"></i>
+                                Previous
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="cod-page-btn disabled">
+                                <i class="bi bi-chevron-left"></i>
+                                Previous
+                            </span>
+                        }
+
+                        @if (filters.PageNumber < totalPages)
+                        {
+                            <a asp-action="Index"
+                               asp-route-PageNumber="@(filters.PageNumber + 1)"
+                               asp-route-PageSize="@filters.PageSize"
+                               asp-route-ReconciliationNumber="@filters.ReconciliationNumber"
+                               asp-route-Status="@filters.Status"
+                               asp-route-ReconciledByUserId="@filters.ReconciledByUserId"
+                               asp-route-FromDate="@filters.FromDate?.ToString("yyyy-MM-dd")"
+                               asp-route-ToDate="@filters.ToDate?.ToString("yyyy-MM-dd")"
+                               class="cod-page-btn">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="cod-page-btn disabled">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        }
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="cod-empty-state">
+                <div class="cod-empty-icon">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+                <h3>No Reconciliations Found</h3>
+                <p>No COD reconciliation records match your current filters.</p>
+
+            </div>
+        }
+
+    </section>
+
+</div>

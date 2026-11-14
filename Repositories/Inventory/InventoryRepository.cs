@@ -1,106 +1,219 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Veltrix.Data;
+﻿    using Microsoft.EntityFrameworkCore;
+    using Veltrix.Data;
+using Veltrix.DTOs.InventoryDTO;
 using Veltrix.Models;
 
-namespace Veltrix.Repositories.Inventory
-{
-    public class InventoryRepository : IInventoryRepository
+    namespace Veltrix.Repositories.Inventory
     {
-        private readonly AppDbContext _db;
-        public InventoryRepository(AppDbContext db)
+        public class InventoryRepository : IInventoryRepository
         {
-            _db = db;
-        }
-
-        public async Task AddAsync(Models.Inventory inventory)
-        {
-            await _db.Inventories.AddAsync(inventory);
-        }
-
-        public async Task<Models.Inventory?> GetByIdAsync(int Id)
-        {
-            return await _db.Inventories.FirstOrDefaultAsync(x => x.Id == Id);
-        }
-        public async Task<int?> TryDecreaseStockAsync(int inventoryId, int quantity)
-        {
-            if (inventoryId <= 0 || quantity <= 0)
-                return null;
-
-            var affectedRows = await _db.Inventories
-                .Where(x => x.Id == inventoryId &&
-                            x.StockQuantity >= quantity)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(
-                        x => x.StockQuantity,
-                        x => x.StockQuantity - quantity)
-                    .SetProperty(
-                        x => x.UpdatedAt,
-                        DateTime.UtcNow));
-
-            if (affectedRows == 0)
-                return null;
-
-            return await _db.Inventories
-                .AsNoTracking()
-                .Where(x => x.Id == inventoryId)
-                .Select(x => (int?)x.StockQuantity)
-                .SingleAsync();
-        }
-        public async Task<Models.Inventory?> GetByProductIdAsync(int productvariantId)
-        {
-            return await _db.Inventories.FirstOrDefaultAsync(x => x.ProductVariantId == productvariantId);
-        }
-
-        public async Task<IReadOnlyList<Models.InventoryTransaction>> GetTransactionsByInventoryIdAsync(int inventoryId)
-        {
-            return await _db.InventoryTransactions.Where(x => x.InventoryId == inventoryId)
-                 .AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync();
-        }
-
-        public void Update(Models.Inventory inventory)
-        {
-            _db.Inventories.Update(inventory);
-        }
-
-        public async Task<(int QuantityBefore, int QuantityAfter)?> TryIncreaseStockAsync(int inventoryId, int quantity)
-        {
-            if (inventoryId <= 0 || quantity <= 0)
-                return null;
-
-            var inventory = await _db.Inventories
-                .Where(x => x.Id == inventoryId)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.StockQuantity
-                })
-                .SingleOrDefaultAsync();
-
-            if (inventory == null ||
-                inventory.StockQuantity > int.MaxValue - quantity)
+            private readonly AppDbContext _db;
+            public InventoryRepository(AppDbContext db)
             {
-                return null;
+                _db = db;
             }
 
-            var quantityBefore = inventory.StockQuantity;
+            public async Task AddAsync(Models.Inventory inventory)
+            {
+                await _db.Inventories.AddAsync(inventory);
+            }
 
-            var affectedRows = await _db.Inventories
-                .Where(x =>
-                    x.Id == inventoryId &&
-                    x.StockQuantity == quantityBefore &&
-                    x.StockQuantity <= int.MaxValue - quantity)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(
-                        x => x.StockQuantity,
-                        x => x.StockQuantity + quantity)
-                    .SetProperty(
-                        x => x.UpdatedAt,
-                        DateTime.UtcNow));
+        public async Task<Models.Inventory?> GetByIdAsync(int id)
+        {
+            return await _db.Inventories
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.Product)
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.VariantOptions)
+                        .ThenInclude(vo => vo.VariantOptionValue)
+                            .ThenInclude(vov => vov.VariantOption)
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+        public async Task<int?> TryDecreaseStockAsync(int inventoryId, int quantity)
+            {
+                if (inventoryId <= 0 || quantity <= 0)
+                    return null;
 
-            if (affectedRows == 0)
-                return null;
+                var affectedRows = await _db.Inventories
+                    .Where(x => x.Id == inventoryId &&
+                                x.StockQuantity >= quantity)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(
+                            x => x.StockQuantity,
+                            x => x.StockQuantity - quantity)
+                        .SetProperty(
+                            x => x.UpdatedAt,
+                            DateTime.UtcNow));
 
-            return (quantityBefore, quantityBefore + quantity);
+                if (affectedRows == 0)
+                    return null;
+
+                return await _db.Inventories
+                    .AsNoTracking()
+                    .Where(x => x.Id == inventoryId)
+                    .Select(x => (int?)x.StockQuantity)
+                    .SingleAsync();
+            }
+            public async Task<Models.Inventory?> GetByProductVariantIdAsync(int productvariantId)
+            {
+                return await _db.Inventories
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.Product)
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.VariantOptions)
+                        .ThenInclude(vo => vo.VariantOptionValue)
+                            .ThenInclude(vov => vov.VariantOption)
+                .FirstOrDefaultAsync(i => i.ProductVariantId == productvariantId);
+        }
+            
+
+            public async Task<IReadOnlyList<Models.InventoryTransaction>> GetTransactionsByInventoryIdAsync(int inventoryId)
+            {
+                return await _db.InventoryTransactions.Where(x => x.InventoryId == inventoryId)
+                     .AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync();
+            }
+
+            public void Update(Models.Inventory inventory)
+            {
+                _db.Inventories.Update(inventory);
+            }
+
+            public async Task<(int QuantityBefore, int QuantityAfter)?> TryIncreaseStockAsync(int inventoryId, int quantity)
+            {
+                if (inventoryId <= 0 || quantity <= 0)
+                    return null;
+
+                var inventory = await _db.Inventories
+                    .Where(x => x.Id == inventoryId)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.StockQuantity
+                    })
+                    .SingleOrDefaultAsync();
+
+                if (inventory == null ||
+                    inventory.StockQuantity > int.MaxValue - quantity)
+                {
+                    return null;
+                }
+
+                var quantityBefore = inventory.StockQuantity;
+
+                var affectedRows = await _db.Inventories
+                    .Where(x =>
+                        x.Id == inventoryId &&
+                        x.StockQuantity == quantityBefore &&
+                        x.StockQuantity <= int.MaxValue - quantity)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(
+                            x => x.StockQuantity,
+                            x => x.StockQuantity + quantity)
+                        .SetProperty(
+                            x => x.UpdatedAt,
+                            DateTime.UtcNow));
+
+                if (affectedRows == 0)
+                    return null;
+
+                return (quantityBefore, quantityBefore + quantity);
+            }
+
+            public async Task<IReadOnlyList<Models.Inventory>> GetAllAsync()
+            {
+            return await _db.Inventories
+                 .AsNoTracking()
+                 .Include(i => i.ProductVariant)
+                     .ThenInclude(v => v.Product)
+                 .Include(i => i.ProductVariant)
+                     .ThenInclude(v => v.VariantOptions)
+                         .ThenInclude(vo => vo.VariantOptionValue)
+                             .ThenInclude(vov => vov.VariantOption)
+                 .OrderBy(i => i.ProductVariant.Product.Name)
+                 .ThenBy(i => i.ProductVariant.SKU)
+                 .ToListAsync();
+        }
+
+        public async Task<(IReadOnlyList<Models.Inventory> Items, int TotalCount)> GetFilteredAsync(InventoryFilterDto filter)
+        {
+            var query = _db.Inventories.AsNoTracking().AsQueryable();
+
+            // Search by product name, SKU, or variant options
+            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+            {
+                var search = filter.SearchTerm.Trim();
+
+                query = query.Where(i => i.ProductVariant.Product.Name.Contains(search) ||
+                    i.ProductVariant.SKU.Contains(search) ||
+                    i.ProductVariant.VariantOptions.Any(vo =>
+                        vo.VariantOptionValue.Value.Contains(search) ||
+                        vo.VariantOptionValue.VariantOption.Name.Contains(search)));
+            }
+
+            // Filter by stock status
+            if (!string.IsNullOrWhiteSpace(filter.StockStatus) && filter.StockStatus != "All")
+            {
+                query = filter.StockStatus switch
+                {
+                    "InStock" => query.Where(i => i.StockQuantity > 5),
+                    "LowStock" => query.Where(i => i.StockQuantity >= 1 && i.StockQuantity <= 5),
+                    "OutOfStock" => query.Where(i => i.StockQuantity == 0),
+                    _ => query
+                };
+            }
+
+            // Filter by quantity range
+            if (filter.MinQuantity.HasValue)
+            {
+                query = query.Where(i => i.StockQuantity >= filter.MinQuantity.Value);
+            }
+
+            if (filter.MaxQuantity.HasValue)
+            {
+                query = query.Where(i => i.StockQuantity <= filter.MaxQuantity.Value);
+            }
+
+            // Count filtered records before pagination
+            var totalCount = await query.CountAsync();
+
+            // Sorting
+            var descending = filter.SortDescending;
+            IOrderedQueryable<Models.Inventory> orderedQuery = filter.SortBy switch
+            {
+                "ProductName" => descending
+                    ? query.OrderByDescending(i => i.ProductVariant.Product.Name)
+                    : query.OrderBy(i => i.ProductVariant.Product.Name),
+
+                "SKU" => descending
+                    ? query.OrderByDescending(i => i.ProductVariant.SKU)
+                    : query.OrderBy(i => i.ProductVariant.SKU),
+
+                "Quantity" => descending
+                    ? query.OrderByDescending(i => i.StockQuantity)
+                    : query.OrderBy(i => i.StockQuantity),
+
+                _ => descending
+                    ? query.OrderByDescending(i => i.UpdatedAt)
+                    : query.OrderBy(i => i.UpdatedAt)
+            };
+
+            // Stable ordering
+            orderedQuery = orderedQuery.ThenBy(i => i.Id);
+        
+
+            // Pagination and navigation loading
+            var items = await query
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.Product)
+                .Include(i => i.ProductVariant)
+                    .ThenInclude(v => v.VariantOptions)
+                        .ThenInclude(vo => vo.VariantOptionValue)
+                            .ThenInclude(vov => vov.VariantOption)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
     }
-}
+    }

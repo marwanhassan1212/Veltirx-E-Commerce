@@ -1,0 +1,218 @@
+﻿@using Veltrix.DTOs.ShipmentDTO
+@using Veltrix.DTOs.ShipmentTrackingEventDTO
+@model ShipmentDto
+
+@{
+    ViewData["Title"] = "Shipment Details";
+
+    var events = ViewBag.TrackingEvents as IEnumerable<ShipmentTrackingEventDto>
+                 ?? Enumerable.Empty<ShipmentTrackingEventDto>();
+}
+
+<div class="admin-shipment-page">
+
+    <div class="shipment-page-header">
+        <div>
+            <h2>Shipment Details</h2>
+            <p>Review shipment information and tracking history.</p>
+        </div>
+
+        <a asp-action="ByOrder"
+           asp-route-orderId="@Model.OrderId"
+           class="shipment-btn shipment-btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Order Shipments
+        </a>
+    </div>
+
+    <div class="shipment-details-grid">
+
+        <div class="shipment-card">
+
+            <div class="shipment-card-header">
+                <div>
+                    <h5>Shipment Information</h5>
+                    <p>General information about this shipment.</p>
+                </div>
+
+                <span class="shipment-status">
+                    @Model.status
+                </span>
+            </div>
+
+            <div class="shipment-info-grid">
+
+                <div class="shipment-info-item">
+                    <span>Tracking Number</span>
+                    <strong>@Model.TrackingNumber</strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Shipment ID</span>
+                    <strong>#@Model.Id</strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Order ID</span>
+                    <strong>
+                        <a asp-controller="AdminOrders"
+                           asp-action="Details"
+                           asp-route-id="@Model.OrderId">
+                            #@Model.OrderId
+                        </a>
+                    </strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Carrier</span>
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(Model.CarrierName)
+                                                ? "Not specified"
+                                                : Model.CarrierName)
+                    </strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Created At</span>
+                    <strong>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Shipped At</span>
+                    <strong>
+                        @(Model.ShippedAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Not shipped")
+                    </strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Estimated Delivery</span>
+                    <strong>
+                        @(Model.EstimatedDeliveryAt?.ToString("dd MMM yyyy") ?? "Not available")
+                    </strong>
+                </div>
+
+                <div class="shipment-info-item">
+                    <span>Delivered At</span>
+                    <strong>
+                        @(Model.DeliveredAt?.ToString("dd MMM yyyy, hh:mm tt") ?? "Not delivered")
+                    </strong>
+                </div>
+
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Notes))
+            {
+                <div class="shipment-notes">
+                    <span>Notes</span>
+                    <p>@Model.Notes</p>
+                </div>
+            }
+
+        </div>
+
+        <div class="shipment-card shipment-summary-card">
+
+            <div class="shipment-card-header">
+                <div>
+                    <h5>Tracking Summary</h5>
+                    <p>Shipment activity overview.</p>
+                </div>
+            </div>
+
+            <div class="shipment-summary-content">
+
+                <div class="shipment-summary-item">
+                    <span>Current Status</span>
+                    <strong>@Model.status</strong>
+                </div>
+
+                <div class="shipment-summary-item">
+                    <span>Tracking Events</span>
+                    <strong>@events.Count()</strong>
+                </div>
+
+                <div class="shipment-summary-item">
+                    <span>Carrier</span>
+                    <strong>@(Model.CarrierName ?? "—")</strong>
+                </div>
+
+            </div>
+
+            <div class="shipment-track-action">
+                <a asp-action="Track"
+                   asp-route-trackingNumber="@Model.TrackingNumber"
+                   class="shipment-btn shipment-btn-primary">
+                    <i class="bi bi-geo-alt"></i>
+                    Open Tracking
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="shipment-card">
+
+        <div class="shipment-card-header">
+            <div>
+                <h5>Tracking Timeline</h5>
+                <p>Recorded updates throughout the shipment journey.</p>
+            </div>
+
+            <span class="shipment-count">
+                @events.Count() Events
+            </span>
+        </div>
+
+        <div class="shipment-timeline">
+
+            @if (events.Any())
+            {
+                foreach (var trackingEvent in events.OrderByDescending(x => x.OccurredAt))
+                {
+                    <div class="shipment-timeline-item">
+
+                        <div class="shipment-timeline-marker">
+                            <i class="bi bi-circle-fill"></i>
+                        </div>
+
+                        <div class="shipment-timeline-content">
+
+                            <div class="shipment-timeline-heading">
+                                <strong>@trackingEvent.Status</strong>
+                                <span>
+                                    @trackingEvent.OccurredAt.ToString("dd MMM yyyy, hh:mm tt")
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(trackingEvent.Description))
+                            {
+                                <p>@trackingEvent.Description</p>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(trackingEvent.Location))
+                            {
+                                <small>
+                                    <i class="bi bi-geo-alt"></i>
+                                    @trackingEvent.Location
+                                </small>
+                            }
+
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="shipment-empty-state">
+                    <i class="bi bi-clock-history"></i>
+                    <h6>No tracking updates yet</h6>
+                    <p>Tracking events will appear here when they become available.</p>
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

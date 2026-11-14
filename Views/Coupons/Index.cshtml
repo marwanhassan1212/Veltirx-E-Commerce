@@ -1,0 +1,249 @@
+﻿@model IReadOnlyCollection<Veltrix.DTOs.CouponDTO.CouponListDto>
+
+@{
+    ViewData["Title"] = "Coupons";
+    var coupons = Model ?? Array.Empty<Veltrix.DTOs.CouponDTO.CouponListDto>();
+}
+
+<div class="page-content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Coupons</h2>
+            <p class="text-muted mb-0">Create and manage your store discount coupons.</p>
+        </div>
+
+        <a asp-controller="Coupons" asp-action="Create" class="vx-btn-primary text-decoration-none">
+            <i class="bi bi-plus-lg me-1"></i> Create Coupon
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="search"
+                               id="couponSearch"
+                               class="form-control"
+                               placeholder="Search by coupon code..." />
+                    </div>
+                </div>
+
+                <div class="col-lg-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="all">All coupons</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="expired">Expired</option>
+                        <option value="limit">Usage limit reached</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+                    <span class="text-muted small">
+                        <strong id="visibleCount">@coupons.Count</strong> coupon(s)
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Coupon</th>
+                            <th>Discount</th>
+                            <th>Usage</th>
+                            <th>Validity</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="couponsTable">
+                        @foreach (var coupon in coupons)
+                        {
+                            var status = !coupon.IsActive ? "inactive"
+                            : coupon.IsExpired ? "expired"
+                            : coupon.IsUpcoming ? "upcoming"
+                            : coupon.IsUsageLimitReached ? "limit"
+                            : "active";
+
+                            var discountLabel = coupon.DiscountType.ToString() == "Percentage"
+                            ? $"{coupon.DiscountValue}%"
+                            : $"{coupon.DiscountValue:N2}";
+
+                            <tr class="coupon-row"
+                                data-code="@coupon.Code.ToLowerInvariant()"
+                                data-status="@status">
+
+                                <td class="ps-4">
+                                    <div class="fw-semibold">@coupon.Code</div>
+                                </td>
+
+                                <td>
+                                    <span class="fw-semibold">@discountLabel</span>
+                                    <div class="text-muted small">@coupon.DiscountType</div>
+                                </td>
+
+                                <td>
+                                    <div class="small">
+                                        @coupon.UsageCount
+                                        /
+                                        @(coupon.UsageLimit?.ToString() ?? "Unlimited")
+                                    </div>
+
+                                    @if (coupon.UsageLimit.HasValue && coupon.UsageLimit.Value > 0)
+                                    {
+                                        var percentage = Math.Min(
+                                        100,
+                                        (double)coupon.UsageCount / coupon.UsageLimit.Value * 100
+                                        );
+
+                                        <div class="progress mt-1" style="height:5px; max-width:120px;">
+                                            <div class="progress-bar"
+                                                 role="progressbar"
+                                                 style="width:@percentage%">
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="small">
+                                        @coupon.StartsAt.ToString("dd MMM yyyy")
+                                    </div>
+                                    <div class="text-muted small">
+                                        to @coupon.ExpiresAt.ToString("dd MMM yyyy")
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @switch (status)
+                                    {
+                                        case "active":
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                            break;
+                                        case "inactive":
+                                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                            break;
+                                        case "upcoming":
+                                            <span class="badge bg-info-subtle text-info">Upcoming</span>
+                                            break;
+                                        case "expired":
+                                            <span class="badge bg-danger-subtle text-danger">Expired</span>
+                                            break;
+                                        case "limit":
+                                            <span class="badge bg-warning-subtle text-warning">Limit reached</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-2">
+                                        <a asp-action="Details"
+                                           asp-route-id="@coupon.Id"
+                                           class="btn btn-sm btn-light"
+                                           title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <a asp-action="Edit"
+                                           asp-route-id="@coupon.Id"
+                                           class="btn btn-sm btn-light"
+                                           title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <form asp-action="ToggleStatus"
+                                              asp-route-id="@coupon.Id"
+                                              method="post"
+                                              class="d-inline">
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-light"
+                                                    title="@(coupon.IsActive ? "Deactivate" : "Activate")">
+                                                <i class="bi @(coupon.IsActive ? "bi-toggle-on text-success" : "bi-toggle-off text-secondary")"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!coupons.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="bi bi-ticket-perforated fs-1 text-muted"></i>
+                                    <h6 class="mt-3">No coupons yet</h6>
+                                    <p class="text-muted small mb-3">Create your first coupon to get started.</p>
+                                    <a asp-action="Create" class="vx-btn-primary text-decoration-none">
+                                        Create Coupon
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noSearchResults" class="text-center py-4 d-none">
+                <p class="text-muted mb-0">No coupons match your search.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const search = document.getElementById('couponSearch');
+            const filter = document.getElementById('statusFilter');
+            const rows = [...document.querySelectorAll('.coupon-row')];
+            const count = document.getElementById('visibleCount');
+            const empty = document.getElementById('noSearchResults');
+
+            function applyFilters() {
+                const term = search.value.trim().toLowerCase();
+                const selectedStatus = filter.value;
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const matchesSearch = row.dataset.code.includes(term);
+                    const matchesStatus =
+                        selectedStatus === 'all' ||
+                        row.dataset.status === selectedStatus;
+
+                    const show = matchesSearch && matchesStatus;
+                    row.classList.toggle('d-none', !show);
+
+                    if (show) visible++;
+                });
+
+                count.textContent = visible;
+                empty.classList.toggle('d-none', visible !== 0 || rows.length === 0);
+            }
+
+            search.addEventListener('input', applyFilters);
+            filter.addEventListener('change', applyFilters);
+        })();
+    </script>
+}
